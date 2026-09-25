@@ -1,0 +1,668 @@
+// Prisma Schema for Edspectrum NGO Platform - Lumino1 Database Layer
+// Targeted for Oracle MySQL / MySQL HeatWave
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SchoolStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum ClassStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  TRANSFERRED
+}
+
+enum EnrollmentStatus {
+  PRESENT
+  ABSENT
+  TRANSFERRED
+  EXCLUDED
+}
+
+enum AssessmentStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  REVIEWED
+  REVIEWED_OVERRIDE
+  LOCKED
+  PRESENT
+  ABSENT
+  PARTIAL
+}
+
+enum AttendanceStatus {
+  P
+  A
+  HALF_DAY
+  ACTIVITY
+  CANCELLED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  OVERRIDE
+  SUBMIT
+  REVIEW
+  LOCK
+  UNLOCK
+}
+
+enum ReadyForTable39Status {
+  NO
+  NOT_YET
+  YES
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+// ==========================================
+// 1. ROLES & USERS (AUTH)
+// ==========================================
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique @db.VarChar(50)
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id                    Int        @id @default(autoincrement())
+  email                 String     @unique @db.VarChar(255)
+  passwordHash          String     @map("password_hash") @db.VarChar(255)
+  firstName             String     @map("first_name") @db.VarChar(100)
+  lastName              String     @map("last_name") @db.VarChar(100)
+  roleId                Int        @map("role_id")
+  schoolId              Int?       @map("school_id")
+  status                UserStatus @default(ACTIVE)
+  passwordResetRequired Boolean    @default(false) @map("password_reset_required")
+  lastLoginAt           DateTime?  @map("last_login_at") @db.DateTime(0)
+  createdAt             DateTime   @default(now()) @map("created_at")
+  updatedAt             DateTime   @updatedAt @map("updated_at")
+  createdById           Int?       @map("created_by")
+
+  // Relationships
+  role                             Role                 @relation(fields: [roleId], references: [id])
+  school                           School?              @relation("SchoolUsers", fields: [schoolId], references: [id])
+  createdBy                        User?                @relation("UserCreator", fields: [createdById], references: [id])
+  createdUsers                     User[]               @relation("UserCreator")
+  createdSchools                   School[]             @relation("SchoolCreator")
+  createdClassSections             ClassSection[]       @relation("ClassSectionCreator")
+  createdStudents                  Student[]            @relation("StudentCreator")
+  createdAssessmentVersions        AssessmentVersion[]  @relation("AssessmentVersionCreator")
+  assessedBaselineAssessments      BaselineAssessment[] @relation("BaselineAssessor")
+  reviewedBaselineAssessments      BaselineAssessment[] @relation("BaselineReviewer")
+  createdBaselineAssessments       BaselineAssessment[] @relation("BaselineCreator")
+  reviewedDomainResults            DomainResult[]       @relation("DomainResultReviewer")
+  generatedClassSummaries          ClassSummary[]       @relation("ClassSummaryGenerator")
+  updatedClassDomainSummaries      ClassDomainSummary[] @relation("ClassDomainSummaryUpdater")
+  createdClassProfiles             ClassProfile[]       @relation("ClassProfileCreator")
+  updatedClassProfiles             ClassProfile[]       @relation("ClassProfileUpdater")
+  auditLogs                        AuditLog[]           @relation("UserAuditLogs")
+
+  @@index([email], map: "idx_users_email")
+  @@index([schoolId], map: "idx_users_school_id")
+  @@index([roleId], map: "idx_users_role_id")
+  @@map("users")
+}
+
+// ==========================================
+// 2. SCHOOL & ACADEMIC HIERARCHY
+// ==========================================
+
+model School {
+  id           Int          @id @default(autoincrement())
+  name         String       @db.VarChar(255)
+  code         String       @unique @db.VarChar(50)
+  address      String?      @db.VarChar(255)
+  city         String?      @db.VarChar(100)
+  state        String?      @db.VarChar(100)
+  country      String?      @db.VarChar(100)
+  contactEmail String?      @map("contact_email") @db.VarChar(255)
+  contactPhone String?      @map("contact_phone") @db.VarChar(20)
+  ngoId        Int?         @map("ngo_id")
+  status       SchoolStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  createdById  Int          @map("created_by")
+
+  createdBy          User                     @relation("SchoolCreator", fields: [createdById], references: [id])
+  users              User[]                   @relation("SchoolUsers")
+  grades             Grade[]
+  classSections      ClassSection[]
+  students           Student[]
+  studentEnrollments StudentClassEnrollment[]
+  baselineAssessments BaselineAssessment[]
+  classSummaries     ClassSummary[]
+  classProfiles      ClassProfile[]
+
+  @@index([code], map: "idx_schools_code")
+  @@index([status], map: "idx_schools_status")
+  @@map("schools")
+}
+
+model Grade {
+  id        Int      @id @default(autoincrement())
+  schoolId  Int      @map("school_id")
+  number    Int
+  name      String   @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  school        School         @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classSections ClassSection[]
+
+  @@unique([schoolId, number], map: "uq_grade_school_number")
+  @@index([schoolId], map: "idx_grades_school_id")
+  @@map("grades")
+}
+
+model ClassSection {
+  id              Int         @id @default(autoincrement())
+  schoolId        Int         @map("school_id")
+  gradeId         Int?        @map("grade_id")
+  className       String      @map("class_name") @db.VarChar(50)
+  section         String      @db.VarChar(10)
+  name            String      @db.VarChar(100)
+  academicYear    String?     @map("academic_year") @db.VarChar(20)
+  status          ClassStatus @default(ACTIVE)
+  assessmentCycle String?     @default("DEFAULT") @map("assessment_cycle") @db.VarChar(50)
+  capacity        Int         @default(40)
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  createdById     Int         @map("created_by")
+
+  school             School                   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  grade              Grade?                   @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  createdBy          User                     @relation("ClassSectionCreator", fields: [createdById], references: [id])
+  students           Student[]
+  studentEnrollments StudentClassEnrollment[]
+  baselineAssessments BaselineAssessment[]
+  classSummaries     ClassSummary[]
+  classProfiles      ClassProfile[]
+  attendances        Attendance[]
+
+  @@unique([schoolId, gradeId, section], map: "uq_class_section")
+  @@index([schoolId], map: "idx_class_sections_school_id")
+  @@index([gradeId], map: "idx_class_sections_grade_id")
+  @@map("class_sections")
+}
+
+// ==========================================
+// 3. STUDENTS & ENROLLMENT
+// ==========================================
+
+model Student {
+  id            Int           @id @default(autoincrement())
+  schoolId      Int           @map("school_id")
+  classId       Int?          @map("class_id")
+  studentIdCode String        @map("student_id") @db.VarChar(100)
+  firstName     String        @map("first_name") @db.VarChar(100)
+  lastName      String        @map("last_name") @db.VarChar(100)
+  dateOfBirth   DateTime?     @map("date_of_birth") @db.Date
+  gender        Gender?
+  status        StudentStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  createdById   Int           @map("created_by")
+
+  school             School                   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classSection       ClassSection?            @relation(fields: [classId], references: [id], onDelete: SetNull)
+  createdBy          User                     @relation("StudentCreator", fields: [createdById], references: [id])
+  enrollments        StudentClassEnrollment[]
+  baselineAssessments BaselineAssessment[]
+  attendances        Attendance[]
+
+  @@unique([schoolId, studentIdCode], map: "uq_school_student_id")
+  @@index([schoolId], map: "idx_students_school_id")
+  @@index([schoolId, studentIdCode], map: "idx_students_student_id")
+  @@map("students")
+}
+
+model StudentClassEnrollment {
+  id             Int              @id @default(autoincrement())
+  studentId      Int              @map("student_id")
+  classSectionId Int              @map("class_section_id")
+  schoolId       Int?             @map("school_id")
+  withdrawnDate  DateTime?        @map("withdrawn_date")
+  status         EnrollmentStatus @default(PRESENT)
+  isCurrent      Boolean          @default(true) @map("is_current")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  student            Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classSection       ClassSection         @relation(fields: [classSectionId], references: [id], onDelete: Cascade)
+  school             School?              @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  baselineAssessments BaselineAssessment[]
+
+  @@unique([studentId, classSectionId], map: "uq_student_enrollment")
+  @@index([studentId], map: "idx_enrollments_student_id")
+  @@index([classSectionId], map: "idx_enrollments_class_section_id")
+  @@index([isCurrent], map: "idx_enrollments_is_current")
+  @@index([status], map: "idx_enrollments_status")
+  @@map("student_class_enrollments")
+}
+
+// ==========================================
+// 4. ASSESSMENT CONFIGURATION
+// ==========================================
+
+model AssessmentDomain {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique @db.VarChar(10)
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  orderNumber Int?     @unique @map("order_number")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  assessmentItems      AssessmentItem[]
+  domainStages         AssessmentDomainStage[]
+  domainResults        DomainResult[]
+  classDomainSummaries ClassDomainSummary[]
+  frameworkSuggestions DomainFrameworkSuggestion[]
+
+  @@map("assessment_domains")
+}
+
+model AssessmentVersion {
+  id            Int      @id @default(autoincrement())
+  versionNumber String   @unique @map("version_number") @db.VarChar(20)
+  name          String   @db.VarChar(255)
+  description   String?  @db.Text
+  isCurrent     Boolean  @default(false) @map("is_current")
+  createdAt     DateTime @default(now()) @map("created_at")
+  createdById   Int      @map("created_by")
+
+  createdBy           User                 @relation("AssessmentVersionCreator", fields: [createdById], references: [id])
+  assessmentItems     AssessmentItem[]
+  baselineAssessments BaselineAssessment[]
+
+  @@map("assessment_versions")
+}
+
+model AssessmentItem {
+  id                  Int      @id @default(autoincrement())
+  assessmentVersionId Int      @map("assessment_version_id")
+  domainId            Int      @map("domain_id")
+  itemNumber          Int      @map("item_number")
+  description         String?  @db.VarChar(255)
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  assessmentVersion AssessmentVersion        @relation(fields: [assessmentVersionId], references: [id], onDelete: Cascade)
+  domain            AssessmentDomain         @relation(fields: [domainId], references: [id])
+  responses         AssessmentItemResponse[]
+
+  @@unique([assessmentVersionId, domainId, itemNumber], map: "uq_version_domain_item")
+  @@index([assessmentVersionId], map: "idx_assessment_items_version_id")
+  @@index([domainId], map: "idx_assessment_items_domain_id")
+  @@map("assessment_items")
+}
+
+model Stage {
+  id          Int      @id @default(autoincrement())
+  stageNumber Int      @unique @map("stage_number")
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  domainStages AssessmentDomainStage[]
+
+  @@map("stages")
+}
+
+model AssessmentDomainStage {
+  id                     Int      @id @default(autoincrement())
+  domainId               Int      @map("domain_id")
+  stageId                Int      @map("stage_id")
+  performanceDescription String   @map("performance_description") @db.Text
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  domain AssessmentDomain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  stage  Stage            @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@unique([domainId, stageId], map: "uq_domain_stage")
+  @@map("assessment_domain_stages")
+}
+
+model SupportCode {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique @db.VarChar(10)
+  meaning     String   @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  domainResults DomainResult[]
+
+  @@map("support_codes")
+}
+
+model OralFlag {
+  id          Int      @id @default(autoincrement())
+  flagCode    String   @unique @map("flag_code") @db.VarChar(10)
+  meaning     String   @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  domainResults DomainResult[]
+
+  @@map("oral_flags")
+}
+
+model FrameworkFamily {
+  id          Int     @id @default(autoincrement())
+  code        String  @unique @db.VarChar(30)
+  name        String  @db.VarChar(150)
+  description String? @db.Text
+
+  domainSuggestions DomainFrameworkSuggestion[]
+
+  @@map("framework_families")
+}
+
+model DomainFrameworkSuggestion {
+  id                Int @id @default(autoincrement())
+  domainId          Int @map("domain_id")
+  frameworkFamilyId Int @map("framework_family_id")
+
+  domain          AssessmentDomain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  frameworkFamily FrameworkFamily  @relation(fields: [frameworkFamilyId], references: [id], onDelete: Cascade)
+
+  @@unique([domainId, frameworkFamilyId], map: "uq_domain_framework")
+  @@map("domain_framework_suggestions")
+}
+
+// ==========================================
+// 5. BASELINE ASSESSMENT & DOMAIN RESULTS
+// ==========================================
+
+model BaselineAssessment {
+  id                       Int              @id @default(autoincrement())
+  studentId                Int              @map("student_id")
+  studentClassEnrollmentId Int?             @map("student_class_enrollment_id")
+  schoolId                 Int              @map("school_id")
+  classSectionId           Int              @map("class_section_id")
+  assessmentVersionId      Int              @map("assessment_version_id")
+  assessmentDate           DateTime         @map("assessment_date") @db.Date
+  assessorId               Int              @map("assessor_id")
+  status                   AssessmentStatus @default(DRAFT)
+  submissionDate           DateTime?        @map("submission_date") @db.DateTime(0)
+  reviewDate               DateTime?        @map("review_date") @db.DateTime(0)
+  reviewedById             Int?             @map("reviewed_by")
+  lockedAt                 DateTime?        @map("locked_at") @db.DateTime(0)
+  qcNotes                  String?          @map("qc_notes") @db.Text
+  keySupportFlag           String?          @map("key_support_flag") @db.VarChar(100)
+  oralFlag                 String?          @map("oral_flag") @db.VarChar(10)
+  createdAt                DateTime         @default(now()) @map("created_at")
+  updatedAt                DateTime         @updatedAt @map("updated_at")
+  createdById              Int              @map("created_by")
+
+  student                Student                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentClassEnrollment StudentClassEnrollment? @relation(fields: [studentClassEnrollmentId], references: [id])
+  school                 School                  @relation(fields: [schoolId], references: [id])
+  classSection           ClassSection            @relation(fields: [classSectionId], references: [id])
+  assessmentVersion      AssessmentVersion       @relation(fields: [assessmentVersionId], references: [id])
+  assessor               User                    @relation("BaselineAssessor", fields: [assessorId], references: [id])
+  reviewedBy             User?                   @relation("BaselineReviewer", fields: [reviewedById], references: [id])
+  createdBy              User                    @relation("BaselineCreator", fields: [createdById], references: [id])
+  domainResults          DomainResult[]
+
+  @@unique([studentId, classSectionId, assessmentVersionId], map: "uq_student_class_version")
+  @@index([studentId], map: "idx_assessments_student_id")
+  @@index([classSectionId], map: "idx_assessments_class_section_id")
+  @@index([status], map: "idx_assessments_status")
+  @@index([assessorId], map: "idx_assessments_assessor_id")
+  @@map("baseline_assessments")
+}
+
+model DomainResult {
+  id                  Int       @id @default(autoincrement())
+  assessmentId        Int       @map("assessment_id")
+  domainId            Int       @map("domain_id")
+  item1               Int?      @map("item_1") @db.TinyInt
+  item2               Int?      @map("item_2") @db.TinyInt
+  item3               Int?      @map("item_3") @db.TinyInt
+  item4               Int?      @map("item_4") @db.TinyInt
+  item5               Int?      @map("item_5") @db.TinyInt
+  totalScore          Int?      @map("total_score")
+  suggestedStage      String?   @map("suggested_stage") @db.VarChar(15)
+  reviewNeeded        Boolean   @default(false) @map("review_needed")
+  finalStage          String?   @map("final_stage") @db.VarChar(15)
+  finalStageOverride  Boolean   @default(false) @map("final_stage_override")
+  overrideReason      String?   @map("override_reason") @db.Text
+  reviewedById        Int?      @map("reviewed_by")
+  reviewedAt          DateTime? @map("reviewed_at") @db.DateTime(0)
+  supportCodeId       Int?      @map("support_code_id")
+  oralFlagId          Int?      @map("oral_flag_id")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  assessment    BaselineAssessment       @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  domain        AssessmentDomain         @relation(fields: [domainId], references: [id])
+  reviewedBy    User?                    @relation("DomainResultReviewer", fields: [reviewedById], references: [id])
+  supportCode   SupportCode?             @relation(fields: [supportCodeId], references: [id])
+  oralFlag      OralFlag?                @relation(fields: [oralFlagId], references: [id])
+  itemResponses AssessmentItemResponse[]
+
+  @@unique([assessmentId, domainId], map: "uq_assessment_domain")
+  @@index([assessmentId], map: "idx_domain_results_assessment_id")
+  @@index([domainId], map: "idx_domain_results_domain_id")
+  @@index([suggestedStage], map: "idx_domain_results_suggested_stage")
+  @@index([finalStage], map: "idx_domain_results_final_stage")
+  @@map("domain_results")
+}
+
+model AssessmentItemResponse {
+  id               Int      @id @default(autoincrement())
+  domainResultId   Int      @map("domain_result_id")
+  assessmentItemId Int      @map("assessment_item_id")
+  rating           Int?     @db.TinyInt
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  domainResult   DomainResult   @relation(fields: [domainResultId], references: [id], onDelete: Cascade)
+  assessmentItem AssessmentItem @relation(fields: [assessmentItemId], references: [id])
+
+  @@unique([domainResultId, assessmentItemId], map: "uq_domain_result_item")
+  @@index([domainResultId], map: "idx_item_responses_domain_result_id")
+  @@map("assessment_item_responses")
+}
+
+// ==========================================
+// 6. CLASS SUMMARIES & PROFILES
+// ==========================================
+
+model ClassSummary {
+  id              Int      @id @default(autoincrement())
+  schoolId        Int      @map("school_id")
+  classSectionId  Int      @map("class_section_id")
+  assessmentCycle String?  @default("DEFAULT") @map("assessment_cycle") @db.VarChar(50)
+  totalAssessed   Int      @default(0) @map("total_assessed")
+  generatedAt     DateTime @default(now()) @map("generated_at") @db.DateTime(0)
+  generatedById   Int      @map("generated_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  school          School               @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classSection    ClassSection         @relation(fields: [classSectionId], references: [id], onDelete: Cascade)
+  generatedBy     User                 @relation("ClassSummaryGenerator", fields: [generatedById], references: [id])
+  domainSummaries ClassDomainSummary[]
+  classProfiles   ClassProfile[]
+
+  @@unique([schoolId, classSectionId, assessmentCycle], map: "uq_class_summary_cycle")
+  @@index([schoolId], map: "idx_class_summaries_school_id")
+  @@index([classSectionId], map: "idx_class_summaries_class_section_id")
+  @@map("class_summaries")
+}
+
+model ClassDomainSummary {
+  id                   Int      @id @default(autoincrement())
+  classSummaryId       Int      @map("class_summary_id")
+  domainId             Int      @map("domain_id")
+  s1Count              Int      @default(0) @map("s1_count")
+  s2Count              Int      @default(0) @map("s2_count")
+  s3Count              Int      @default(0) @map("s3_count")
+  s4Count              Int      @default(0) @map("s4_count")
+  s5Count              Int      @default(0) @map("s5_count")
+  totalWithStage       Int      @default(0) @map("total_with_stage")
+  dominantStage        Int?     @map("dominant_stage")
+  percentBelowDominant Decimal? @map("percent_below_dominant") @db.Decimal(5, 2)
+  reviewFlag           String?  @map("review_flag") @db.VarChar(50)
+  supportBand          String?  @map("support_band") @db.Text
+  anchorBand           String?  @map("anchor_band") @db.Text
+  stretchBand          String?  @map("stretch_band") @db.Text
+  planningImplication  String?  @map("planning_implication") @db.Text
+  frameworkFamily      String?  @map("framework_family") @db.VarChar(255)
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  updatedById          Int?     @map("updated_by")
+
+  classSummary ClassSummary     @relation(fields: [classSummaryId], references: [id], onDelete: Cascade)
+  domain       AssessmentDomain @relation(fields: [domainId], references: [id])
+  updatedBy    User?            @relation("ClassDomainSummaryUpdater", fields: [updatedById], references: [id])
+
+  @@unique([classSummaryId, domainId], map: "uq_summary_domain")
+  @@index([classSummaryId], map: "idx_class_domain_summaries_class_summary_id")
+  @@map("class_domain_summaries")
+}
+
+model LanguageFunction {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique @db.VarChar(50)
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  classProfiles ClassProfile[]
+
+  @@map("language_functions")
+}
+
+model Theme {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique @db.VarChar(50)
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  classProfiles ClassProfile[]
+
+  @@map("themes")
+}
+
+model ClassProfile {
+  id                            Int                   @id @default(autoincrement())
+  schoolId                      Int                   @map("school_id")
+  classSectionId                Int                   @map("class_section_id")
+  classSummaryId                Int?                  @map("class_summary_id")
+  studentsAssessed              Int?                  @map("students_assessed")
+  assessmentDate                DateTime?             @map("assessment_date") @db.Date
+  strongDomains                 String?               @map("strong_domains") @db.Text
+  weakDomains                   String?               @map("weak_domains") @db.Text
+  crossDomainPattern            String?               @map("cross_domain_pattern") @db.Text
+  communicationBottleneck       String?               @map("communication_bottleneck") @db.Text
+  provisionalLanguageDirection  String?               @map("provisional_language_direction") @db.VarChar(255)
+  centralLanguageFunctionId     Int?                  @map("central_language_function_id")
+  compatibleThemeId             Int?                  @map("compatible_theme_id")
+  immediatePlanningImplication  String?               @map("immediate_planning_implication") @db.Text
+  classroomProfileParagraph     String?               @map("classroom_profile_paragraph") @db.Text
+  readyForTable39               ReadyForTable39Status @default(NO) @map("ready_for_table39")
+  table39Notes                  String?               @map("table39_notes") @db.Text
+  createdAt                     DateTime              @default(now()) @map("created_at")
+  updatedAt                     DateTime              @updatedAt @map("updated_at")
+  createdById                   Int                   @map("created_by")
+  updatedById                   Int?                  @map("updated_by")
+
+  school                  School            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classSection            ClassSection      @relation(fields: [classSectionId], references: [id], onDelete: Cascade)
+  classSummary            ClassSummary?     @relation(fields: [classSummaryId], references: [id], onDelete: SetNull)
+  centralLanguageFunction LanguageFunction? @relation(fields: [centralLanguageFunctionId], references: [id])
+  compatibleTheme         Theme?            @relation(fields: [compatibleThemeId], references: [id])
+  createdBy               User              @relation("ClassProfileCreator", fields: [createdById], references: [id])
+  updatedBy               User?             @relation("ClassProfileUpdater", fields: [updatedById], references: [id])
+
+  @@unique([schoolId, classSectionId], map: "uq_school_class_profile")
+  @@index([schoolId], map: "idx_class_profiles_school_id")
+  @@index([classSectionId], map: "idx_class_profiles_class_section_id")
+  @@index([readyForTable39], map: "idx_class_profiles_ready_for_table39")
+  @@map("class_profiles")
+}
+
+// ==========================================
+// 7. DAILY ATTENDANCE TRACKING
+// ==========================================
+
+model Attendance {
+  id             BigInt           @id @default(autoincrement())
+  sessionDate    DateTime         @map("session_date") @db.Date
+  classSectionId Int              @map("class_id")
+  studentId      Int?             @map("student_id")
+  status         AttendanceStatus
+  remarks        String?          @db.Text
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  classSection ClassSection @relation(fields: [classSectionId], references: [id], onDelete: Cascade)
+  student      Student?     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionDate, classSectionId, studentId], map: "uq_session_class_student")
+  @@index([sessionDate, classSectionId], map: "idx_att_date_class")
+  @@index([status], map: "idx_att_status")
+  @@map("attendance")
+}
+
+// ==========================================
+// 8. AUDIT LOGGING
+// ==========================================
+
+model AuditLog {
+  id         Int         @id @default(autoincrement())
+  userId     Int         @map("user_id")
+  action     AuditAction
+  entityName String      @map("entity_name") @db.VarChar(100)
+  entityId   Int?        @map("entity_id")
+  details    String?     @db.Text
+  ipAddress  String?     @map("ip_address") @db.VarChar(45)
+  userAgent  String?     @map("user_agent") @db.VarChar(255)
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  user User @relation("UserAuditLogs", fields: [userId], references: [id])
+
+  @@index([userId], map: "idx_audit_logs_user_id")
+  @@index([action], map: "idx_audit_logs_action")
+  @@index([entityName, entityId], map: "idx_audit_logs_entity")
+  @@map("audit_logs")
+}

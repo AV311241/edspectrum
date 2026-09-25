@@ -1,0 +1,856 @@
+{
+	"openapi": "3.0.0",
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"UserResponseDTO": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"email": {
+						"type": "string"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"roleId": {
+						"type": "number",
+						"format": "double"
+					},
+					"status": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"email",
+					"firstName",
+					"lastName",
+					"roleId",
+					"status",
+					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateUserDTO": {
+				"properties": {
+					"email": {
+						"type": "string"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"passwordHash": {
+						"type": "string"
+					},
+					"roleId": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"email",
+					"firstName",
+					"lastName",
+					"passwordHash",
+					"roleId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AssessmentStatus": {
+				"enum": [
+					"Present",
+					"Absent",
+					"Partial"
+				],
+				"type": "string"
+			},
+			"OralFlag": {
+				"enum": [
+					"C0",
+					"C1",
+					"C2",
+					"C3"
+				],
+				"type": "string"
+			},
+			"BaselineDomain": {
+				"enum": [
+					"Vocabulary",
+					"Grammar",
+					"Phrase_Sentence",
+					"Listening",
+					"Speaking",
+					"Reading",
+					"Writing"
+				],
+				"type": "string"
+			},
+			"SuggestedStage": {
+				"enum": [
+					"S1",
+					"S2",
+					"S3",
+					"S4",
+					"S5",
+					"Review",
+					"AB"
+				],
+				"type": "string"
+			},
+			"DomainScoreRecord": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"assessmentId": {
+						"type": "number",
+						"format": "double"
+					},
+					"domain": {
+						"$ref": "#/components/schemas/BaselineDomain"
+					},
+					"item1": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"item2": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"item3": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"item4": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"item5": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"domainScore": {
+						"type": "number",
+						"format": "double"
+					},
+					"suggestedStage": {
+						"$ref": "#/components/schemas/SuggestedStage"
+					},
+					"finalStage": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/SuggestedStage"
+							}
+						],
+						"nullable": true
+					},
+					"reviewNeeded": {
+						"type": "boolean"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"assessmentId",
+					"domain",
+					"item1",
+					"item2",
+					"item3",
+					"item4",
+					"item5",
+					"domainScore",
+					"suggestedStage",
+					"finalStage",
+					"reviewNeeded",
+					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BaselineAssessmentRecord": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"studentId": {
+						"type": "string"
+					},
+					"assessmentDate": {
+						"type": "string"
+					},
+					"assessorName": {
+						"type": "string"
+					},
+					"status": {
+						"$ref": "#/components/schemas/AssessmentStatus"
+					},
+					"keySupportFlag": {
+						"type": "string",
+						"nullable": true
+					},
+					"oralFlag": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/OralFlag"
+							}
+						],
+						"nullable": true
+					},
+					"qcNotes": {
+						"type": "string",
+						"nullable": true
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"domainScores": {
+						"items": {
+							"$ref": "#/components/schemas/DomainScoreRecord"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"id",
+					"studentId",
+					"assessmentDate",
+					"assessorName",
+					"status",
+					"keySupportFlag",
+					"oralFlag",
+					"qcNotes",
+					"createdAt",
+					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DomainScoreInput": {
+				"properties": {
+					"domain": {
+						"$ref": "#/components/schemas/BaselineDomain"
+					},
+					"item1": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"item2": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"item3": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"item4": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"item5": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"finalStage": {
+						"$ref": "#/components/schemas/SuggestedStage"
+					}
+				},
+				"required": [
+					"domain"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateBaselineAssessmentInput": {
+				"properties": {
+					"studentId": {
+						"type": "string"
+					},
+					"assessmentDate": {
+						"type": "string"
+					},
+					"assessorName": {
+						"type": "string"
+					},
+					"status": {
+						"$ref": "#/components/schemas/AssessmentStatus"
+					},
+					"keySupportFlag": {
+						"type": "string",
+						"nullable": true
+					},
+					"oralFlag": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/OralFlag"
+							}
+						],
+						"nullable": true
+					},
+					"qcNotes": {
+						"type": "string",
+						"nullable": true
+					},
+					"domainScores": {
+						"items": {
+							"$ref": "#/components/schemas/DomainScoreInput"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"studentId",
+					"assessmentDate",
+					"assessorName",
+					"domainScores"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BulkImportBaselineAssessmentInput": {
+				"properties": {
+					"assessments": {
+						"items": {
+							"$ref": "#/components/schemas/CreateBaselineAssessmentInput"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"assessments"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Record_string.unknown_": {
+				"properties": {},
+				"additionalProperties": {},
+				"type": "object",
+				"description": "Construct a type with a set of properties K of type T"
+			},
+			"PaginatedBaselineAssessmentResponse": {
+				"properties": {
+					"records": {
+						"items": {},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"records",
+					"total",
+					"page",
+					"totalPages"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateBaselineAssessmentInput": {
+				"properties": {
+					"studentId": {
+						"type": "string"
+					},
+					"assessmentDate": {
+						"type": "string"
+					},
+					"assessorName": {
+						"type": "string"
+					},
+					"status": {
+						"$ref": "#/components/schemas/AssessmentStatus"
+					},
+					"keySupportFlag": {
+						"type": "string",
+						"nullable": true
+					},
+					"oralFlag": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/OralFlag"
+							}
+						],
+						"nullable": true
+					},
+					"qcNotes": {
+						"type": "string",
+						"nullable": true
+					},
+					"domainScores": {
+						"items": {
+							"$ref": "#/components/schemas/DomainScoreInput"
+						},
+						"type": "array"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {}
+	},
+	"info": {
+		"title": "lumino1-backend",
+		"version": "1.0.0",
+		"description": "Lumino1 NGO Baseline Assessment Production-Ready Express TypeScript Backend",
+		"license": {
+			"name": "ISC"
+		},
+		"contact": {
+			"name": "Edspectrum NGO"
+		}
+	},
+	"paths": {
+		"/users": {
+			"get": {
+				"operationId": "GetUsers",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/UserResponseDTO"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieve all registered users",
+				"tags": [
+					"Users"
+				],
+				"security": [],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateUser",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserResponseDTO"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new user profile",
+				"tags": [
+					"Users"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateUserDTO"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/users/{id}": {
+			"get": {
+				"operationId": "GetUserById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserResponseDTO"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "User not found"
+					}
+				},
+				"description": "Retrieve user details by numeric ID",
+				"tags": [
+					"Users"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/baseline-assessments": {
+			"post": {
+				"operationId": "Create",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BaselineAssessmentRecord"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new Baseline Assessment",
+				"tags": [
+					"Baseline Assessments"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateBaselineAssessmentInput"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "List",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaginatedBaselineAssessmentResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "List paginated Baseline Assessments",
+				"tags": [
+					"Baseline Assessments"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/baseline-assessments/import": {
+			"post": {
+				"operationId": "ImportAssessments",
+				"responses": {
+					"201": {
+						"description": "Bulk Imported",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"records": {
+											"items": {
+												"$ref": "#/components/schemas/BaselineAssessmentRecord"
+											},
+											"type": "array"
+										},
+										"importedCount": {
+											"type": "number",
+											"format": "double"
+										}
+									},
+									"required": [
+										"records",
+										"importedCount"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Bulk import Baseline Assessments",
+				"tags": [
+					"Baseline Assessments"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BulkImportBaselineAssessmentInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/baseline-assessments/export/flat": {
+			"get": {
+				"operationId": "ExportFlat",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Record_string.unknown_"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Export flat wide matrix for Baseline Assessments",
+				"tags": [
+					"Baseline Assessments"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/baseline-assessments/{id}": {
+			"get": {
+				"operationId": "GetById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BaselineAssessmentRecord"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Assessment not found"
+					}
+				},
+				"description": "Get Baseline Assessment by numeric ID",
+				"tags": [
+					"Baseline Assessments"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "Update",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BaselineAssessmentRecord"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Assessment not found"
+					}
+				},
+				"description": "Update Baseline Assessment by ID",
+				"tags": [
+					"Baseline Assessments"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateBaselineAssessmentInput"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteAssessment",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"success": {
+											"type": "boolean"
+										}
+									},
+									"required": [
+										"success"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Assessment not found"
+					}
+				},
+				"description": "Delete Baseline Assessment by ID",
+				"tags": [
+					"Baseline Assessments"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/baseline-assessments/student/{studentId}": {
+			"get": {
+				"operationId": "GetByStudentId",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BaselineAssessmentRecord"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get Baseline Assessments by Student ID",
+				"tags": [
+					"Baseline Assessments"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "studentId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}

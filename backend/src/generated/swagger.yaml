@@ -1,0 +1,2227 @@
+openapi: 3.0.0
+components:
+  examples: {}
+  headers: {}
+  parameters: {}
+  requestBodies: {}
+  responses: {}
+  schemas:
+    UserResponseDTO:
+      properties:
+        id:
+          type: number
+          format: double
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        roleId:
+          type: number
+          format: double
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - roleId
+        - status
+        - createdAt
+      type: object
+      additionalProperties: false
+    CreateUserDTO:
+      properties:
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        passwordHash:
+          type: string
+        roleId:
+          type: number
+          format: double
+      required:
+        - email
+        - firstName
+        - lastName
+        - passwordHash
+        - roleId
+      type: object
+      additionalProperties: false
+    _36_Enums.Gender:
+      type: string
+      enum:
+        - MALE
+        - FEMALE
+        - OTHER
+        - PREFER_NOT_TO_SAY
+    Gender:
+      $ref: "#/components/schemas/_36_Enums.Gender"
+    _36_Enums.StudentStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - INACTIVE
+        - TRANSFERRED
+    StudentStatus:
+      $ref: "#/components/schemas/_36_Enums.StudentStatus"
+    _36_Enums.EnrollmentStatus:
+      type: string
+      enum:
+        - TRANSFERRED
+        - PRESENT
+        - ABSENT
+        - EXCLUDED
+    EnrollmentStatus:
+      $ref: "#/components/schemas/_36_Enums.EnrollmentStatus"
+    EnrollmentRecordDTO:
+      properties:
+        id:
+          type: number
+          format: double
+        studentId:
+          type: number
+          format: double
+        classSectionId:
+          type: number
+          format: double
+        schoolId:
+          type: number
+          format: double
+          nullable: true
+        withdrawnDate:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/EnrollmentStatus"
+        isCurrent:
+          type: boolean
+        createdAt:
+          type: string
+        className:
+          type: string
+      required:
+        - id
+        - studentId
+        - classSectionId
+        - schoolId
+        - withdrawnDate
+        - status
+        - isCurrent
+        - createdAt
+      type: object
+      additionalProperties: false
+    StudentResponseDTO:
+      properties:
+        id:
+          type: number
+          format: double
+        schoolId:
+          type: number
+          format: double
+        classId:
+          type: number
+          format: double
+          nullable: true
+        studentIdCode:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dateOfBirth:
+          type: string
+          nullable: true
+        gender:
+          allOf:
+            - $ref: "#/components/schemas/Gender"
+          nullable: true
+        status:
+          $ref: "#/components/schemas/StudentStatus"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        createdById:
+          type: number
+          format: double
+        schoolName:
+          type: string
+        className:
+          type: string
+        currentEnrollment:
+          allOf:
+            - $ref: "#/components/schemas/EnrollmentRecordDTO"
+          nullable: true
+      required:
+        - id
+        - schoolId
+        - classId
+        - studentIdCode
+        - firstName
+        - lastName
+        - dateOfBirth
+        - gender
+        - status
+        - createdAt
+        - updatedAt
+        - createdById
+      type: object
+      additionalProperties: false
+    CreateStudentInput:
+      properties:
+        schoolId:
+          type: number
+          format: double
+        studentIdCode:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dateOfBirth:
+          type: string
+          nullable: true
+        gender:
+          allOf:
+            - $ref: "#/components/schemas/Gender"
+          nullable: true
+        classId:
+          type: number
+          format: double
+          nullable: true
+        createdById:
+          type: number
+          format: double
+      required:
+        - schoolId
+        - studentIdCode
+        - firstName
+        - lastName
+      type: object
+      additionalProperties: false
+    PaginatedStudentResponseDTO:
+      properties:
+        records:
+          items:
+            $ref: "#/components/schemas/StudentResponseDTO"
+          type: array
+        total:
+          type: number
+          format: double
+        page:
+          type: number
+          format: double
+        limit:
+          type: number
+          format: double
+        totalPages:
+          type: number
+          format: double
+      required:
+        - records
+        - total
+        - page
+        - limit
+        - totalPages
+      type: object
+      additionalProperties: false
+    UpdateStudentInput:
+      properties:
+        schoolId:
+          type: number
+          format: double
+        studentIdCode:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dateOfBirth:
+          type: string
+          nullable: true
+        gender:
+          allOf:
+            - $ref: "#/components/schemas/Gender"
+          nullable: true
+        classId:
+          type: number
+          format: double
+          nullable: true
+        status:
+          $ref: "#/components/schemas/StudentStatus"
+      type: object
+      additionalProperties: false
+    EnrollStudentInput:
+      properties:
+        classSectionId:
+          type: number
+          format: double
+      required:
+        - classSectionId
+      type: object
+      additionalProperties: false
+    UnenrollStudentInput:
+      properties:
+        classSectionId:
+          type: number
+          format: double
+        reason:
+          type: string
+      type: object
+      additionalProperties: false
+    TransferStudentInput:
+      properties:
+        fromClassSectionId:
+          type: number
+          format: double
+        toClassSectionId:
+          type: number
+          format: double
+        reason:
+          type: string
+      required:
+        - toClassSectionId
+      type: object
+      additionalProperties: false
+    _36_Enums.ClassStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - ARCHIVED
+    ClassStatus:
+      $ref: "#/components/schemas/_36_Enums.ClassStatus"
+    EnrolledStudentSummaryDTO:
+      properties:
+        id:
+          type: number
+          format: double
+        studentIdCode:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        gender:
+          allOf:
+            - $ref: "#/components/schemas/Gender"
+          nullable: true
+        status:
+          $ref: "#/components/schemas/StudentStatus"
+        enrolledAt:
+          type: string
+      required:
+        - id
+        - studentIdCode
+        - firstName
+        - lastName
+        - gender
+        - status
+        - enrolledAt
+      type: object
+      additionalProperties: false
+    ClassResponseDTO:
+      properties:
+        id:
+          type: number
+          format: double
+        schoolId:
+          type: number
+          format: double
+        gradeId:
+          type: number
+          format: double
+          nullable: true
+        className:
+          type: string
+        section:
+          type: string
+        name:
+          type: string
+        academicYear:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/ClassStatus"
+        assessmentCycle:
+          type: string
+          nullable: true
+        capacity:
+          type: number
+          format: double
+        enrolledCount:
+          type: number
+          format: double
+        availableSeats:
+          type: number
+          format: double
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        createdById:
+          type: number
+          format: double
+        schoolName:
+          type: string
+        gradeName:
+          type: string
+        enrolledStudents:
+          items:
+            $ref: "#/components/schemas/EnrolledStudentSummaryDTO"
+          type: array
+      required:
+        - id
+        - schoolId
+        - gradeId
+        - className
+        - section
+        - name
+        - academicYear
+        - status
+        - assessmentCycle
+        - capacity
+        - enrolledCount
+        - availableSeats
+        - createdAt
+        - updatedAt
+        - createdById
+      type: object
+      additionalProperties: false
+    CreateClassInput:
+      properties:
+        schoolId:
+          type: number
+          format: double
+        gradeId:
+          type: number
+          format: double
+          nullable: true
+        className:
+          type: string
+        section:
+          type: string
+        name:
+          type: string
+        academicYear:
+          type: string
+          nullable: true
+        assessmentCycle:
+          type: string
+          nullable: true
+        capacity:
+          type: number
+          format: double
+        createdById:
+          type: number
+          format: double
+      required:
+        - schoolId
+        - className
+        - section
+        - name
+      type: object
+      additionalProperties: false
+    PaginatedClassResponseDTO:
+      properties:
+        records:
+          items:
+            $ref: "#/components/schemas/ClassResponseDTO"
+          type: array
+        total:
+          type: number
+          format: double
+        page:
+          type: number
+          format: double
+        limit:
+          type: number
+          format: double
+        totalPages:
+          type: number
+          format: double
+      required:
+        - records
+        - total
+        - page
+        - limit
+        - totalPages
+      type: object
+      additionalProperties: false
+    UpdateClassInput:
+      properties:
+        schoolId:
+          type: number
+          format: double
+        gradeId:
+          type: number
+          format: double
+          nullable: true
+        className:
+          type: string
+        section:
+          type: string
+        name:
+          type: string
+        academicYear:
+          type: string
+          nullable: true
+        assessmentCycle:
+          type: string
+          nullable: true
+        capacity:
+          type: number
+          format: double
+        status:
+          $ref: "#/components/schemas/ClassStatus"
+      type: object
+      additionalProperties: false
+    AssessmentStatus:
+      enum:
+        - Present
+        - Absent
+        - Partial
+      type: string
+    OralFlag:
+      enum:
+        - C0
+        - C1
+        - C2
+        - C3
+      type: string
+    BaselineDomain:
+      enum:
+        - Vocabulary
+        - Grammar
+        - Phrase_Sentence
+        - Listening
+        - Speaking
+        - Reading
+        - Writing
+      type: string
+    SuggestedStage:
+      enum:
+        - S1
+        - S2
+        - S3
+        - S4
+        - S5
+        - Review
+        - AB
+      type: string
+    DomainScoreRecord:
+      properties:
+        id:
+          type: number
+          format: double
+        assessmentId:
+          type: number
+          format: double
+        domain:
+          $ref: "#/components/schemas/BaselineDomain"
+        item1:
+          type: number
+          format: double
+          nullable: true
+        item2:
+          type: number
+          format: double
+          nullable: true
+        item3:
+          type: number
+          format: double
+          nullable: true
+        item4:
+          type: number
+          format: double
+          nullable: true
+        item5:
+          type: number
+          format: double
+          nullable: true
+        domainScore:
+          type: number
+          format: double
+        suggestedStage:
+          $ref: "#/components/schemas/SuggestedStage"
+        finalStage:
+          allOf:
+            - $ref: "#/components/schemas/SuggestedStage"
+          nullable: true
+        reviewNeeded:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - assessmentId
+        - domain
+        - item1
+        - item2
+        - item3
+        - item4
+        - item5
+        - domainScore
+        - suggestedStage
+        - finalStage
+        - reviewNeeded
+        - createdAt
+      type: object
+      additionalProperties: false
+    BaselineAssessmentRecord:
+      properties:
+        id:
+          type: number
+          format: double
+        studentId:
+          type: string
+        assessmentDate:
+          type: string
+        assessorName:
+          type: string
+        status:
+          $ref: "#/components/schemas/AssessmentStatus"
+        keySupportFlag:
+          type: string
+          nullable: true
+        oralFlag:
+          allOf:
+            - $ref: "#/components/schemas/OralFlag"
+          nullable: true
+        qcNotes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        domainScores:
+          items:
+            $ref: "#/components/schemas/DomainScoreRecord"
+          type: array
+      required:
+        - id
+        - studentId
+        - assessmentDate
+        - assessorName
+        - status
+        - keySupportFlag
+        - oralFlag
+        - qcNotes
+        - createdAt
+        - updatedAt
+      type: object
+      additionalProperties: false
+    DomainScoreInput:
+      properties:
+        domain:
+          $ref: "#/components/schemas/BaselineDomain"
+        item1:
+          type: number
+          format: double
+          nullable: true
+        item2:
+          type: number
+          format: double
+          nullable: true
+        item3:
+          type: number
+          format: double
+          nullable: true
+        item4:
+          type: number
+          format: double
+          nullable: true
+        item5:
+          type: number
+          format: double
+          nullable: true
+        domainScore:
+          type: number
+          format: double
+          nullable: true
+        suggestedStage:
+          allOf:
+            - $ref: "#/components/schemas/SuggestedStage"
+          nullable: true
+        finalStage:
+          allOf:
+            - $ref: "#/components/schemas/SuggestedStage"
+          nullable: true
+        reviewNeeded:
+          type: boolean
+          nullable: true
+      required:
+        - domain
+      type: object
+      additionalProperties: false
+    CreateBaselineAssessmentInput:
+      properties:
+        studentId:
+          type: string
+        assessmentDate:
+          type: string
+        assessorName:
+          type: string
+        status:
+          $ref: "#/components/schemas/AssessmentStatus"
+        keySupportFlag:
+          type: string
+          nullable: true
+        oralFlag:
+          allOf:
+            - $ref: "#/components/schemas/OralFlag"
+          nullable: true
+        qcNotes:
+          type: string
+          nullable: true
+        domainScores:
+          items:
+            $ref: "#/components/schemas/DomainScoreInput"
+          type: array
+      required:
+        - studentId
+        - assessmentDate
+        - assessorName
+        - domainScores
+      type: object
+      additionalProperties: false
+    BulkImportBaselineAssessmentInput:
+      properties:
+        assessments:
+          items:
+            $ref: "#/components/schemas/CreateBaselineAssessmentInput"
+          type: array
+      required:
+        - assessments
+      type: object
+      additionalProperties: false
+    Record_string.unknown_:
+      properties: {}
+      additionalProperties: {}
+      type: object
+      description: Construct a type with a set of properties K of type T
+    PaginatedBaselineAssessmentResponse:
+      properties:
+        records:
+          items: {}
+          type: array
+        total:
+          type: number
+          format: double
+        page:
+          type: number
+          format: double
+        totalPages:
+          type: number
+          format: double
+      required:
+        - records
+        - total
+        - page
+        - totalPages
+      type: object
+      additionalProperties: false
+    UpdateBaselineAssessmentInput:
+      properties:
+        studentId:
+          type: string
+        assessmentDate:
+          type: string
+        assessorName:
+          type: string
+        status:
+          $ref: "#/components/schemas/AssessmentStatus"
+        keySupportFlag:
+          type: string
+          nullable: true
+        oralFlag:
+          allOf:
+            - $ref: "#/components/schemas/OralFlag"
+          nullable: true
+        qcNotes:
+          type: string
+          nullable: true
+        domainScores:
+          items:
+            $ref: "#/components/schemas/DomainScoreInput"
+          type: array
+      type: object
+      additionalProperties: false
+    _36_Enums.AttendanceStatus:
+      type: string
+      enum:
+        - P
+        - A
+        - HALF_DAY
+        - ACTIVITY
+        - CANCELLED
+    AttendanceStatus:
+      $ref: "#/components/schemas/_36_Enums.AttendanceStatus"
+    AttendanceStudentSummaryDTO:
+      properties:
+        id:
+          type: number
+          format: double
+        studentIdCode:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+      required:
+        - id
+        - studentIdCode
+        - firstName
+        - lastName
+      type: object
+      additionalProperties: false
+    AttendanceResponseDTO:
+      properties:
+        id:
+          type: string
+        classId:
+          type: number
+          format: double
+        studentId:
+          type: number
+          format: double
+          nullable: true
+        sessionDate:
+          type: string
+        status:
+          $ref: "#/components/schemas/AttendanceStatus"
+        remarks:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        className:
+          type: string
+        student:
+          allOf:
+            - $ref: "#/components/schemas/AttendanceStudentSummaryDTO"
+          nullable: true
+      required:
+        - id
+        - classId
+        - studentId
+        - sessionDate
+        - status
+        - remarks
+        - createdAt
+      type: object
+      additionalProperties: false
+    BatchUpsertAttendanceResponseDTO:
+      properties:
+        classId:
+          type: number
+          format: double
+        sessionDate:
+          type: string
+        upserted:
+          type: number
+          format: double
+        records:
+          items:
+            $ref: "#/components/schemas/AttendanceResponseDTO"
+          type: array
+      required:
+        - classId
+        - sessionDate
+        - upserted
+        - records
+      type: object
+      additionalProperties: false
+    AttendanceRecordInput:
+      properties:
+        studentId:
+          type: number
+          format: double
+        status:
+          type: string
+          enum:
+            - P
+            - A
+            - HALF_DAY
+            - ACTIVITY
+        remarks:
+          type: string
+          nullable: true
+      required:
+        - studentId
+        - status
+      type: object
+      additionalProperties: false
+    BatchUpsertAttendanceInput:
+      properties:
+        classId:
+          type: number
+          format: double
+        sessionDate:
+          type: string
+        records:
+          items:
+            $ref: "#/components/schemas/AttendanceRecordInput"
+          type: array
+      required:
+        - classId
+        - sessionDate
+        - records
+      type: object
+      additionalProperties: false
+    ClassCancellationResponseDTO:
+      properties:
+        classId:
+          type: number
+          format: double
+        sessionDate:
+          type: string
+        status:
+          $ref: "#/components/schemas/AttendanceStatus"
+        remarks:
+          type: string
+          nullable: true
+        removedStudentRecords:
+          type: number
+          format: double
+        record:
+          $ref: "#/components/schemas/AttendanceResponseDTO"
+      required:
+        - classId
+        - sessionDate
+        - status
+        - remarks
+        - removedStudentRecords
+        - record
+      type: object
+      additionalProperties: false
+    CancelClassAttendanceInput:
+      properties:
+        classId:
+          type: number
+          format: double
+        sessionDate:
+          type: string
+        remarks:
+          type: string
+      required:
+        - classId
+        - sessionDate
+        - remarks
+      type: object
+      additionalProperties: false
+    MutationMessageDTO:
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+      type: object
+      additionalProperties: false
+    UncancelClassAttendanceInput:
+      properties:
+        classId:
+          type: number
+          format: double
+        sessionDate:
+          type: string
+      required:
+        - classId
+        - sessionDate
+      type: object
+      additionalProperties: false
+    DailyRegisterEntryDTO:
+      properties:
+        studentId:
+          type: number
+          format: double
+        studentIdCode:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        status:
+          anyOf:
+            - $ref: "#/components/schemas/AttendanceStatus"
+            - type: string
+              enum:
+                - UNMARKED
+        remarks:
+          type: string
+          nullable: true
+        attendanceId:
+          type: string
+          nullable: true
+      required:
+        - studentId
+        - studentIdCode
+        - firstName
+        - lastName
+        - status
+        - remarks
+        - attendanceId
+      type: object
+      additionalProperties: false
+    DailyRegisterResponseDTO:
+      properties:
+        classId:
+          type: number
+          format: double
+        className:
+          type: string
+        sessionDate:
+          type: string
+        cancelled:
+          type: boolean
+        cancellationRemarks:
+          type: string
+          nullable: true
+        enrolledCount:
+          type: number
+          format: double
+        markedCount:
+          type: number
+          format: double
+        presentCount:
+          type: number
+          format: double
+        absentCount:
+          type: number
+          format: double
+        halfDayCount:
+          type: number
+          format: double
+        activityCount:
+          type: number
+          format: double
+        entries:
+          items:
+            $ref: "#/components/schemas/DailyRegisterEntryDTO"
+          type: array
+      required:
+        - classId
+        - className
+        - sessionDate
+        - cancelled
+        - cancellationRemarks
+        - enrolledCount
+        - markedCount
+        - presentCount
+        - absentCount
+        - halfDayCount
+        - activityCount
+        - entries
+      type: object
+      additionalProperties: false
+    AttendanceRiskLevel:
+      enum:
+        - STABLE
+        - WATCH
+        - AT_RISK
+        - CRITICAL
+      type: string
+    StudentMonthlyAnalyticsDTO:
+      properties:
+        studentId:
+          type: number
+          format: double
+        studentIdCode:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        presentDays:
+          type: number
+          format: double
+        absentDays:
+          type: number
+          format: double
+        halfDays:
+          type: number
+          format: double
+        activityDays:
+          type: number
+          format: double
+        unmarkedDays:
+          type: number
+          format: double
+        workingDays:
+          type: number
+          format: double
+        attendancePercent:
+          type: number
+          format: double
+        consecutiveAbsences:
+          type: number
+          format: double
+        maxConsecutiveAbsences:
+          type: number
+          format: double
+        riskLevel:
+          $ref: "#/components/schemas/AttendanceRiskLevel"
+      required:
+        - studentId
+        - studentIdCode
+        - firstName
+        - lastName
+        - presentDays
+        - absentDays
+        - halfDays
+        - activityDays
+        - unmarkedDays
+        - workingDays
+        - attendancePercent
+        - consecutiveAbsences
+        - maxConsecutiveAbsences
+        - riskLevel
+      type: object
+      additionalProperties: false
+    MonthlyAttendanceAnalyticsDTO:
+      properties:
+        classId:
+          type: number
+          format: double
+        className:
+          type: string
+        year:
+          type: number
+          format: double
+        month:
+          type: number
+          format: double
+        workingDays:
+          type: number
+          format: double
+        cancelledDays:
+          type: number
+          format: double
+        classAveragePercent:
+          type: number
+          format: double
+        atRiskCount:
+          type: number
+          format: double
+        students:
+          items:
+            $ref: "#/components/schemas/StudentMonthlyAnalyticsDTO"
+          type: array
+      required:
+        - classId
+        - className
+        - year
+        - month
+        - workingDays
+        - cancelledDays
+        - classAveragePercent
+        - atRiskCount
+        - students
+      type: object
+      additionalProperties: false
+    PaginatedAttendanceResponseDTO:
+      properties:
+        records:
+          items:
+            $ref: "#/components/schemas/AttendanceResponseDTO"
+          type: array
+        total:
+          type: number
+          format: double
+        page:
+          type: number
+          format: double
+        limit:
+          type: number
+          format: double
+        totalPages:
+          type: number
+          format: double
+      required:
+        - records
+        - total
+        - page
+        - limit
+        - totalPages
+      type: object
+      additionalProperties: false
+    UpdateAttendanceInput:
+      properties:
+        status:
+          $ref: "#/components/schemas/AttendanceStatus"
+        remarks:
+          type: string
+          nullable: true
+      type: object
+      additionalProperties: false
+  securitySchemes: {}
+info:
+  title: lumino1-backend
+  version: 1.0.0
+  description: Lumino1 NGO Baseline Assessment Production-Ready Express TypeScript Backend
+  license:
+    name: ISC
+  contact:
+    name: Edspectrum NGO
+paths:
+  /users:
+    get:
+      operationId: GetUsers
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/UserResponseDTO"
+                type: array
+      description: Retrieve all registered users
+      tags:
+        - Users
+      security: []
+      parameters: []
+    post:
+      operationId: CreateUser
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponseDTO"
+      description: Create a new user profile
+      tags:
+        - Users
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserDTO"
+  /users/{id}:
+    get:
+      operationId: GetUserById
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponseDTO"
+        "404":
+          description: User not found
+      description: Retrieve user details by numeric ID
+      tags:
+        - Users
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+  /students:
+    post:
+      operationId: CreateStudent
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentResponseDTO"
+        "400":
+          description: Bad Request - Validation Error
+        "409":
+          description: Conflict - Student code already exists or class capacity reached
+      description: Create a new Student record
+      tags:
+        - Students
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStudentInput"
+    get:
+      operationId: ListStudents
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedStudentResponseDTO"
+      description: List paginated Students with optional filters
+      tags:
+        - Students
+      security: []
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: classId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: status
+          required: false
+          schema:
+            $ref: "#/components/schemas/StudentStatus"
+        - in: query
+          name: search
+          required: false
+          schema:
+            type: string
+  /students/{id}:
+    get:
+      operationId: GetStudentById
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentResponseDTO"
+        "404":
+          description: Student not found
+      description: Get Student details by numeric ID
+      tags:
+        - Students
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+    put:
+      operationId: UpdateStudent
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentResponseDTO"
+        "404":
+          description: Student not found
+        "409":
+          description: Conflict - Student code duplicate
+      description: Update Student profile by ID
+      tags:
+        - Students
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateStudentInput"
+    delete:
+      operationId: DeleteStudent
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                required:
+                  - message
+                  - success
+                type: object
+        "404":
+          description: Student not found
+      description: Delete Student by ID
+      tags:
+        - Students
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+  /students/{id}/enroll:
+    post:
+      operationId: EnrollStudent
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentResponseDTO"
+        "400":
+          description: Bad Request - Student or Class inactive
+        "404":
+          description: Student or Class not found
+        "409":
+          description: Conflict - Already enrolled or Class capacity limit reached
+      description: Enroll Student into a Class Section
+      tags:
+        - Students
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnrollStudentInput"
+  /students/{id}/unenroll:
+    post:
+      operationId: UnenrollStudent
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentResponseDTO"
+        "400":
+          description: Bad Request - Student not currently enrolled
+        "404":
+          description: Student not found
+      description: Unenroll Student from a Class Section
+      tags:
+        - Students
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnenrollStudentInput"
+  /students/{id}/transfer:
+    post:
+      operationId: TransferStudent
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentResponseDTO"
+        "400":
+          description: Bad Request - Invalid transfer source/target or inactive class
+        "404":
+          description: Student or Target Class not found
+        "409":
+          description: Conflict - Target class capacity limit reached or duplicate
+            enrollment
+      description: Transfer Student from one Class Section to another
+      tags:
+        - Students
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferStudentInput"
+  /classes:
+    post:
+      operationId: CreateClass
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassResponseDTO"
+        "400":
+          description: Bad Request - Validation Error
+        "404":
+          description: School or Grade not found
+        "409":
+          description: Conflict - Section already exists for School/Grade
+      description: Create a new Class Section
+      tags:
+        - Classes
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClassInput"
+    get:
+      operationId: ListClasses
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedClassResponseDTO"
+      description: List paginated Class Sections with optional filters
+      tags:
+        - Classes
+      security: []
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: gradeId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: status
+          required: false
+          schema:
+            $ref: "#/components/schemas/ClassStatus"
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: search
+          required: false
+          schema:
+            type: string
+  /classes/{id}:
+    get:
+      operationId: GetClassById
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassResponseDTO"
+        "404":
+          description: Class Section not found
+      description: Get Class Section details by numeric ID
+      tags:
+        - Classes
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+    put:
+      operationId: UpdateClass
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassResponseDTO"
+        "400":
+          description: Bad Request - Reduced capacity below enrolled count
+        "404":
+          description: Class Section not found
+        "409":
+          description: Conflict - Section duplicate
+      description: Update Class Section by ID
+      tags:
+        - Classes
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateClassInput"
+    delete:
+      operationId: DeleteClass
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                required:
+                  - message
+                  - success
+                type: object
+        "404":
+          description: Class Section not found
+        "409":
+          description: Conflict - Cannot delete class with active enrolled students
+      description: Delete Class Section by ID (Enforces non-empty safeguard)
+      tags:
+        - Classes
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+  /classes/{id}/students:
+    get:
+      operationId: GetEnrolledStudents
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                properties:
+                  totalPages:
+                    type: number
+                    format: double
+                  page:
+                    type: number
+                    format: double
+                  total:
+                    type: number
+                    format: double
+                  records:
+                    items:
+                      $ref: "#/components/schemas/EnrolledStudentSummaryDTO"
+                    type: array
+                required:
+                  - totalPages
+                  - page
+                  - total
+                  - records
+                type: object
+        "404":
+          description: Class Section not found
+      description: Get paginated list of active enrolled students in a Class Section
+      tags:
+        - Classes
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: page
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            format: double
+            type: number
+  /baseline-assessments:
+    post:
+      operationId: Create
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaselineAssessmentRecord"
+      description: Create a new Baseline Assessment
+      tags:
+        - Baseline Assessments
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBaselineAssessmentInput"
+    get:
+      operationId: List
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedBaselineAssessmentResponse"
+      description: List paginated Baseline Assessments
+      tags:
+        - Baseline Assessments
+      security: []
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            format: double
+            type: number
+  /baseline-assessments/import:
+    post:
+      operationId: ImportAssessments
+      responses:
+        "201":
+          description: Bulk Imported
+          content:
+            application/json:
+              schema:
+                properties:
+                  records:
+                    items:
+                      $ref: "#/components/schemas/BaselineAssessmentRecord"
+                    type: array
+                  importedCount:
+                    type: number
+                    format: double
+                required:
+                  - records
+                  - importedCount
+                type: object
+      description: Bulk import Baseline Assessments
+      tags:
+        - Baseline Assessments
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkImportBaselineAssessmentInput"
+  /baseline-assessments/export/flat:
+    get:
+      operationId: ExportFlat
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Record_string.unknown_"
+                type: array
+      description: Export flat wide matrix for Baseline Assessments
+      tags:
+        - Baseline Assessments
+      security: []
+      parameters: []
+  /baseline-assessments/{id}:
+    get:
+      operationId: GetById
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaselineAssessmentRecord"
+        "404":
+          description: Assessment not found
+      description: Get Baseline Assessment by numeric ID
+      tags:
+        - Baseline Assessments
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+    put:
+      operationId: Update
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaselineAssessmentRecord"
+        "404":
+          description: Assessment not found
+      description: Update Baseline Assessment by ID
+      tags:
+        - Baseline Assessments
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBaselineAssessmentInput"
+    delete:
+      operationId: DeleteAssessment
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                required:
+                  - success
+                type: object
+        "404":
+          description: Assessment not found
+      description: Delete Baseline Assessment by ID
+      tags:
+        - Baseline Assessments
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+  /baseline-assessments/student/{studentId}:
+    get:
+      operationId: GetByStudentId
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/BaselineAssessmentRecord"
+                type: array
+      description: Get Baseline Assessments by Student ID
+      tags:
+        - Baseline Assessments
+      security: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+  /attendance/batch:
+    post:
+      operationId: BatchUpsertAttendance
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchUpsertAttendanceResponseDTO"
+        "400":
+          description: Bad Request - Validation Error or Class is Cancelled
+        "404":
+          description: Class Section not found
+      description: Batch mark or update daily attendance records for a class section
+      tags:
+        - Attendance
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchUpsertAttendanceInput"
+  /attendance/cancel-class:
+    post:
+      operationId: CancelClassSession
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassCancellationResponseDTO"
+        "400":
+          description: Bad Request - Validation Error
+        "404":
+          description: Class Section not found
+      description: Cancel an entire class session for a specific date
+      tags:
+        - Attendance
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelClassAttendanceInput"
+  /attendance/uncancel-class:
+    post:
+      operationId: UncancelClassSession
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MutationMessageDTO"
+        "400":
+          description: Bad Request - Validation Error
+        "404":
+          description: Class Section not found
+      description: Remove class session cancellation flag for a specific date
+      tags:
+        - Attendance
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UncancelClassAttendanceInput"
+  /attendance/register:
+    get:
+      operationId: GetDailyRegister
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyRegisterResponseDTO"
+        "400":
+          description: Bad Request - Invalid date format
+        "404":
+          description: Class Section not found
+      description: Get daily attendance register grid for a class section and date
+      tags:
+        - Attendance
+      security: []
+      parameters:
+        - in: query
+          name: classId
+          required: true
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: sessionDate
+          required: true
+          schema:
+            type: string
+  /attendance/monthly-analytics:
+    get:
+      operationId: GetMonthlyAnalytics
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonthlyAttendanceAnalyticsDTO"
+        "400":
+          description: Bad Request - Invalid year/month
+        "404":
+          description: Class Section not found
+      description: Get monthly attendance analytics for a class section
+      tags:
+        - Attendance
+      security: []
+      parameters:
+        - in: query
+          name: classId
+          required: true
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: year
+          required: true
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: month
+          required: true
+          schema:
+            format: double
+            type: number
+  /attendance/risk-analytics:
+    get:
+      operationId: GetRiskAnalytics
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonthlyAttendanceAnalyticsDTO"
+        "400":
+          description: Bad Request - Invalid parameters
+        "404":
+          description: Class Section not found
+      description: Get attendance risk analytics filtered by minimum risk level
+      tags:
+        - Attendance
+      security: []
+      parameters:
+        - in: query
+          name: classId
+          required: true
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: year
+          required: true
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: month
+          required: true
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: minRiskLevel
+          required: false
+          schema:
+            $ref: "#/components/schemas/AttendanceRiskLevel"
+  /attendance:
+    get:
+      operationId: ListAttendance
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedAttendanceResponseDTO"
+      description: List paginated attendance records with optional filters
+      tags:
+        - Attendance
+      security: []
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: classId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: studentId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: sessionDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: fromDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: toDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: status
+          required: false
+          schema:
+            $ref: "#/components/schemas/AttendanceStatus"
+  /attendance/{id}:
+    get:
+      operationId: GetAttendanceById
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceResponseDTO"
+        "404":
+          description: Attendance record not found
+      description: Get individual attendance record by ID
+      tags:
+        - Attendance
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    put:
+      operationId: UpdateAttendance
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceResponseDTO"
+        "404":
+          description: Attendance record not found
+      description: Update individual attendance record by ID
+      tags:
+        - Attendance
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAttendanceInput"
+    delete:
+      operationId: DeleteAttendance
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MutationMessageDTO"
+        "404":
+          description: Attendance record not found
+      description: Delete attendance record by ID
+      tags:
+        - Attendance
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+servers:
+  - url: /

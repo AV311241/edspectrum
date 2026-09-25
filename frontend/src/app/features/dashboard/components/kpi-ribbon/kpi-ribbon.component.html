@@ -1,0 +1,47 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-5">
+  @for (item of dashboardService.kpiMetrics(); track item.id) {
+    <app-ui-card customClass="flex flex-col justify-between h-full hover:-translate-y-0.5">
+      <div class="flex items-center justify-between mb-2">
+        <div [class]="'w-10 h-10 rounded-2xl flex items-center justify-center ' + item.badgeBg">
+          <app-ui-icon [name]="item.icon" [size]="20" [className]="item.badgeIconColor" />
+        </div>
+      </div>
+
+      <div>
+        <div class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-none mb-1">
+          {{ item.value }}
+        </div>
+        <div class="text-xs font-semibold text-slate-600 line-clamp-1">
+          {{ item.title }}
+        </div>
+        @if (item.subtext && item.subtext !== item.title) {
+          <div class="text-[10px] font-medium text-slate-400">
+            {{ item.subtext }}
+          </div>
+        }
+      </div>
+
+      <div class="mt-3 pt-2 border-t border-slate-100">
+        <app-ui-badge variant="success" customClass="bg-emerald-50 text-emerald-700 text-[10px] py-0.5 px-2">
+          <span class="font-bold">↑ {{ item.trend }}</span>
+        </app-ui-badge>
+      </div>
+    </app-ui-card>
+  }
+
+  <div class="bg-gradient-to-br from-pink-100/90 via-pink-50 to-rose-100/70 border border-pink-200/80 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden shadow-xs hover:shadow-md transition-shadow min-h-[140px]">
+    <div class="relative z-10">
+      <p class="text-xs sm:text-sm font-extrabold text-[#93004e] italic leading-tight">
+        "Every small step in English builds a bigger future."
+      </p>
+    </div>
+    <div class="mt-4 flex items-end justify-between relative z-10">
+      <div class="w-8 h-8 rounded-full bg-[#93004e] text-white flex items-center justify-center shadow-md">
+        <app-ui-icon name="academic-cap" [size]="16" />
+      </div>
+      <div class="w-14 h-14 bg-pink-300/40 rounded-full flex items-center justify-center">
+        <app-ui-icon name="users" [size]="24" className="text-[#93004e]" />
+      </div>
+    </div>
+  </div>
+</div>

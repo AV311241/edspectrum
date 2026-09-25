@@ -1,0 +1,26 @@
+<app-ui-card customClass="h-full flex flex-col justify-between">
+  <h2 class="text-sm font-bold text-slate-800 tracking-tight mb-3">Overall Progress (Average %)</h2>
+
+  <div class="grid grid-cols-3 gap-2 text-center bg-pink-50/50 rounded-xl p-3 border border-pink-100/60">
+    <div class="flex flex-col items-center">
+      <span class="text-xl font-extrabold text-[#93004e] mb-0.5">
+        {{ dashboardService.overallProgress().baseline }}%
+      </span>
+      <span class="text-[11px] font-semibold text-slate-500">Baseline</span>
+    </div>
+
+    <div class="flex flex-col items-center border-x border-pink-200/60 px-1">
+      <span class="text-xl font-extrabold text-emerald-600 mb-0.5">
+        {{ dashboardService.overallProgress().current }}%
+      </span>
+      <span class="text-[11px] font-semibold text-slate-500">Current</span>
+    </div>
+
+    <div class="flex flex-col items-center">
+      <span class="text-xl font-extrabold text-emerald-600 mb-0.5">
+        +{{ dashboardService.overallProgress().increase }}
+      </span>
+      <span class="text-[11px] font-semibold text-slate-500">Increase</span>
+    </div>
+  </div>
+</app-ui-card>

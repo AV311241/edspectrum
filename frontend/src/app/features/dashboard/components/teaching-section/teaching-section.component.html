@@ -1,0 +1,80 @@
+<app-ui-card customClass="h-full flex flex-col justify-between">
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-sm font-bold text-slate-800 tracking-tight">Teaching</h2>
+    <app-ui-select
+      value="All Classes"
+      [options]="classOptions"
+    />
+  </div>
+
+  <div class="grid grid-cols-4 gap-2 mb-4">
+    <div class="p-2.5 rounded-xl bg-pink-50/70 border border-pink-100 flex flex-col items-center text-center">
+      <div class="w-7 h-7 rounded-lg bg-[#93004e] text-white flex items-center justify-center mb-1">
+        <app-ui-icon name="book" [size]="14" />
+      </div>
+      <span class="text-base font-extrabold text-slate-900 leading-none">12</span>
+      <span class="text-[10px] font-semibold text-slate-600 mt-0.5">Objectives Planned</span>
+    </div>
+
+    <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100 flex flex-col items-center text-center">
+      <div class="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center mb-1">
+        <app-ui-icon name="check" [size]="14" />
+      </div>
+      <span class="text-base font-extrabold text-slate-900 leading-none">7</span>
+      <span class="text-[10px] font-semibold text-slate-600 mt-0.5">Completed</span>
+    </div>
+
+    <div class="p-2.5 rounded-xl bg-amber-50/70 border border-amber-100 flex flex-col items-center text-center">
+      <div class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center mb-1">
+        <app-ui-icon name="clock" [size]="14" />
+      </div>
+      <span class="text-base font-extrabold text-slate-900 leading-none">2</span>
+      <span class="text-[10px] font-semibold text-slate-600 mt-0.5">In Progress</span>
+    </div>
+
+    <div class="p-2.5 rounded-xl bg-blue-50/70 border border-blue-100 flex flex-col items-center text-center">
+      <div class="w-7 h-7 rounded-lg bg-blue-500 text-white flex items-center justify-center mb-1">
+        <app-ui-icon name="calendar" [size]="14" />
+      </div>
+      <span class="text-base font-extrabold text-slate-900 leading-none">3</span>
+      <span class="text-[10px] font-semibold text-slate-600 mt-0.5">Upcoming</span>
+    </div>
+  </div>
+
+  <div>
+    <h3 class="text-xs font-bold text-slate-700 mb-2">Objective Coverage by Class</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-center text-xs">
+        <thead>
+          <tr class="text-[10px] font-bold text-slate-400 border-b border-slate-100">
+            <th class="py-1 px-1 text-left font-semibold text-slate-600">Class</th>
+            <th class="py-1 px-1">M01</th>
+            <th class="py-1 px-1">M02</th>
+            <th class="py-1 px-1">M03</th>
+            <th class="py-1 px-1">M04</th>
+            <th class="py-1 px-1">M05</th>
+            <th class="py-1 px-1">M06</th>
+            <th class="py-1 px-1">M07</th>
+            <th class="py-1 px-1">M08</th>
+            <th class="py-1 px-1">M09</th>
+            <th class="py-1 px-1">M10</th>
+            <th class="py-1 px-1 text-right font-bold text-slate-600">%</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          @for (row of dashboardService.teachingMatrix(); track row.className) {
+            <tr class="hover:bg-slate-50/60">
+              <td class="py-2 px-1 text-left font-bold text-slate-700">{{ row.className }}</td>
+              @for (status of row.modules; track $index) {
+                <td class="py-2 px-1">
+                  <span [class]="'w-2.5 h-2.5 rounded-full inline-block ' + (status ? 'bg-emerald-500' : ($index === 6 ? 'bg-amber-400' : 'bg-rose-400'))"></span>
+                </td>
+              }
+              <td class="py-2 px-1 text-right font-bold text-slate-800">{{ row.coveragePercent }}%</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</app-ui-card>

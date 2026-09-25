@@ -1,0 +1,195 @@
+<div class="space-y-6">
+  <!-- Page Header with Title and Top-Right Action Toolbar -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+    <div>
+      <div class="flex items-center gap-2 text-xs font-semibold text-pink-700 tracking-wide">
+        <span>EDSPECTRUM NGO</span>
+        <span>•</span>
+        <span>ASSESSMENT MODULE</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">Student Baseline Assessment</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Manage 7-domain student baseline scoring, client-side typechecking, and Excel import/export.</p>
+    </div>
+
+    <!-- Right Corner Action Buttons (Upload & Download) -->
+    <div class="flex items-center gap-3">
+      <!-- Hidden File Input for Excel Upload -->
+      <input #fileInput type="file" accept=".xlsx, .xls" class="hidden" (change)="onFileSelected($event)" />
+
+      <!-- Upload Excel Button -->
+      <button 
+        type="button"
+        (click)="fileInput.click()"
+        [disabled]="uploading()"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#93004e] hover:bg-[#7a0041] text-white text-xs font-bold rounded-xl shadow-md shadow-pink-950/20 transition-all active:scale-95 disabled:opacity-50 cursor-pointer">
+        <app-ui-icon name="upload" [size]="16" className="text-white" />
+        <span>{{ uploading() ? 'Validating & Uploading...' : 'Upload Excel' }}</span>
+      </button>
+
+      <!-- Download Excel Button -->
+      <button 
+        type="button"
+        (click)="onDownloadExcel()"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer">
+        <app-ui-icon name="download" [size]="16" className="text-white" />
+        <span>Download Excel</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages & Alert Banners -->
+  @if (successMessage()) {
+    <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <app-ui-icon name="check" [size]="16" className="text-emerald-600" />
+        <span>{{ successMessage() }}</span>
+      </div>
+      <button (click)="successMessage.set(null)" class="text-emerald-600 hover:text-emerald-900">✕</button>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <app-ui-icon name="alert-circle" [size]="16" className="text-rose-600" />
+        <span>{{ errorMessage() }}</span>
+      </div>
+      <button (click)="errorMessage.set(null)" class="text-rose-600 hover:text-rose-900">✕</button>
+    </div>
+  }
+
+  <!-- KPI Overview Ribbon -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold">
+        <app-ui-icon name="users" [size]="22" />
+      </div>
+      <div>
+        <span class="text-xs font-semibold text-slate-400 block uppercase">Total Assessed</span>
+        <span class="text-2xl font-black text-slate-900">{{ totalStudents() }}</span>
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+        <app-ui-icon name="check" [size]="22" />
+      </div>
+      <div>
+        <span class="text-xs font-semibold text-slate-400 block uppercase">Present</span>
+        <span class="text-2xl font-black text-emerald-600">{{ presentCount() }}</span>
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
+        <app-ui-icon name="alert-circle" [size]="22" />
+      </div>
+      <div>
+        <span class="text-xs font-semibold text-slate-400 block uppercase">Absent / Review</span>
+        <span class="text-2xl font-black text-rose-600">{{ absentCount() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Baseline Assessment Data Table -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="text-base font-extrabold text-slate-900">Assessment Records</h2>
+      <span class="text-xs font-medium text-slate-400">7-Domain Granular Overview</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse min-w-[1000px]">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200/80 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+            <th class="py-3.5 px-4">Student ID</th>
+            <th class="py-3.5 px-4">Date</th>
+            <th class="py-3.5 px-4">Assessor</th>
+            <th class="py-3.5 px-4">Status</th>
+            <th class="py-3.5 px-4">Vocabulary</th>
+            <th class="py-3.5 px-4">Grammar</th>
+            <th class="py-3.5 px-4">Phrase/Sentence</th>
+            <th class="py-3.5 px-4">Listening</th>
+            <th class="py-3.5 px-4">Speaking</th>
+            <th class="py-3.5 px-4">Reading</th>
+            <th class="py-3.5 px-4">Writing</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-xs">
+          @if (loading()) {
+            <tr>
+              <td colspan="11" class="py-8 text-center text-slate-400 font-medium">Loading baseline assessment records...</td>
+            </tr>
+          } @else if (assessments().length === 0) {
+            <tr>
+              <td colspan="11" class="py-12 text-center">
+                <div class="max-w-xs mx-auto text-slate-400 space-y-2">
+                  <app-ui-icon name="calendar" [size]="32" className="mx-auto text-slate-300" />
+                  <p class="font-bold text-slate-600">No Assessment Data Available</p>
+                  <p class="text-[11px]">Click "Upload Excel" in the top right corner to validate and import student assessments.</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (item of assessments(); track item.id || item.studentId) {
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-3 px-4 font-bold text-slate-900">{{ item.studentId }}</td>
+                <td class="py-3 px-4 text-slate-600">{{ item.assessmentDate }}</td>
+                <td class="py-3 px-4 text-slate-600 font-medium">{{ item.assessorName }}</td>
+                <td class="py-3 px-4">
+                  <span [class]="'px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide ' + 
+                    (item.status === 'Present' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800')">
+                    {{ item.status }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-slate-700 font-medium">{{ getDomainScore(item, 'Vocabulary') }}</td>
+                <td class="py-3 px-4 text-slate-700 font-medium">{{ getDomainScore(item, 'Grammar') }}</td>
+                <td class="py-3 px-4 text-slate-700 font-medium">{{ getDomainScore(item, 'Phrase_Sentence') }}</td>
+                <td class="py-3 px-4 text-slate-700 font-medium">{{ getDomainScore(item, 'Listening') }}</td>
+                <td class="py-3 px-4 text-slate-700 font-medium">{{ getDomainScore(item, 'Speaking') }}</td>
+                <td class="py-3 px-4 text-slate-700 font-medium">{{ getDomainScore(item, 'Reading') }}</td>
+                <td class="py-3 px-4 text-slate-700 font-medium">{{ getDomainScore(item, 'Writing') }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Client-Side Validation Modal (Shown when Excel file fails frontend typecheck) -->
+  @if (showValidationModal()) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2 text-rose-600 font-extrabold text-base">
+            <app-ui-icon name="alert-circle" [size]="20" />
+            <span>Client-Side Validation Failed</span>
+          </div>
+          <button (click)="showValidationModal.set(false)" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+        </div>
+
+        <p class="text-xs text-slate-600">
+          The uploaded Excel file failed frontend typechecking. To prevent unnecessary server overhead, please fix the following errors in your spreadsheet before uploading again:
+        </p>
+
+        <div class="max-h-60 overflow-y-auto border border-rose-100 rounded-xl bg-rose-50/50 p-3 space-y-2">
+          @for (err of validationErrors(); track $index) {
+            <div class="text-xs flex items-start gap-2 text-rose-900 font-medium">
+              <span class="bg-rose-200 text-rose-800 px-1.5 py-0.5 rounded text-[10px] font-bold">Row {{ err.rowNumber }}</span>
+              <span><strong>[{{ err.field }}]</strong>: {{ err.message }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="flex justify-end pt-2">
+          <button 
+            (click)="showValidationModal.set(false)" 
+            class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800">
+            Close & Fix File
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,8 @@
+<app-ui-card customClass="h-full flex flex-col justify-between">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-sm font-bold text-slate-800 tracking-tight">Learning Progress (Average %)</h2>
+  </div>
+  <div class="flex-1 min-h-[200px]">
+    <app-bar-chart [data]="dashboardService.learningProgress()" />
+  </div>
+</app-ui-card>

@@ -1,0 +1,38 @@
+Vision -> Requirements -> wireframe -> Architecture -> Tasks -> AI Development -> Testing ->Release
+
+
+Product Vision ->
+
+Product : Edspectrum's Student management.
+
+user : NGO people (maximum 20), School management, NGO admin, Fund person,
+
+Problem :
+-> As of now Edspectrum is dealing with excel for all insights and student data management. There are Multiple student data excels which cause issue to get clear understanding about student growth status.
+-> Individual School level growth month by month 
+-> School Comparison issue with excels
+-> NGO level measurement (All Scholl data with month by month growth) 
+-> lack of Student insights 
+-> Everyone enter data in excel so data is not consistent 
+
+Goal : 
+
+-> Develop an Application which help to understand about lacking students/schools. So These students can be treated on priority basis.
+-> For Data consistency there must be a form section where data can be added.
+
+
+MVP (Minimum Viable Product):
+
+Login
+Data Collection Form 
+Student Profile
+Class Profile
+School Profile
+NGO Admin dashboard 
+
+
+
+
+
+Question :
+What is v1,v2,v3,v4 same for all others.

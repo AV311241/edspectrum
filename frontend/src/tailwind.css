@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #93004e;
+  --color-primary-container: #b81d67;
+  --color-on-primary-container: #ffd2de;
+  --color-secondary: #006398;
+  --color-secondary-container: #5bb8fe;
+  --color-tertiary: #005539;
+  --color-tertiary-container: #00704c;
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-surface: #faf8ff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container: #eaedff;
+  --color-on-surface: #131b2e;
+  --color-on-surface-variant: #584047;
+  --color-outline: #8b7077;
+  --color-navy-900: #0E1726;
+  --color-navy-800: #10172A;
+  --color-navy-700: #1E293B;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --font-display-lg: 700 32px/40px var(--font-sans);
+  --font-headline-lg: 700 22px/28px var(--font-sans);
+  --font-headline-md: 600 18px/24px var(--font-sans);
+  --font-body-lg: 500 14px/20px var(--font-sans);
+  --font-label-md: 600 11px/14px var(--font-sans);
+  --font-metric-xl: 800 28px/34px var(--font-sans);
+
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-full: 9999px;
+
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+  --shadow-card-hover: 0 4px 16px rgba(15, 23, 42, 0.08), 0 10px 24px -4px rgba(15, 23, 42, 0.06);
+}
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #f8fafc;
+    color: #131b2e;
+    -webkit-font-smoothing: antialiased;
+  }
+}

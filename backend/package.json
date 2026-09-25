@@ -1,0 +1,60 @@
+{
+  "name": "lumino1-backend",
+  "version": "1.0.0",
+  "description": "Lumino1 NGO Baseline Assessment Production-Ready Express TypeScript Backend",
+  "main": "dist/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsoa spec-and-routes && tsc",
+    "tsoa:gen": "tsoa spec-and-routes",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio"
+  },
+  "keywords": [
+    "express",
+    "typescript",
+    "baseline-assessment",
+    "clean-architecture",
+    "zod",
+    "prisma",
+    "mysql",
+    "heatwave"
+  ],
+  "author": "Edspectrum NGO",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.4.0",
+    "@tsoa/runtime": "7.0.0-alpha.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "inversify": "^6.0.2",
+    "inversify-binding-decorators": "^4.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.17.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.25",
+    "@types/jsonwebtoken": "^9.0.8",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.13.0",
+    "@types/swagger-ui-express": "^4.1.8",
+    "prisma": "^6.4.0",
+    "tsoa": "7.0.0-alpha.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

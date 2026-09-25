@@ -1,0 +1,19 @@
+{
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/controllers/*.controller.ts"],
+  "iocModule": "src/ioc.ts",
+  "routes": {
+    "routesDir": "src/generated",
+    "iocModule": "src/ioc.ts",
+    "middleware": "express"
+  },
+  "spec": {
+    "outputDirectory": "src/generated",
+    "specVersion": 3,
+    "yaml": true,
+    "entryFile": "src/index.ts",
+    "noImplicitAdditionalProperties": "throw-on-extras",
+    "controllerPathGlobs": ["src/controllers/*.controller.ts"]
+  }
+}

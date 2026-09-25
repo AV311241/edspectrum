@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build and Output Directories
+dist/
+build/
+out/
+.angular/
+
+# Environment and Secret Files
+.env
+.env.*
+!.env.example
+
+# Application Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE, Editor, and Tool Settings
+.vscode/
+.idea/
+.agents/
+.antigravity/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+
+# Database / Prisma
+# Uncomment the line below if SQLite databases or Prisma migrations generate local files you wish to ignore:
+# *.db
+# *.db-journal

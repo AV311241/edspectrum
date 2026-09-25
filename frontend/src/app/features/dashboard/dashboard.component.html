@@ -1,0 +1,42 @@
+<div class="space-y-5">
+  <app-kpi-ribbon />
+
+  <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+    <div class="xl:col-span-5">
+      <app-learning-progress-chart />
+    </div>
+    <div class="xl:col-span-3">
+      <app-stage-distribution-chart />
+    </div>
+    <div class="xl:col-span-4 flex flex-col gap-4">
+      <app-overall-progress-summary />
+      <app-domain-progress-chart />
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+    <div class="xl:col-span-5">
+      <app-school-performance-table />
+    </div>
+    <div class="xl:col-span-3">
+      <app-needs-attention-list />
+    </div>
+    <div class="xl:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-3.5">
+      <app-stage-movement />
+      <app-sas-distribution-chart />
+      <app-objective-progress-summary />
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+    <div class="xl:col-span-4">
+      <app-engagement-section />
+    </div>
+    <div class="xl:col-span-4">
+      <app-teaching-section />
+    </div>
+    <div class="xl:col-span-4">
+      <app-resources-finance-section />
+    </div>
+  </div>
+</div>
