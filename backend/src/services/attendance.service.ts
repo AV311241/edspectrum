@@ -34,6 +34,7 @@ import {
   BulkAttendanceUploadResultDTO,
   BulkAttendanceUploadRow,
 } from '../dtos/attendance-upload.dto';
+import { BatchAttendanceUploadDTO } from '../schemas/attendance-upload.schema';
 import { RowErrorDTO } from '../dtos/upload-common.dto';
 
 @provide(AttendanceService)
@@ -121,6 +122,188 @@ export class AttendanceService {
       sessionDate: input.sessionDate,
       upserted: results.length,
       records: dtoRecords,
+    };
+  }
+
+  /**
+   * Bulk upsert attendance for a single class section, addressed by primary key.
+   *
+   * Unlike `bulkUploadAttendance` (which resolves per-row codes and may span
+   * several classes) this takes the class once in the envelope. Students are
+   * verified with a single bulk query, then written with real upserts inside one
+   * transaction.
+   *
+   * `skipDuplicates` / `createMany` is deliberately NOT used: it silently drops
+   * conflicting rows instead of updating them, so re-uploading a corrected
+   * sheet would leave the old value in place while still reporting success. The
+   * unique index on (sessionDate, classSectionId, studentId) makes the upsert
+   * target unambiguous.
+   */
+  public async bulkUploadAttendanceByClass(
+    input: BatchAttendanceUploadDTO
+  ): Promise<BulkAttendanceUploadResultDTO> {
+    const startTime = Date.now();
+    const { schoolId, classSectionId, records } = input;
+    const errors: RowErrorDTO[] = [];
+    let failed = 0;
+    let cancellations = 0;
+
+    logger.info('[AttendanceService.bulkUploadAttendanceByClass] Starting per-class bulk upload', {
+      classSectionId,
+      recordCount: records.length,
+    });
+
+    // 1. The class must exist AND belong to the declared school.
+    const classSection = await prisma.classSection.findFirst({
+      where: { id: classSectionId, schoolId },
+      select: { id: true, name: true },
+    });
+    if (!classSection) {
+      throw new AppError(
+        `ClassSection ID ${classSectionId} not found under School ID ${schoolId}`,
+        HttpStatusCode.NOT_FOUND
+      );
+    }
+
+    // 2. Verify every referenced student in ONE round-trip, then build an
+    //    O(1) studentCode -> primary key lookup.
+    const uniqueStudentCodes = Array.from(
+      new Set(records.map((r) => r.studentId).filter((id): id is string => Boolean(id)))
+    );
+    const existingStudents =
+      uniqueStudentCodes.length > 0
+        ? await prisma.student.findMany({
+            where: { schoolId, studentIdCode: { in: uniqueStudentCodes } },
+            select: { id: true, studentIdCode: true },
+          })
+        : [];
+    const studentIdByCode = new Map<string, number>(
+      existingStudents.map((s) => [s.studentIdCode.trim().toUpperCase(), s.id])
+    );
+
+    // 3. Report unresolved students as row-scoped errors so the wizard can
+    //    highlight the exact cells instead of aborting the whole batch.
+    const writeRows: StudentAttendanceUpsertInput[] = [];
+    for (let i = 0; i < records.length; i++) {
+      const record = records[i];
+      if (!record.studentId) continue; // class-wide cancellation, handled below
+      const pk = studentIdByCode.get(record.studentId.trim().toUpperCase());
+      if (pk === undefined) {
+        failed += 1;
+        errors.push({
+          rowIndex: i + 2,
+          columnName: 'studentId',
+          invalidValue: record.studentId,
+          errorMessage: `Student "${record.studentId}" was not found in school ID ${schoolId}. Upload the Students sheet first.`,
+          severity: 'ERROR',
+        });
+        continue;
+      }
+      writeRows.push({
+        classSectionId,
+        studentId: pk,
+        sessionDate: parseIsoDate(record.sessionDate, 'sessionDate'),
+        status: record.status as AttendanceStatus,
+        remarks: record.remarks ?? null,
+      });
+    }
+
+    // 4. Class-wide cancellations are distinct (class, date) sessions.
+    const cancellationByDate = new Map<string, string>();
+    for (const record of records) {
+      if (record.status !== 'CANCELLED') continue;
+      const remarks = record.remarks ?? '';
+      if (remarks) cancellationByDate.set(record.sessionDate, remarks);
+    }
+
+    // 5. Persist atomically, chunked to stay clear of SQL parameter limits.
+    const CHUNK_SIZE = 200;
+    let created = 0;
+
+    try {
+      await prisma.$transaction(async (tx) => {
+        for (let offset = 0; offset < writeRows.length; offset += CHUNK_SIZE) {
+          const chunk = writeRows.slice(offset, offset + CHUNK_SIZE);
+          for (const row of chunk) {
+            await tx.attendance.upsert({
+              where: {
+                sessionDate_classSectionId_studentId: {
+                  sessionDate: row.sessionDate,
+                  classSectionId: row.classSectionId,
+                  studentId: row.studentId,
+                },
+              },
+              create: row,
+              update: { status: row.status, remarks: row.remarks },
+            });
+            created += 1;
+          }
+        }
+
+        for (const [sessionDate, remarks] of cancellationByDate) {
+          const parsedDate = parseIsoDate(sessionDate, 'sessionDate');
+          // Prisma cannot match `studentId: null` in a compound-unique
+          // `where`, so the class-wide row is located explicitly and then
+          // updated or created. This also keeps us inside the transaction.
+          const existingCancellation = await tx.attendance.findFirst({
+            where: { classSectionId, sessionDate: parsedDate, studentId: null },
+            select: { id: true },
+          });
+
+          if (existingCancellation) {
+            await tx.attendance.update({
+              where: { id: existingCancellation.id },
+              data: { status: 'CANCELLED' as AttendanceStatus, remarks },
+            });
+          } else {
+            await tx.attendance.create({
+              data: {
+                classSectionId,
+                studentId: null,
+                sessionDate: parsedDate,
+                status: 'CANCELLED' as AttendanceStatus,
+                remarks,
+              },
+            });
+          }
+          cancellations += 1;
+        }
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'unknown error';
+      logger.error('[AttendanceService.bulkUploadAttendanceByClass] Transaction rolled back', {
+        classSectionId,
+        message,
+      });
+      // The whole transaction is rolled back, so report honestly.
+      throw new AppError(
+        `Attendance upload failed and was rolled back in full: ${message}`,
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+    }
+
+    const duration = Date.now() - startTime;
+    logger.info('[AttendanceService.bulkUploadAttendanceByClass] Per-class bulk upload finished', {
+      classSectionId,
+      totalRows: records.length,
+      created,
+      cancellations,
+      failed,
+      durationMs: duration,
+    });
+
+    return {
+      totalRows: records.length,
+      created,
+      skipped: 0,
+      failed,
+      records: [],
+      errors,
+      cancellations,
+      sessionsProcessed: new Set([
+        ...writeRows.map((r) => toIsoDateString(r.sessionDate)),
+        ...cancellationByDate.keys(),
+      ]).size,
     };
   }
 
@@ -221,6 +404,7 @@ export class AttendanceService {
     let absentCount = 0;
     let halfDayCount = 0;
     let activityCount = 0;
+    let leaveCount = 0;
 
     const entries: DailyRegisterEntryDTO[] = enrolledStudents.map((stu) => {
       const rec = recordByStudentId.get(stu.id);
@@ -232,6 +416,7 @@ export class AttendanceService {
         else if (rec.status === AttendanceStatus.A) absentCount += 1;
         else if (rec.status === AttendanceStatus.HALF_DAY) halfDayCount += 1;
         else if (rec.status === AttendanceStatus.ACTIVITY) activityCount += 1;
+        else if (rec.status === AttendanceStatus.ON_LEAVE) leaveCount += 1;
       }
 
       return {
@@ -257,6 +442,7 @@ export class AttendanceService {
       absentCount,
       halfDayCount,
       activityCount,
+      leaveCount,
       entries: sanitizePII(entries),
     };
   }

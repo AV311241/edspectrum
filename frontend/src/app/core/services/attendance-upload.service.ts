@@ -70,7 +70,7 @@ export const ATTENDANCE_UPLOAD_COLUMNS: ColumnSpec[] = [
     required: true,
     editable: true,
     example: 'P',
-    help: 'P, A, HALF_DAY, ACTIVITY or CANCELLED.',
+    help: 'P, A, HALF_DAY, ACTIVITY, ON_LEAVE or CANCELLED.',
   },
   {
     key: 'remarks',
@@ -83,30 +83,59 @@ export const ATTENDANCE_UPLOAD_COLUMNS: ColumnSpec[] = [
 ];
 
 /**
- * Normalise the spellings school spreadsheets actually contain into the five
- * canonical statuses. Anything not listed here is rejected as an ERROR, which
- * keeps the contract strict while forgiving case and separator noise.
+ * Normalise the spellings school spreadsheets actually contain into the
+ * canonical statuses. Anything not recognised here is rejected as an ERROR,
+ * which keeps the contract strict while forgiving case, separator and padding
+ * noise.
+ *
+ * Mirrors `cleanseExcelStatus` in backend/src/schemas/attendance-upload.schema.ts
+ * so the browser and the API agree on what a given cell means.
  */
 const STATUS_ALIASES: Record<string, AttendanceStatus> = {
   p: 'P',
   present: 'P',
+  pr: 'P',
   a: 'A',
   ab: 'A',
   absent: 'A',
+  abs: 'A',
   hd: 'HALF_DAY',
   halfday: 'HALF_DAY',
   activity: 'ACTIVITY',
   act: 'ACTIVITY',
+  function: 'ACTIVITY',
+  outing: 'ACTIVITY',
+  dance: 'ACTIVITY',
+  sports: 'ACTIVITY',
+  onleave: 'ON_LEAVE',
+  leave: 'ON_LEAVE',
+  ol: 'ON_LEAVE',
   cancelled: 'CANCELLED',
   canceled: 'CANCELLED',
   cancel: 'CANCELLED',
+  holiday: 'CANCELLED',
+  schoolholiday: 'CANCELLED',
 };
 
 /** Fold a raw status cell to its canonical form, or `null` if unrecognised. */
 export function normalizeAttendanceStatus(raw: unknown): AttendanceStatus | null {
   const key = stringifyCell(raw).toLowerCase().replace(/[^a-z0-9]/g, '');
   if (!key) return null;
-  return STATUS_ALIASES[key] ?? null;
+
+  const exact = STATUS_ALIASES[key];
+  if (exact) return exact;
+
+  // Substring fallbacks, ordered so the more specific token wins.
+  if (key.includes('half') && key.includes('day')) return 'HALF_DAY';
+  if (key.includes('leave')) return 'ON_LEAVE';
+  if (key.includes('cancel') || key.includes('holiday')) return 'CANCELLED';
+  if (['activit', 'function', 'outing', 'dance', 'sports'].some((h) => key.includes(h))) {
+    return 'ACTIVITY';
+  }
+  if (key.startsWith('present')) return 'P';
+  if (key.startsWith('absent')) return 'A';
+
+  return null;
 }
 
 /**
@@ -122,9 +151,12 @@ export function normalizeAttendanceStatus(raw: unknown): AttendanceStatus | null
  *
  * Validation rules:
  *  - `sessionDate`: valid ISO `YYYY-MM-DD` or an Excel serial date
- *  - `status`     : must resolve to P | A | HALF_DAY | ACTIVITY | CANCELLED
+ *  - `status`     : must resolve to P | A | HALF_DAY | ACTIVITY | ON_LEAVE | CANCELLED
  *  - cancellation : `status === 'CANCELLED'` may omit `studentId` but REQUIRES
  *                   `remarks`; every other status REQUIRES `studentId`
+ *
+ * `ON_LEAVE` is authorised leave: it is counted as a non-present day but is not
+ * an absence, so it never extends a consecutive-absence streak.
  *
  * Dispatches to `POST /attendance/batch-upload`.
  */
@@ -493,7 +525,7 @@ export class AttendanceUploadService extends BulkUploadService<AttendanceUploadR
           ['studentId', 'Required for every status EXCEPT CANCELLED.'],
           [
             'status',
-            'Required. One of P, A, HALF_DAY, ACTIVITY, CANCELLED (case-insensitive).',
+            'Required. One of P, A, HALF_DAY, ACTIVITY, ON_LEAVE, CANCELLED (case-insensitive).',
           ],
           [
             'remarks',

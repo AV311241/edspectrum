@@ -396,6 +396,105 @@ components:
         - toClassSectionId
       type: object
       additionalProperties: false
+    _36_Enums.SchoolStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - INACTIVE
+        - ARCHIVED
+    SchoolStatus:
+      $ref: "#/components/schemas/_36_Enums.SchoolStatus"
+    SchoolSummaryDTO:
+      properties:
+        id:
+          type: number
+          format: double
+        code:
+          type: string
+        name:
+          type: string
+        status:
+          $ref: "#/components/schemas/SchoolStatus"
+      required:
+        - id
+        - code
+        - name
+        - status
+      type: object
+      additionalProperties: false
+    CreateSchoolInput:
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+      required:
+        - code
+        - name
+      type: object
+      additionalProperties: false
+    Pick_SchoolSummaryDTO.id-or-code-or-name_:
+      properties:
+        id:
+          type: number
+          format: double
+        code:
+          type: string
+        name:
+          type: string
+      required:
+        - id
+        - code
+        - name
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    SchoolClassDTO:
+      properties:
+        id:
+          type: number
+          format: double
+        className:
+          type: string
+        academicYear:
+          type: string
+          nullable: true
+        totalStudents:
+          type: number
+          format: double
+        createdAt:
+          type: string
+      required:
+        - id
+        - className
+        - academicYear
+        - totalStudents
+        - createdAt
+      type: object
+      additionalProperties: false
+    SchoolClassesResponseDTO:
+      properties:
+        school:
+          $ref: "#/components/schemas/Pick_SchoolSummaryDTO.id-or-code-or-name_"
+        classes:
+          items:
+            $ref: "#/components/schemas/SchoolClassDTO"
+          type: array
+      required:
+        - school
+        - classes
+      type: object
+      additionalProperties: false
+    CreateSchoolClassInput:
+      properties:
+        className:
+          type: string
+        academicYear:
+          type: string
+      required:
+        - className
+        - academicYear
+      type: object
+      additionalProperties: false
     _36_Enums.ClassStatus:
       type: string
       enum:
@@ -947,6 +1046,7 @@ components:
         - HALF_DAY
         - ACTIVITY
         - CANCELLED
+        - ON_LEAVE
     AttendanceStatus:
       $ref: "#/components/schemas/_36_Enums.AttendanceStatus"
     AttendanceStudentSummaryDTO:
@@ -1044,59 +1144,69 @@ components:
         - sessionsProcessed
       type: object
       additionalProperties: false
-    UploadAttendanceStatus:
-      type: string
-      enum:
-        - P
-        - A
-        - HALF_DAY
-        - ACTIVITY
-        - CANCELLED
-    BulkAttendanceUploadRow:
-      description: "A single attendance row, in EITHER the row-based format:\r
+    AttendanceUploadRequestBody:
+      description: >-
+        Route-level body shape for `POST /attendance/batch-upload`.
 
-        \  schoolCode, className, academicYear, sessionDate, studentId, status,
-        remarks\r
 
-        or the pivoted equivalent produced from the Excel matrix (grid)
-        format.\r
+        This is deliberately a plain interface rather than the Zod-inferred
+        union:
 
-        \r
+        tsoa must be able to resolve the declared parameter type when generating
+        the
 
-        `studentId` is optional *only* when `status === 'CANCELLED'`, which
-        encodes a\r
+        OpenAPI spec and routes, and it cannot introspect
 
-        class-wide session cancellation and therefore requires `remarks`."
+        `z.infer<typeof SomeUnionSchema>`. The interface documents both accepted
+
+        shapes for the spec, while `AttendanceUploadRequestSchema` remains the
+
+        authoritative runtime gate (it strips unknown keys and coerces types).
+
+
+        Both forms are accepted on the one route, discriminated by
+        `classSectionId`:
+         - envelope form: `{ schoolId, classSectionId, records: [...] }`
+         - code form:     `{ records: [{ schoolCode, className, academicYear, ... }] }`
       properties:
-        schoolCode:
-          type: string
-        className:
-          type: string
-        academicYear:
-          type: string
-        sessionDate:
-          type: string
-        studentId:
-          type: string
-          nullable: true
-        status:
-          $ref: "#/components/schemas/UploadAttendanceStatus"
-        remarks:
-          type: string
-          nullable: true
-      required:
-        - schoolCode
-        - className
-        - academicYear
-        - sessionDate
-        - status
-      type: object
-      additionalProperties: false
-    BulkAttendanceUploadInput:
-      properties:
+        schoolId:
+          type: number
+          format: double
+          description: "Envelope form only: the owning school."
+        classSectionId:
+          type: number
+          format: double
+          description: Envelope form only. When present, the envelope form is expected.
         records:
           items:
-            $ref: "#/components/schemas/BulkAttendanceUploadRow"
+            properties:
+              academicYear:
+                type: string
+                description: Code form only.
+              className:
+                type: string
+                description: Code form only.
+              schoolCode:
+                type: string
+                description: Code form only.
+              remarks:
+                type: string
+                nullable: true
+              status:
+                type: string
+              sessionDate:
+                type: string
+              studentId:
+                anyOf:
+                  - type: string
+                  - type: number
+                    format: double
+                nullable: true
+                description: Envelope form matches on the student's code within the school.
+            required:
+              - status
+              - sessionDate
+            type: object
           type: array
       required:
         - records
@@ -1289,6 +1399,9 @@ components:
         activityCount:
           type: number
           format: double
+        leaveCount:
+          type: number
+          format: double
         entries:
           items:
             $ref: "#/components/schemas/DailyRegisterEntryDTO"
@@ -1305,6 +1418,7 @@ components:
         - absentCount
         - halfDayCount
         - activityCount
+        - leaveCount
         - entries
       type: object
       additionalProperties: false
@@ -1338,6 +1452,9 @@ components:
         activityDays:
           type: number
           format: double
+        leaveDays:
+          type: number
+          format: double
         unmarkedDays:
           type: number
           format: double
@@ -1364,6 +1481,7 @@ components:
         - absentDays
         - halfDays
         - activityDays
+        - leaveDays
         - unmarkedDays
         - workingDays
         - attendancePercent
@@ -1801,6 +1919,98 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/TransferStudentInput"
+  /schools:
+    get:
+      operationId: ListSchools
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/SchoolSummaryDTO"
+                type: array
+      tags:
+        - Schools
+      security: []
+      parameters: []
+    post:
+      operationId: CreateSchool
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchoolSummaryDTO"
+        "400":
+          description: Bad Request - Validation Error
+        "409":
+          description: Conflict - School code already exists
+      tags:
+        - Schools
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSchoolInput"
+  /schools/{schoolId}/classes:
+    get:
+      operationId: GetClassesBySchool
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchoolClassesResponseDTO"
+        "404":
+          description: School not found
+      tags:
+        - Schools
+      security: []
+      parameters:
+        - in: path
+          name: schoolId
+          required: true
+          schema:
+            format: double
+            type: number
+    post:
+      operationId: CreateClass
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchoolClassDTO"
+        "400":
+          description: Bad Request - Validation Error
+        "404":
+          description: School not found
+        "409":
+          description: Conflict - Class already exists
+      tags:
+        - Schools
+      security: []
+      parameters:
+        - in: path
+          name: schoolId
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSchoolClassInput"
   /classes:
     post:
       operationId: CreateClass
@@ -2256,19 +2466,31 @@ paths:
                 $ref: "#/components/schemas/BulkAttendanceUploadResultDTO"
         "400":
           description: Bad Request - Validation Error
+        "404":
+          description: Class Section not found under the given School
       description: >-
-        Bulk upload Daily Attendance from a code-based Excel upload.
+        Bulk upload Daily Attendance from an Excel upload.
 
 
-        Unlike `POST /attendance/batch` (which takes numeric `classId` /
-        `studentId`
+        Accepts two request shapes, discriminated by `classSectionId`:
+         - envelope form  `{ schoolId, classSectionId, records: [...] }`
+           the class is named once by primary key
+         - code form      `{ records: [{ schoolCode, className, academicYear, ... }] }`
+           each row names its class by human-readable code, so one sheet may span
+           several classes (this is what the matrix/grid pivot produces)
 
-        foreign keys for a single class session), this endpoint accepts the
+        Both are resolved server-side. `CANCELLED` rows become class-wide
+        records
 
-        human-facing spreadsheet codes and resolves them server-side.
-        `CANCELLED`
+        (studentId = null) and require `remarks`; every other status requires a
 
-        rows become class-wide cancellation records and require `remarks`.
+        `studentId` and is verified against the class's students.
+
+
+        Note: `POST /attendance/batch` is the older numeric-FK endpoint for a
+        single
+
+        session and is intentionally left untouched.
       tags:
         - Attendance
       security: []
@@ -2278,7 +2500,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/BulkAttendanceUploadInput"
+              $ref: "#/components/schemas/AttendanceUploadRequestBody"
   /attendance/batch:
     post:
       operationId: BatchUpsertAttendance

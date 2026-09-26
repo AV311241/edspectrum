@@ -1,0 +1,236 @@
+<section class="school-workspace">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">ORGANIZATION</p>
+      <h1>Schools &amp; classes</h1>
+      <p class="page-copy">Manage school records, class sections, and student rosters.</p>
+    </div>
+    <div class="heading-actions">
+      <button class="button button-outline" type="button" (click)="openDialog('school')">
+        <span aria-hidden="true">+</span> Create School
+      </button>
+      <button class="button button-primary" type="button" (click)="openDialog('class')" [disabled]="!selectedSchool()">
+        <span aria-hidden="true">+</span> Create Class
+      </button>
+    </div>
+  </header>
+
+  <section class="school-toolbar" aria-label="School selection">
+    <div class="school-identity">
+      <div class="school-monogram"><app-ui-icon name="home" [size]="21" /></div>
+      <div>
+        <span class="field-caption">CURRENT SCHOOL</span>
+        @if (selectedSchool(); as school) {
+          <strong>{{ school.name }}</strong>
+          <span class="school-code">{{ school.code }}</span>
+        } @else if (!schoolsLoading()) {
+          <strong>No school selected</strong>
+          <span class="school-code">Create a school to begin</span>
+        } @else {
+          <span class="toolbar-placeholder"></span>
+        }
+      </div>
+    </div>
+    <div class="school-switcher">
+      <label for="school-search">Find a school</label>
+      <div class="switcher-controls">
+        <input
+          id="school-search"
+          type="search"
+          placeholder="Search name or code"
+          [ngModel]="schoolSearch()"
+          (ngModelChange)="schoolSearch.set($event)"
+          [disabled]="schoolsLoading() || schools().length === 0"
+        />
+        <select
+          aria-label="Selected school"
+          [value]="selectedSchool()?.id ?? ''"
+          (change)="selectSchool($event)"
+          [disabled]="schoolsLoading() || filteredSchools().length === 0"
+        >
+          @for (school of filteredSchools(); track school.id) {
+            <option [value]="school.id">{{ school.name }} · {{ school.code }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </section>
+
+  @if (toast()) {
+    <div class="toast-message" role="status" aria-live="polite">
+      <app-ui-icon name="info" [size]="17" />{{ toast() }}
+    </div>
+  }
+
+  <section class="class-section" aria-labelledby="class-list-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">SCHOOL DIRECTORY</p>
+        <h2 id="class-list-title">Class sections</h2>
+      </div>
+      @if (!classesLoading() && selectedSchool()) {
+        <span class="result-count">{{ classes().length }} {{ classes().length === 1 ? 'class' : 'classes' }}</span>
+      }
+    </div>
+
+    @if (classesLoading() || schoolsLoading()) {
+      <div class="class-grid" aria-label="Loading classes">
+        @for (placeholder of [1, 2, 3]; track placeholder) {
+          <div class="class-skeleton"><span></span><span></span><span></span><i></i></div>
+        }
+      </div>
+    } @else if (selectedSchool() && classes().length > 0) {
+      <div class="class-grid">
+        @for (classSection of classes(); track classSection.id) {
+          <article class="class-card">
+            <div class="class-card-topline">
+              <span class="class-symbol"><app-ui-icon name="academic-cap" [size]="19" /></span>
+              <span class="class-date">Added {{ classSection.createdAt | date:'mediumDate' }}</span>
+            </div>
+            <h3>{{ classSection.className }}</h3>
+            <div class="class-metadata">
+              <span><app-ui-icon name="calendar" [size]="14" />{{ classSection.academicYear || 'Year not set' }}</span>
+              <span><app-ui-icon name="users" [size]="15" />{{ classSection.totalStudents }} enrolled</span>
+            </div>
+            <div class="class-actions">
+              <button class="roster-action" type="button" (click)="openRoster(classSection)">
+                <app-ui-icon name="table" [size]="16" /> View roster
+              </button>
+              <div class="quiet-actions">
+                <button type="button" title="Edit class" aria-label="Edit class" (click)="openDialog('edit-class', classSection)">Edit</button>
+                <button type="button" title="Delete class" aria-label="Delete class" (click)="deleteClass(classSection)">Delete</button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    } @else if (selectedSchool()) {
+      <div class="empty-state">
+        <span class="empty-icon"><app-ui-icon name="academic-cap" [size]="25" /></span>
+        <h3>No classes yet</h3>
+        <p>Create the first class section for {{ selectedSchool()?.name }}.</p>
+        <button class="button button-primary" type="button" (click)="openDialog('class')">Create Class</button>
+      </div>
+    } @else if (!schoolsLoading()) {
+      <div class="empty-state">
+        <span class="empty-icon"><app-ui-icon name="home" [size]="25" /></span>
+        <h3>Your school directory is ready</h3>
+        <p>Add a school to start organizing classes and student rosters.</p>
+        <button class="button button-primary" type="button" (click)="openDialog('school')">Create School</button>
+      </div>
+    }
+  </section>
+
+  @if (selectedClass(); as activeClass) {
+    <button class="drawer-backdrop" type="button" aria-label="Close student roster" (click)="closeRoster()"></button>
+    <aside class="roster-drawer" aria-labelledby="roster-title">
+      <header class="drawer-header">
+        <div>
+          <p class="eyebrow">CLASS ROSTER</p>
+          <h2 id="roster-title">{{ activeClass.className }}</h2>
+          <span>{{ activeClass.academicYear || 'Academic year not set' }} · {{ students().length }} students</span>
+        </div>
+        <button class="icon-button" type="button" aria-label="Close roster" title="Close roster" (click)="closeRoster()">×</button>
+      </header>
+      <div class="roster-controls">
+        <label class="search-field">
+          <app-ui-icon name="users" [size]="17" />
+          <input
+            type="search"
+            aria-label="Search students by name or ID"
+            placeholder="Search name or student ID"
+            [ngModel]="studentSearch()"
+            (ngModelChange)="studentSearch.set($event)"
+          />
+        </label>
+        <select aria-label="Filter students by status" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+          <option value="">All statuses</option>
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+      </div>
+      @if (rosterLoading()) {
+        <div class="roster-loading" aria-label="Loading students">
+          @for (placeholder of [1, 2, 3, 4, 5]; track placeholder) { <span></span> }
+        </div>
+      } @else if (students().length === 0) {
+        <div class="roster-empty">
+          <span class="empty-icon"><app-ui-icon name="users-group" [size]="24" /></span>
+          <h3>No students enrolled in this class yet.</h3>
+          <p>Upload via Excel or add students manually.</p>
+        </div>
+      } @else if (filteredStudents().length === 0) {
+        <div class="roster-empty compact-empty"><p>No students match these filters.</p></div>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Student ID</th><th>Full name</th><th>Status</th><th>Date added</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+            <tbody>
+              @for (student of filteredStudents(); track student.id) {
+                <tr>
+                  <td class="student-id">{{ student.studentIdCode }}</td>
+                  <td class="student-name">{{ student.firstName }} {{ student.lastName }}</td>
+                  <td><span class="status-badge" [class.status-active]="student.status === 'ACTIVE'" [class.status-inactive]="student.status !== 'ACTIVE'">{{ student.status === 'ACTIVE' ? 'Active' : 'Inactive' }}</span></td>
+                  <td class="date-cell">{{ student.enrolledAt | date:'mediumDate' }}</td>
+                  <td>
+                    <div class="student-actions">
+                      <button type="button" (click)="openDialog('edit-student', undefined, student)">Edit</button>
+                      @if (classes().length > 1) {
+                        <button type="button" (click)="openDialog('transfer', undefined, student)">Transfer</button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </aside>
+  }
+
+  @if (dialog(); as mode) {
+    <div class="modal-scrim">
+      <section class="modal-panel" role="dialog" aria-modal="true" [attr.aria-labelledby]="'dialog-title'">
+        <header class="modal-heading">
+          <div>
+            <p class="eyebrow">{{ mode === 'school' ? 'SCHOOL DIRECTORY' : mode === 'edit-student' || mode === 'transfer' ? 'STUDENT RECORD' : 'CLASS MANAGEMENT' }}</p>
+            <h2 id="dialog-title">
+              {{ mode === 'school' ? 'Create school' : mode === 'class' ? 'Create class' : mode === 'edit-class' ? 'Edit class' : mode === 'edit-student' ? 'Edit student' : 'Transfer student' }}
+            </h2>
+          </div>
+          <button class="icon-button" type="button" aria-label="Close dialog" (click)="closeDialog()">×</button>
+        </header>
+        <form (ngSubmit)="submitDialog()">
+          @if (mode === 'school') {
+            <label class="form-field">School name<input name="schoolName" [(ngModel)]="schoolName" required minlength="2" maxlength="255" placeholder="Greenwood Public School" /></label>
+            <label class="form-field">School code<input name="schoolCode" [(ngModel)]="schoolCode" required maxlength="50" placeholder="SCH-001" /></label>
+          } @else if (mode === 'class' || mode === 'edit-class') {
+            <label class="form-field">Class name<input name="className" [(ngModel)]="className" required maxlength="50" placeholder="6A" /></label>
+            <label class="form-field">Academic year<input name="academicYear" [(ngModel)]="academicYear" required pattern="[0-9]{4}-[0-9]{4}" placeholder="2026-2027" /></label>
+          } @else if (mode === 'edit-student') {
+            <label class="form-field">First name<input name="studentFirstName" [(ngModel)]="studentFirstName" required maxlength="100" /></label>
+            <label class="form-field">Last name<input name="studentLastName" [(ngModel)]="studentLastName" required maxlength="100" /></label>
+            <label class="form-field">Status<select name="studentStatus" [(ngModel)]="studentStatus"><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select></label>
+          } @else {
+            <p class="transfer-copy">Move {{ dialogStudent()?.firstName }} {{ dialogStudent()?.lastName }} from {{ selectedClass()?.className }} to:</p>
+            <label class="form-field">Destination class
+              <select name="transferTargetId" [(ngModel)]="transferTargetId" required>
+                <option value="" disabled>Select a class</option>
+                @for (classSection of classes(); track classSection.id) {
+                  @if (classSection.id !== selectedClass()?.id) { <option [value]="classSection.id">{{ classSection.className }} · {{ classSection.academicYear || 'Year not set' }}</option> }
+                }
+              </select>
+            </label>
+          }
+          <div class="modal-actions">
+            <button class="button button-subtle" type="button" (click)="closeDialog()">Cancel</button>
+            <button class="button button-primary" type="submit" [disabled]="saving()">
+              {{ saving() ? 'Saving…' : mode === 'transfer' ? 'Transfer student' : mode === 'edit-class' || mode === 'edit-student' ? 'Save changes' : 'Create' }}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  }
+</section>

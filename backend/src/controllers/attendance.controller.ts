@@ -28,8 +28,46 @@ import { AttendanceRiskLevel } from '../constants/attendance.constants';
 import {
   BulkAttendanceUploadInput,
   BulkAttendanceUploadResultDTO,
-  bulkAttendanceUploadSchema,
 } from '../dtos/attendance-upload.dto';
+import {
+  BatchAttendanceUploadDTO,
+  AttendanceUploadRequestSchema as attendanceUploadRequestSchema,
+  isEnvelopeForm,
+} from '../schemas/attendance-upload.schema';
+
+/**
+ * Route-level body shape for `POST /attendance/batch-upload`.
+ *
+ * This is deliberately a plain interface rather than the Zod-inferred union:
+ * tsoa must be able to resolve the declared parameter type when generating the
+ * OpenAPI spec and routes, and it cannot introspect
+ * `z.infer<typeof SomeUnionSchema>`. The interface documents both accepted
+ * shapes for the spec, while `AttendanceUploadRequestSchema` remains the
+ * authoritative runtime gate (it strips unknown keys and coerces types).
+ *
+ * Both forms are accepted on the one route, discriminated by `classSectionId`:
+ *  - envelope form: `{ schoolId, classSectionId, records: [...] }`
+ *  - code form:     `{ records: [{ schoolCode, className, academicYear, ... }] }`
+ */
+export interface AttendanceUploadRequestBody {
+  /** Envelope form only: the owning school. */
+  schoolId?: number;
+  /** Envelope form only. When present, the envelope form is expected. */
+  classSectionId?: number;
+  records: {
+    /** Envelope form matches on the student's code within the school. */
+    studentId?: string | number | null;
+    sessionDate: string;
+    status: string;
+    remarks?: string | null;
+    /** Code form only. */
+    schoolCode?: string;
+    /** Code form only. */
+    className?: string;
+    /** Code form only. */
+    academicYear?: string;
+  }[];
+}
 
 @Tags('Attendance')
 @Route('attendance')
@@ -42,21 +80,41 @@ export class AttendanceController extends Controller {
   }
 
   /**
-   * Bulk upload Daily Attendance from a code-based Excel upload.
+   * Bulk upload Daily Attendance from an Excel upload.
    *
-   * Unlike `POST /attendance/batch` (which takes numeric `classId` / `studentId`
-   * foreign keys for a single class session), this endpoint accepts the
-   * human-facing spreadsheet codes and resolves them server-side. `CANCELLED`
-   * rows become class-wide cancellation records and require `remarks`.
+   * Accepts two request shapes, discriminated by `classSectionId`:
+   *  - envelope form  `{ schoolId, classSectionId, records: [...] }`
+   *    the class is named once by primary key
+   *  - code form      `{ records: [{ schoolCode, className, academicYear, ... }] }`
+   *    each row names its class by human-readable code, so one sheet may span
+   *    several classes (this is what the matrix/grid pivot produces)
+   *
+   * Both are resolved server-side. `CANCELLED` rows become class-wide records
+   * (studentId = null) and require `remarks`; every other status requires a
+   * `studentId` and is verified against the class's students.
+   *
+   * Note: `POST /attendance/batch` is the older numeric-FK endpoint for a single
+   * session and is intentionally left untouched.
    */
   @SuccessResponse('200', 'Success')
   @Response(400, 'Bad Request - Validation Error')
+  @Response(404, 'Class Section not found under the given School')
   @Post('batch-upload')
   public async bulkUploadAttendance(
-    @Body() requestBody: BulkAttendanceUploadInput
+    @Body() requestBody: AttendanceUploadRequestBody
   ): Promise<BulkAttendanceUploadResultDTO> {
-    const validated = bulkAttendanceUploadSchema.parse(requestBody);
-    return await this.attendanceService.bulkUploadAttendance(validated as BulkAttendanceUploadInput);
+    // Zod is the single validation gate; globalErrorHandler renders any
+    // ZodError as a 400 with per-field paths.
+    const validated = attendanceUploadRequestSchema.parse(requestBody);
+
+    if (isEnvelopeForm(validated)) {
+      return await this.attendanceService.bulkUploadAttendanceByClass(
+        validated as BatchAttendanceUploadDTO
+      );
+    }
+    return await this.attendanceService.bulkUploadAttendance(
+      validated as unknown as BulkAttendanceUploadInput
+    );
   }
 
   /**

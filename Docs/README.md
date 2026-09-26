@@ -8,6 +8,11 @@ To optimize context window usage and prevent context bloat during AI pair progra
 - **Sub-Document Directory**: Deep modular specifications are kept in [`docs/backend/`](file:///c:/Users/av311/Desktop/NGO-app/docs/backend/).
 
 ## Sub-Document Index
-1. **[Architecture Specification](file:///c:/Users/av311/Desktop/NGO-app/docs/backend/architecture.md)**: Clean Layered Architecture, stage calculation rules, and data pipeline.
-2. **[Configuration Guide](file:///c:/Users/av311/Desktop/NGO-app/docs/backend/configuration.md)**: `.env` keys, security middleware, and DB pool configuration.
-3. **[API Tracking & Registry](file:///c:/Users/av311/Desktop/NGO-app/docs/backend/tracking.md)**: Complete list of HTTP endpoints, method signatures, DTOs, and JSON response contracts.
+1. **[Architecture Specification](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/architecture.md)**: Clean Layered Architecture, stage calculation rules, and data pipeline.
+2. **[Configuration Guide](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/configuration.md)**: `.env` keys, security middleware, and DB pool configuration.
+3. **[API Tracking & Registry](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/tracking.md)**: Complete list of HTTP endpoints, method signatures, DTOs, and JSON response contracts.
+4. **[Attendance Module](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/attendance_api.md)**: Attendance statuses & weights, the canonical bulk-upload Zod schema, batch-upsert write semantics, and risk formulas.
+5. **[Bulk Data Upload (Excel)](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/data_upload_api.md)**: The centralized Excel-to-database pipeline - Classes / Students / Attendance contracts, the 5-step wizard, and the `/batch` endpoints.
+
+> [!IMPORTANT]
+> **Route prefix**: TSOA routes are served from the **application root** (`/attendance/...`, `/classes/...`), not under `/api/v1`. The `/api/v1` mount only carries `/health`. Older revisions of these documents listed `/api/v1/...` paths, which was inaccurate.

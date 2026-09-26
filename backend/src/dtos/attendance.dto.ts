@@ -1,12 +1,16 @@
 import { z } from 'zod';
 import { AttendanceStatus } from '@prisma/client';
-import { AttendanceRiskLevel } from '../constants/attendance.constants';
+import { AttendanceRiskLevel, STUDENT_MARKABLE_STATUSES } from '../constants/attendance.constants';
 
 const isoDate = z
   .string({ required_error: 'sessionDate is required' })
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be formatted YYYY-MM-DD');
 
-const markableStatus = z.enum(['P', 'A', 'HALF_DAY', 'ACTIVITY']);
+const markableStatus = z.enum(STUDENT_MARKABLE_STATUSES, {
+  errorMap: () => ({
+    message: `status must be one of: ${STUDENT_MARKABLE_STATUSES.join(', ')}`,
+  }),
+});
 
 export interface AttendanceRecordInput {
   studentId: number;
@@ -125,6 +129,7 @@ export interface DailyRegisterResponseDTO {
   absentCount: number;
   halfDayCount: number;
   activityCount: number;
+  leaveCount: number;
   entries: DailyRegisterEntryDTO[];
 }
 
@@ -137,6 +142,7 @@ export interface StudentMonthlyAnalyticsDTO {
   absentDays: number;
   halfDays: number;
   activityDays: number;
+  leaveDays: number;
   unmarkedDays: number;
   workingDays: number;
   attendancePercent: number;

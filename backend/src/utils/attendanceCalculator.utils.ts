@@ -16,6 +16,7 @@ export interface StudentAttendanceMetrics {
   absentDays: number;
   halfDays: number;
   activityDays: number;
+  leaveDays: number;
   unmarkedDays: number;
   workingDays: number;
   attendancePercent: number;
@@ -25,10 +26,18 @@ export interface StudentAttendanceMetrics {
 }
 
 function presentWeight(status: AttendanceStatus): number {
-  return ATTENDANCE_PRESENT_WEIGHT[status];
+  // `ATTENDANCE_PRESENT_WEIGHT` is typed as a total `Record` over
+  // `AttendanceStatusValue`, so this lookup is exhaustively checked at compile
+  // time. The `?? 0` is belt-and-braces: a future status that slipped through
+  // would otherwise turn every percentage into NaN and silently classify the
+  // student as STABLE.
+  return ATTENDANCE_PRESENT_WEIGHT[status] ?? 0;
 }
 
 function isAbsentForStreak(status: AttendanceStatus | 'UNMARKED'): boolean {
+  // ON_LEAVE is authorised leave, not an absence: it must not extend a
+  // consecutive-absence streak, otherwise a student on approved medical leave
+  // would be escalated to AT_RISK/CRITICAL purely for taking leave.
   return status === AttendanceStatus.A || status === 'UNMARKED';
 }
 
@@ -105,6 +114,7 @@ export function calculateStudentMetrics(
   let absentDays = 0;
   let halfDays = 0;
   let activityDays = 0;
+  let leaveDays = 0;
   let unmarkedDays = 0;
   let weightedPresent = 0;
 
@@ -119,6 +129,7 @@ export function calculateStudentMetrics(
     else if (status === AttendanceStatus.A) absentDays += 1;
     else if (status === AttendanceStatus.HALF_DAY) halfDays += 1;
     else if (status === AttendanceStatus.ACTIVITY) activityDays += 1;
+    else if (status === AttendanceStatus.ON_LEAVE) leaveDays += 1;
   }
 
   const workingDays = workingDayKeys.length;
@@ -130,6 +141,7 @@ export function calculateStudentMetrics(
     absentDays,
     halfDays,
     activityDays,
+    leaveDays,
     unmarkedDays,
     workingDays,
     attendancePercent,

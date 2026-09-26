@@ -75,6 +75,970 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"_36_Enums.Gender": {
+				"type": "string",
+				"enum": [
+					"MALE",
+					"FEMALE",
+					"OTHER",
+					"PREFER_NOT_TO_SAY"
+				]
+			},
+			"Gender": {
+				"$ref": "#/components/schemas/_36_Enums.Gender"
+			},
+			"_36_Enums.StudentStatus": {
+				"type": "string",
+				"enum": [
+					"ACTIVE",
+					"INACTIVE",
+					"TRANSFERRED"
+				]
+			},
+			"StudentStatus": {
+				"$ref": "#/components/schemas/_36_Enums.StudentStatus"
+			},
+			"_36_Enums.EnrollmentStatus": {
+				"type": "string",
+				"enum": [
+					"TRANSFERRED",
+					"PRESENT",
+					"ABSENT",
+					"EXCLUDED"
+				]
+			},
+			"EnrollmentStatus": {
+				"$ref": "#/components/schemas/_36_Enums.EnrollmentStatus"
+			},
+			"EnrollmentRecordDTO": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"studentId": {
+						"type": "number",
+						"format": "double"
+					},
+					"classSectionId": {
+						"type": "number",
+						"format": "double"
+					},
+					"schoolId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"withdrawnDate": {
+						"type": "string",
+						"nullable": true
+					},
+					"status": {
+						"$ref": "#/components/schemas/EnrollmentStatus"
+					},
+					"isCurrent": {
+						"type": "boolean"
+					},
+					"createdAt": {
+						"type": "string"
+					},
+					"className": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"studentId",
+					"classSectionId",
+					"schoolId",
+					"withdrawnDate",
+					"status",
+					"isCurrent",
+					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"StudentResponseDTO": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"schoolId": {
+						"type": "number",
+						"format": "double"
+					},
+					"classId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"studentIdCode": {
+						"type": "string"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"dateOfBirth": {
+						"type": "string",
+						"nullable": true
+					},
+					"gender": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Gender"
+							}
+						],
+						"nullable": true
+					},
+					"status": {
+						"$ref": "#/components/schemas/StudentStatus"
+					},
+					"createdAt": {
+						"type": "string"
+					},
+					"updatedAt": {
+						"type": "string"
+					},
+					"createdById": {
+						"type": "number",
+						"format": "double"
+					},
+					"schoolName": {
+						"type": "string"
+					},
+					"className": {
+						"type": "string"
+					},
+					"currentEnrollment": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/EnrollmentRecordDTO"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"id",
+					"schoolId",
+					"classId",
+					"studentIdCode",
+					"firstName",
+					"lastName",
+					"dateOfBirth",
+					"gender",
+					"status",
+					"createdAt",
+					"updatedAt",
+					"createdById"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateStudentInput": {
+				"properties": {
+					"schoolId": {
+						"type": "number",
+						"format": "double"
+					},
+					"studentIdCode": {
+						"type": "string"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"dateOfBirth": {
+						"type": "string",
+						"nullable": true
+					},
+					"gender": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Gender"
+							}
+						],
+						"nullable": true
+					},
+					"classId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"createdById": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"schoolId",
+					"studentIdCode",
+					"firstName",
+					"lastName"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RowErrorDTO": {
+				"description": "A single row-scoped failure. Deliberately mirrors the frontend\r\n`ValidationError` shape so the upload page can render server-detected\r\nproblems in exactly the same error matrix as client-side ones.",
+				"properties": {
+					"rowIndex": {
+						"type": "number",
+						"format": "double",
+						"description": "1-based spreadsheet row number, matching what the user sees in Excel."
+					},
+					"columnName": {
+						"type": "string"
+					},
+					"invalidValue": {},
+					"errorMessage": {
+						"type": "string"
+					},
+					"severity": {
+						"type": "string",
+						"enum": [
+							"ERROR",
+							"WARNING"
+						]
+					}
+				},
+				"required": [
+					"rowIndex",
+					"columnName",
+					"invalidValue",
+					"errorMessage",
+					"severity"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BatchUploadResultDTO_StudentResponseDTO_": {
+				"properties": {
+					"totalRows": {
+						"type": "number",
+						"format": "double"
+					},
+					"created": {
+						"type": "number",
+						"format": "double"
+					},
+					"skipped": {
+						"type": "number",
+						"format": "double"
+					},
+					"failed": {
+						"type": "number",
+						"format": "double"
+					},
+					"records": {
+						"items": {
+							"$ref": "#/components/schemas/StudentResponseDTO"
+						},
+						"type": "array"
+					},
+					"errors": {
+						"items": {
+							"$ref": "#/components/schemas/RowErrorDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"totalRows",
+					"created",
+					"skipped",
+					"failed",
+					"records",
+					"errors"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BatchStudentUploadResultDTO": {
+				"$ref": "#/components/schemas/BatchUploadResultDTO_StudentResponseDTO_"
+			},
+			"BatchStudentUploadRow": {
+				"description": "A single row of the \"Students Master\" Excel template.\r\nColumns: studentId, schoolCode, className, academicYear, studentName, isActive",
+				"properties": {
+					"studentId": {
+						"type": "string",
+						"description": "Maps to `Student.studentIdCode`."
+					},
+					"schoolCode": {
+						"type": "string"
+					},
+					"className": {
+						"type": "string"
+					},
+					"academicYear": {
+						"type": "string"
+					},
+					"studentName": {
+						"type": "string",
+						"description": "Full name; split server-side into firstName / lastName."
+					},
+					"isActive": {
+						"type": "boolean",
+						"description": "Defaults to `true` when the column is omitted or blank."
+					}
+				},
+				"required": [
+					"studentId",
+					"schoolCode",
+					"className",
+					"academicYear",
+					"studentName"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BatchStudentUploadInput": {
+				"properties": {
+					"students": {
+						"items": {
+							"$ref": "#/components/schemas/BatchStudentUploadRow"
+						},
+						"type": "array"
+					},
+					"createdById": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"students"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PaginatedStudentResponseDTO": {
+				"properties": {
+					"records": {
+						"items": {
+							"$ref": "#/components/schemas/StudentResponseDTO"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"limit": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"records",
+					"total",
+					"page",
+					"limit",
+					"totalPages"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateStudentInput": {
+				"properties": {
+					"schoolId": {
+						"type": "number",
+						"format": "double"
+					},
+					"studentIdCode": {
+						"type": "string"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"dateOfBirth": {
+						"type": "string",
+						"nullable": true
+					},
+					"gender": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Gender"
+							}
+						],
+						"nullable": true
+					},
+					"classId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"status": {
+						"$ref": "#/components/schemas/StudentStatus"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"EnrollStudentInput": {
+				"properties": {
+					"classSectionId": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"classSectionId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UnenrollStudentInput": {
+				"properties": {
+					"classSectionId": {
+						"type": "number",
+						"format": "double"
+					},
+					"reason": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TransferStudentInput": {
+				"properties": {
+					"fromClassSectionId": {
+						"type": "number",
+						"format": "double"
+					},
+					"toClassSectionId": {
+						"type": "number",
+						"format": "double"
+					},
+					"reason": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"toClassSectionId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"_36_Enums.SchoolStatus": {
+				"type": "string",
+				"enum": [
+					"ACTIVE",
+					"INACTIVE",
+					"ARCHIVED"
+				]
+			},
+			"SchoolStatus": {
+				"$ref": "#/components/schemas/_36_Enums.SchoolStatus"
+			},
+			"SchoolSummaryDTO": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"code": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"status": {
+						"$ref": "#/components/schemas/SchoolStatus"
+					}
+				},
+				"required": [
+					"id",
+					"code",
+					"name",
+					"status"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateSchoolInput": {
+				"properties": {
+					"code": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"code",
+					"name"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Pick_SchoolSummaryDTO.id-or-code-or-name_": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"code": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"code",
+					"name"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"SchoolClassDTO": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"className": {
+						"type": "string"
+					},
+					"academicYear": {
+						"type": "string",
+						"nullable": true
+					},
+					"totalStudents": {
+						"type": "number",
+						"format": "double"
+					},
+					"createdAt": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"className",
+					"academicYear",
+					"totalStudents",
+					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SchoolClassesResponseDTO": {
+				"properties": {
+					"school": {
+						"$ref": "#/components/schemas/Pick_SchoolSummaryDTO.id-or-code-or-name_"
+					},
+					"classes": {
+						"items": {
+							"$ref": "#/components/schemas/SchoolClassDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"school",
+					"classes"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateSchoolClassInput": {
+				"properties": {
+					"className": {
+						"type": "string"
+					},
+					"academicYear": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"className",
+					"academicYear"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"_36_Enums.ClassStatus": {
+				"type": "string",
+				"enum": [
+					"ACTIVE",
+					"ARCHIVED"
+				]
+			},
+			"ClassStatus": {
+				"$ref": "#/components/schemas/_36_Enums.ClassStatus"
+			},
+			"EnrolledStudentSummaryDTO": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"studentIdCode": {
+						"type": "string"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"gender": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Gender"
+							}
+						],
+						"nullable": true
+					},
+					"status": {
+						"$ref": "#/components/schemas/StudentStatus"
+					},
+					"enrolledAt": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"studentIdCode",
+					"firstName",
+					"lastName",
+					"gender",
+					"status",
+					"enrolledAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ClassResponseDTO": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"schoolId": {
+						"type": "number",
+						"format": "double"
+					},
+					"gradeId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"className": {
+						"type": "string"
+					},
+					"section": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"academicYear": {
+						"type": "string",
+						"nullable": true
+					},
+					"status": {
+						"$ref": "#/components/schemas/ClassStatus"
+					},
+					"assessmentCycle": {
+						"type": "string",
+						"nullable": true
+					},
+					"capacity": {
+						"type": "number",
+						"format": "double"
+					},
+					"enrolledCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"availableSeats": {
+						"type": "number",
+						"format": "double"
+					},
+					"createdAt": {
+						"type": "string"
+					},
+					"updatedAt": {
+						"type": "string"
+					},
+					"createdById": {
+						"type": "number",
+						"format": "double"
+					},
+					"schoolName": {
+						"type": "string"
+					},
+					"gradeName": {
+						"type": "string"
+					},
+					"enrolledStudents": {
+						"items": {
+							"$ref": "#/components/schemas/EnrolledStudentSummaryDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"id",
+					"schoolId",
+					"gradeId",
+					"className",
+					"section",
+					"name",
+					"academicYear",
+					"status",
+					"assessmentCycle",
+					"capacity",
+					"enrolledCount",
+					"availableSeats",
+					"createdAt",
+					"updatedAt",
+					"createdById"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateClassInput": {
+				"properties": {
+					"schoolId": {
+						"type": "number",
+						"format": "double"
+					},
+					"gradeId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"className": {
+						"type": "string"
+					},
+					"section": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"academicYear": {
+						"type": "string",
+						"nullable": true
+					},
+					"assessmentCycle": {
+						"type": "string",
+						"nullable": true
+					},
+					"capacity": {
+						"type": "number",
+						"format": "double"
+					},
+					"createdById": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"schoolId",
+					"className",
+					"section",
+					"name"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BatchUploadResultDTO_ClassResponseDTO_": {
+				"properties": {
+					"totalRows": {
+						"type": "number",
+						"format": "double"
+					},
+					"created": {
+						"type": "number",
+						"format": "double"
+					},
+					"skipped": {
+						"type": "number",
+						"format": "double"
+					},
+					"failed": {
+						"type": "number",
+						"format": "double"
+					},
+					"records": {
+						"items": {
+							"$ref": "#/components/schemas/ClassResponseDTO"
+						},
+						"type": "array"
+					},
+					"errors": {
+						"items": {
+							"$ref": "#/components/schemas/RowErrorDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"totalRows",
+					"created",
+					"skipped",
+					"failed",
+					"records",
+					"errors"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BatchClassUploadResultDTO": {
+				"$ref": "#/components/schemas/BatchUploadResultDTO_ClassResponseDTO_"
+			},
+			"BatchClassUploadRow": {
+				"description": "A single row of the \"Classes Master\" Excel template.\r\nColumns: schoolCode, className, academicYear (plus two optional overrides).",
+				"properties": {
+					"schoolCode": {
+						"type": "string"
+					},
+					"className": {
+						"type": "string"
+					},
+					"academicYear": {
+						"type": "string"
+					},
+					"section": {
+						"type": "string",
+						"nullable": true,
+						"description": "Defaults to `'A'` when omitted."
+					},
+					"name": {
+						"type": "string",
+						"nullable": true,
+						"description": "Defaults to `\"<schoolCode> <className>\"` when omitted."
+					},
+					"capacity": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					}
+				},
+				"required": [
+					"schoolCode",
+					"className",
+					"academicYear"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BatchClassUploadInput": {
+				"properties": {
+					"classes": {
+						"items": {
+							"$ref": "#/components/schemas/BatchClassUploadRow"
+						},
+						"type": "array"
+					},
+					"createdById": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"classes"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PaginatedClassResponseDTO": {
+				"properties": {
+					"records": {
+						"items": {
+							"$ref": "#/components/schemas/ClassResponseDTO"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"limit": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"records",
+					"total",
+					"page",
+					"limit",
+					"totalPages"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateClassInput": {
+				"properties": {
+					"schoolId": {
+						"type": "number",
+						"format": "double"
+					},
+					"gradeId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"className": {
+						"type": "string"
+					},
+					"section": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"academicYear": {
+						"type": "string",
+						"nullable": true
+					},
+					"assessmentCycle": {
+						"type": "string",
+						"nullable": true
+					},
+					"capacity": {
+						"type": "number",
+						"format": "double"
+					},
+					"status": {
+						"$ref": "#/components/schemas/ClassStatus"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
 			"AssessmentStatus": {
 				"enum": [
 					"Present",
@@ -289,8 +1253,30 @@
 						"format": "double",
 						"nullable": true
 					},
+					"domainScore": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"suggestedStage": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/SuggestedStage"
+							}
+						],
+						"nullable": true
+					},
 					"finalStage": {
-						"$ref": "#/components/schemas/SuggestedStage"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/SuggestedStage"
+							}
+						],
+						"nullable": true
+					},
+					"reviewNeeded": {
+						"type": "boolean",
+						"nullable": true
 					}
 				},
 				"required": [
@@ -433,6 +1419,697 @@
 				},
 				"type": "object",
 				"additionalProperties": false
+			},
+			"_36_Enums.AttendanceStatus": {
+				"type": "string",
+				"enum": [
+					"P",
+					"A",
+					"HALF_DAY",
+					"ACTIVITY",
+					"CANCELLED",
+					"ON_LEAVE"
+				]
+			},
+			"AttendanceStatus": {
+				"$ref": "#/components/schemas/_36_Enums.AttendanceStatus"
+			},
+			"AttendanceStudentSummaryDTO": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"studentIdCode": {
+						"type": "string"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"studentIdCode",
+					"firstName",
+					"lastName"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AttendanceResponseDTO": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"classId": {
+						"type": "number",
+						"format": "double"
+					},
+					"studentId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"sessionDate": {
+						"type": "string"
+					},
+					"status": {
+						"$ref": "#/components/schemas/AttendanceStatus"
+					},
+					"remarks": {
+						"type": "string",
+						"nullable": true
+					},
+					"createdAt": {
+						"type": "string"
+					},
+					"className": {
+						"type": "string"
+					},
+					"student": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/AttendanceStudentSummaryDTO"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"id",
+					"classId",
+					"studentId",
+					"sessionDate",
+					"status",
+					"remarks",
+					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BulkAttendanceUploadResultDTO": {
+				"properties": {
+					"totalRows": {
+						"type": "number",
+						"format": "double"
+					},
+					"created": {
+						"type": "number",
+						"format": "double"
+					},
+					"skipped": {
+						"type": "number",
+						"format": "double"
+					},
+					"failed": {
+						"type": "number",
+						"format": "double"
+					},
+					"records": {
+						"items": {
+							"$ref": "#/components/schemas/AttendanceResponseDTO"
+						},
+						"type": "array"
+					},
+					"errors": {
+						"items": {
+							"$ref": "#/components/schemas/RowErrorDTO"
+						},
+						"type": "array"
+					},
+					"cancellations": {
+						"type": "number",
+						"format": "double",
+						"description": "Number of class-wide cancellation records created."
+					},
+					"sessionsProcessed": {
+						"type": "number",
+						"format": "double",
+						"description": "Number of distinct (class, date) sessions touched."
+					}
+				},
+				"required": [
+					"totalRows",
+					"created",
+					"skipped",
+					"failed",
+					"records",
+					"errors",
+					"cancellations",
+					"sessionsProcessed"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AttendanceUploadRequestBody": {
+				"description": "Route-level body shape for `POST /attendance/batch-upload`.\n\nThis is deliberately a plain interface rather than the Zod-inferred union:\ntsoa must be able to resolve the declared parameter type when generating the\nOpenAPI spec and routes, and it cannot introspect\n`z.infer<typeof SomeUnionSchema>`. The interface documents both accepted\nshapes for the spec, while `AttendanceUploadRequestSchema` remains the\nauthoritative runtime gate (it strips unknown keys and coerces types).\n\nBoth forms are accepted on the one route, discriminated by `classSectionId`:\n - envelope form: `{ schoolId, classSectionId, records: [...] }`\n - code form:     `{ records: [{ schoolCode, className, academicYear, ... }] }`",
+				"properties": {
+					"schoolId": {
+						"type": "number",
+						"format": "double",
+						"description": "Envelope form only: the owning school."
+					},
+					"classSectionId": {
+						"type": "number",
+						"format": "double",
+						"description": "Envelope form only. When present, the envelope form is expected."
+					},
+					"records": {
+						"items": {
+							"properties": {
+								"academicYear": {
+									"type": "string",
+									"description": "Code form only."
+								},
+								"className": {
+									"type": "string",
+									"description": "Code form only."
+								},
+								"schoolCode": {
+									"type": "string",
+									"description": "Code form only."
+								},
+								"remarks": {
+									"type": "string",
+									"nullable": true
+								},
+								"status": {
+									"type": "string"
+								},
+								"sessionDate": {
+									"type": "string"
+								},
+								"studentId": {
+									"anyOf": [
+										{
+											"type": "string"
+										},
+										{
+											"type": "number",
+											"format": "double"
+										}
+									],
+									"nullable": true,
+									"description": "Envelope form matches on the student's code within the school."
+								}
+							},
+							"required": [
+								"status",
+								"sessionDate"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"records"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BatchUpsertAttendanceResponseDTO": {
+				"properties": {
+					"classId": {
+						"type": "number",
+						"format": "double"
+					},
+					"sessionDate": {
+						"type": "string"
+					},
+					"upserted": {
+						"type": "number",
+						"format": "double"
+					},
+					"records": {
+						"items": {
+							"$ref": "#/components/schemas/AttendanceResponseDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"classId",
+					"sessionDate",
+					"upserted",
+					"records"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AttendanceRecordInput": {
+				"properties": {
+					"studentId": {
+						"type": "number",
+						"format": "double"
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"P",
+							"A",
+							"HALF_DAY",
+							"ACTIVITY"
+						]
+					},
+					"remarks": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"studentId",
+					"status"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BatchUpsertAttendanceInput": {
+				"properties": {
+					"classId": {
+						"type": "number",
+						"format": "double"
+					},
+					"sessionDate": {
+						"type": "string"
+					},
+					"records": {
+						"items": {
+							"$ref": "#/components/schemas/AttendanceRecordInput"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"classId",
+					"sessionDate",
+					"records"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ClassCancellationResponseDTO": {
+				"properties": {
+					"classId": {
+						"type": "number",
+						"format": "double"
+					},
+					"sessionDate": {
+						"type": "string"
+					},
+					"status": {
+						"$ref": "#/components/schemas/AttendanceStatus"
+					},
+					"remarks": {
+						"type": "string",
+						"nullable": true
+					},
+					"removedStudentRecords": {
+						"type": "number",
+						"format": "double"
+					},
+					"record": {
+						"$ref": "#/components/schemas/AttendanceResponseDTO"
+					}
+				},
+				"required": [
+					"classId",
+					"sessionDate",
+					"status",
+					"remarks",
+					"removedStudentRecords",
+					"record"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CancelClassAttendanceInput": {
+				"properties": {
+					"classId": {
+						"type": "number",
+						"format": "double"
+					},
+					"sessionDate": {
+						"type": "string"
+					},
+					"remarks": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"classId",
+					"sessionDate",
+					"remarks"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MutationMessageDTO": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UncancelClassAttendanceInput": {
+				"properties": {
+					"classId": {
+						"type": "number",
+						"format": "double"
+					},
+					"sessionDate": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"classId",
+					"sessionDate"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DailyRegisterEntryDTO": {
+				"properties": {
+					"studentId": {
+						"type": "number",
+						"format": "double"
+					},
+					"studentIdCode": {
+						"type": "string"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"status": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/AttendanceStatus"
+							},
+							{
+								"type": "string",
+								"enum": [
+									"UNMARKED"
+								]
+							}
+						]
+					},
+					"remarks": {
+						"type": "string",
+						"nullable": true
+					},
+					"attendanceId": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"studentId",
+					"studentIdCode",
+					"firstName",
+					"lastName",
+					"status",
+					"remarks",
+					"attendanceId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DailyRegisterResponseDTO": {
+				"properties": {
+					"classId": {
+						"type": "number",
+						"format": "double"
+					},
+					"className": {
+						"type": "string"
+					},
+					"sessionDate": {
+						"type": "string"
+					},
+					"cancelled": {
+						"type": "boolean"
+					},
+					"cancellationRemarks": {
+						"type": "string",
+						"nullable": true
+					},
+					"enrolledCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"markedCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"presentCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"absentCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"halfDayCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"activityCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"leaveCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"entries": {
+						"items": {
+							"$ref": "#/components/schemas/DailyRegisterEntryDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"classId",
+					"className",
+					"sessionDate",
+					"cancelled",
+					"cancellationRemarks",
+					"enrolledCount",
+					"markedCount",
+					"presentCount",
+					"absentCount",
+					"halfDayCount",
+					"activityCount",
+					"leaveCount",
+					"entries"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AttendanceRiskLevel": {
+				"enum": [
+					"STABLE",
+					"WATCH",
+					"AT_RISK",
+					"CRITICAL"
+				],
+				"type": "string"
+			},
+			"StudentMonthlyAnalyticsDTO": {
+				"properties": {
+					"studentId": {
+						"type": "number",
+						"format": "double"
+					},
+					"studentIdCode": {
+						"type": "string"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"presentDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"absentDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"halfDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"activityDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"leaveDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"unmarkedDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"workingDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"attendancePercent": {
+						"type": "number",
+						"format": "double"
+					},
+					"consecutiveAbsences": {
+						"type": "number",
+						"format": "double"
+					},
+					"maxConsecutiveAbsences": {
+						"type": "number",
+						"format": "double"
+					},
+					"riskLevel": {
+						"$ref": "#/components/schemas/AttendanceRiskLevel"
+					}
+				},
+				"required": [
+					"studentId",
+					"studentIdCode",
+					"firstName",
+					"lastName",
+					"presentDays",
+					"absentDays",
+					"halfDays",
+					"activityDays",
+					"leaveDays",
+					"unmarkedDays",
+					"workingDays",
+					"attendancePercent",
+					"consecutiveAbsences",
+					"maxConsecutiveAbsences",
+					"riskLevel"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MonthlyAttendanceAnalyticsDTO": {
+				"properties": {
+					"classId": {
+						"type": "number",
+						"format": "double"
+					},
+					"className": {
+						"type": "string"
+					},
+					"year": {
+						"type": "number",
+						"format": "double"
+					},
+					"month": {
+						"type": "number",
+						"format": "double"
+					},
+					"workingDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"cancelledDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"classAveragePercent": {
+						"type": "number",
+						"format": "double"
+					},
+					"atRiskCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"students": {
+						"items": {
+							"$ref": "#/components/schemas/StudentMonthlyAnalyticsDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"classId",
+					"className",
+					"year",
+					"month",
+					"workingDays",
+					"cancelledDays",
+					"classAveragePercent",
+					"atRiskCount",
+					"students"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PaginatedAttendanceResponseDTO": {
+				"properties": {
+					"records": {
+						"items": {
+							"$ref": "#/components/schemas/AttendanceResponseDTO"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"limit": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"records",
+					"total",
+					"page",
+					"limit",
+					"totalPages"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateAttendanceInput": {
+				"properties": {
+					"status": {
+						"$ref": "#/components/schemas/AttendanceStatus"
+					},
+					"remarks": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -534,6 +2211,957 @@
 						"in": "path",
 						"name": "id",
 						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/students": {
+			"post": {
+				"operationId": "CreateStudent",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/StudentResponseDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Validation Error"
+					},
+					"409": {
+						"description": "Conflict - Student code already exists or class capacity reached"
+					}
+				},
+				"description": "Create a new Student record",
+				"tags": [
+					"Students"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateStudentInput"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "ListStudents",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaginatedStudentResponseDTO"
+								}
+							}
+						}
+					}
+				},
+				"description": "List paginated Students with optional filters",
+				"tags": [
+					"Students"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "schoolId",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "classId",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "status",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/StudentStatus"
+						}
+					},
+					{
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/students/batch": {
+			"post": {
+				"operationId": "BatchUploadStudents",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BatchStudentUploadResultDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Validation Error"
+					}
+				},
+				"description": "Bulk create Students from a code-based Excel upload.\nResolves `schoolCode` and `(schoolCode, className, academicYear)` to their\nprimary keys server-side, splits `studentName`, and enrols each student.",
+				"tags": [
+					"Students"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BatchStudentUploadInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/students/{id}": {
+			"get": {
+				"operationId": "GetStudentById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/StudentResponseDTO"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Student not found"
+					}
+				},
+				"description": "Get Student details by numeric ID",
+				"tags": [
+					"Students"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateStudent",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/StudentResponseDTO"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Student not found"
+					},
+					"409": {
+						"description": "Conflict - Student code duplicate"
+					}
+				},
+				"description": "Update Student profile by ID",
+				"tags": [
+					"Students"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateStudentInput"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteStudent",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										},
+										"success": {
+											"type": "boolean"
+										}
+									},
+									"required": [
+										"message",
+										"success"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Student not found"
+					}
+				},
+				"description": "Delete Student by ID",
+				"tags": [
+					"Students"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/students/{id}/enroll": {
+			"post": {
+				"operationId": "EnrollStudent",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/StudentResponseDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Student or Class inactive"
+					},
+					"404": {
+						"description": "Student or Class not found"
+					},
+					"409": {
+						"description": "Conflict - Already enrolled or Class capacity limit reached"
+					}
+				},
+				"description": "Enroll Student into a Class Section",
+				"tags": [
+					"Students"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/EnrollStudentInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/students/{id}/unenroll": {
+			"post": {
+				"operationId": "UnenrollStudent",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/StudentResponseDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Student not currently enrolled"
+					},
+					"404": {
+						"description": "Student not found"
+					}
+				},
+				"description": "Unenroll Student from a Class Section",
+				"tags": [
+					"Students"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UnenrollStudentInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/students/{id}/transfer": {
+			"post": {
+				"operationId": "TransferStudent",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/StudentResponseDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Invalid transfer source/target or inactive class"
+					},
+					"404": {
+						"description": "Student or Target Class not found"
+					},
+					"409": {
+						"description": "Conflict - Target class capacity limit reached or duplicate enrollment"
+					}
+				},
+				"description": "Transfer Student from one Class Section to another",
+				"tags": [
+					"Students"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TransferStudentInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/schools": {
+			"get": {
+				"operationId": "ListSchools",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/SchoolSummaryDTO"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Schools"
+				],
+				"security": [],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateSchool",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SchoolSummaryDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Validation Error"
+					},
+					"409": {
+						"description": "Conflict - School code already exists"
+					}
+				},
+				"tags": [
+					"Schools"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateSchoolInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/schools/{schoolId}/classes": {
+			"get": {
+				"operationId": "GetClassesBySchool",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SchoolClassesResponseDTO"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "School not found"
+					}
+				},
+				"tags": [
+					"Schools"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "schoolId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "CreateClass",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SchoolClassDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Validation Error"
+					},
+					"404": {
+						"description": "School not found"
+					},
+					"409": {
+						"description": "Conflict - Class already exists"
+					}
+				},
+				"tags": [
+					"Schools"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "schoolId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateSchoolClassInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/classes": {
+			"post": {
+				"operationId": "CreateClass",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ClassResponseDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Validation Error"
+					},
+					"404": {
+						"description": "School or Grade not found"
+					},
+					"409": {
+						"description": "Conflict - Section already exists for School/Grade"
+					}
+				},
+				"description": "Create a new Class Section",
+				"tags": [
+					"Classes"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateClassInput"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "ListClasses",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaginatedClassResponseDTO"
+								}
+							}
+						}
+					}
+				},
+				"description": "List paginated Class Sections with optional filters",
+				"tags": [
+					"Classes"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "schoolId",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "gradeId",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "status",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/ClassStatus"
+						}
+					},
+					{
+						"in": "query",
+						"name": "academicYear",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/classes/batch": {
+			"post": {
+				"operationId": "BatchUploadClasses",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BatchClassUploadResultDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Validation Error"
+					}
+				},
+				"description": "Bulk create Class Sections from a code-based Excel upload.\nResolves `schoolCode` to `School.id` server-side and reports row-level\nfailures without aborting the rest of the upload.",
+				"tags": [
+					"Classes"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BatchClassUploadInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/classes/{id}": {
+			"get": {
+				"operationId": "GetClassById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ClassResponseDTO"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Class Section not found"
+					}
+				},
+				"description": "Get Class Section details by numeric ID",
+				"tags": [
+					"Classes"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateClass",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ClassResponseDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Reduced capacity below enrolled count"
+					},
+					"404": {
+						"description": "Class Section not found"
+					},
+					"409": {
+						"description": "Conflict - Section duplicate"
+					}
+				},
+				"description": "Update Class Section by ID",
+				"tags": [
+					"Classes"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateClassInput"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteClass",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										},
+										"success": {
+											"type": "boolean"
+										}
+									},
+									"required": [
+										"message",
+										"success"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Class Section not found"
+					},
+					"409": {
+						"description": "Conflict - Cannot delete class with active enrolled students"
+					}
+				},
+				"description": "Delete Class Section by ID (Enforces non-empty safeguard)",
+				"tags": [
+					"Classes"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/classes/{id}/students": {
+			"get": {
+				"operationId": "GetEnrolledStudents",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"totalPages": {
+											"type": "number",
+											"format": "double"
+										},
+										"page": {
+											"type": "number",
+											"format": "double"
+										},
+										"total": {
+											"type": "number",
+											"format": "double"
+										},
+										"records": {
+											"items": {
+												"$ref": "#/components/schemas/EnrolledStudentSummaryDTO"
+											},
+											"type": "array"
+										}
+									},
+									"required": [
+										"totalPages",
+										"page",
+										"total",
+										"records"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Class Section not found"
+					}
+				},
+				"description": "Get paginated list of active enrolled students in a Class Section",
+				"tags": [
+					"Classes"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
 						"schema": {
 							"format": "double",
 							"type": "number"
@@ -839,6 +3467,534 @@
 					{
 						"in": "path",
 						"name": "studentId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/attendance/batch-upload": {
+			"post": {
+				"operationId": "BulkUploadAttendance",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BulkAttendanceUploadResultDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Validation Error"
+					},
+					"404": {
+						"description": "Class Section not found under the given School"
+					}
+				},
+				"description": "Bulk upload Daily Attendance from an Excel upload.\n\nAccepts two request shapes, discriminated by `classSectionId`:\n - envelope form  `{ schoolId, classSectionId, records: [...] }`\n   the class is named once by primary key\n - code form      `{ records: [{ schoolCode, className, academicYear, ... }] }`\n   each row names its class by human-readable code, so one sheet may span\n   several classes (this is what the matrix/grid pivot produces)\n\nBoth are resolved server-side. `CANCELLED` rows become class-wide records\n(studentId = null) and require `remarks`; every other status requires a\n`studentId` and is verified against the class's students.\n\nNote: `POST /attendance/batch` is the older numeric-FK endpoint for a single\nsession and is intentionally left untouched.",
+				"tags": [
+					"Attendance"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AttendanceUploadRequestBody"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/attendance/batch": {
+			"post": {
+				"operationId": "BatchUpsertAttendance",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BatchUpsertAttendanceResponseDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Validation Error or Class is Cancelled"
+					},
+					"404": {
+						"description": "Class Section not found"
+					}
+				},
+				"description": "Batch mark or update daily attendance records for a class section",
+				"tags": [
+					"Attendance"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BatchUpsertAttendanceInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/attendance/cancel-class": {
+			"post": {
+				"operationId": "CancelClassSession",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ClassCancellationResponseDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Validation Error"
+					},
+					"404": {
+						"description": "Class Section not found"
+					}
+				},
+				"description": "Cancel an entire class session for a specific date",
+				"tags": [
+					"Attendance"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CancelClassAttendanceInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/attendance/uncancel-class": {
+			"post": {
+				"operationId": "UncancelClassSession",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MutationMessageDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Validation Error"
+					},
+					"404": {
+						"description": "Class Section not found"
+					}
+				},
+				"description": "Remove class session cancellation flag for a specific date",
+				"tags": [
+					"Attendance"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UncancelClassAttendanceInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/attendance/register": {
+			"get": {
+				"operationId": "GetDailyRegister",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DailyRegisterResponseDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Invalid date format"
+					},
+					"404": {
+						"description": "Class Section not found"
+					}
+				},
+				"description": "Get daily attendance register grid for a class section and date",
+				"tags": [
+					"Attendance"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "classId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "sessionDate",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/attendance/monthly-analytics": {
+			"get": {
+				"operationId": "GetMonthlyAnalytics",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MonthlyAttendanceAnalyticsDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Invalid year/month"
+					},
+					"404": {
+						"description": "Class Section not found"
+					}
+				},
+				"description": "Get monthly attendance analytics for a class section",
+				"tags": [
+					"Attendance"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "classId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "year",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "month",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/attendance/risk-analytics": {
+			"get": {
+				"operationId": "GetRiskAnalytics",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MonthlyAttendanceAnalyticsDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request - Invalid parameters"
+					},
+					"404": {
+						"description": "Class Section not found"
+					}
+				},
+				"description": "Get attendance risk analytics filtered by minimum risk level",
+				"tags": [
+					"Attendance"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "classId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "year",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "month",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "minRiskLevel",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/AttendanceRiskLevel"
+						}
+					}
+				]
+			}
+		},
+		"/attendance": {
+			"get": {
+				"operationId": "ListAttendance",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaginatedAttendanceResponseDTO"
+								}
+							}
+						}
+					}
+				},
+				"description": "List paginated attendance records with optional filters",
+				"tags": [
+					"Attendance"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "classId",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "studentId",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "sessionDate",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "fromDate",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "toDate",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "status",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/AttendanceStatus"
+						}
+					}
+				]
+			}
+		},
+		"/attendance/{id}": {
+			"get": {
+				"operationId": "GetAttendanceById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AttendanceResponseDTO"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Attendance record not found"
+					}
+				},
+				"description": "Get individual attendance record by ID",
+				"tags": [
+					"Attendance"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateAttendance",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AttendanceResponseDTO"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Attendance record not found"
+					}
+				},
+				"description": "Update individual attendance record by ID",
+				"tags": [
+					"Attendance"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateAttendanceInput"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteAttendance",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MutationMessageDTO"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Attendance record not found"
+					}
+				},
+				"description": "Delete attendance record by ID",
+				"tags": [
+					"Attendance"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
 						"required": true,
 						"schema": {
 							"type": "string"

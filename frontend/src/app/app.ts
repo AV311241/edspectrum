@@ -7,6 +7,7 @@ import { LayoutShellComponent } from './layout/layout-shell/layout-shell.compone
   standalone: true,
   imports: [RouterOutlet, LayoutShellComponent],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
+  styles: [':host { display: block; min-width: 0; width: 100%; max-width: 100%; overflow-x: clip; }']
 })
 export class App {}

@@ -27,7 +27,7 @@ export class SidebarComponent {
     { id: 'engagement', label: 'Engagement', icon: 'users-group', route: '/' },
     { id: 'teaching', label: 'Teaching', icon: 'academic-cap', route: '/' },
     { id: 'finance', label: 'Resources & Finance', icon: 'wallet', route: '/' },
-    { id: 'schools', label: 'Schools', icon: 'home', route: '/' },
+    { id: 'schools', label: 'Schools', icon: 'home', route: '/schools' },
     { id: 'reports', label: 'Reports', icon: 'calendar', route: '/' }
   ]);
 }

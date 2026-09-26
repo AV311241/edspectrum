@@ -27,14 +27,24 @@ When detailed context is required for specific tasks, refer strictly to the foll
 | [`Docs/backend/configuration.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/configuration.md) | `.env` variables, database pool config, security middleware parameters (Helmet/CORS). | Adding environment variables, database configuration, or security policies. |
 | [`Docs/backend/tracking.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/tracking.md) | Full API Route Registry for Students, Classes, Attendance, and Baseline Assessments. | Adding new API endpoints, modifying request/response DTOs, or auditing route specs. |
 | [`Docs/backend/student_class_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/student_class_api.md) | Student & Class Section CRUD, enrollment, unenrollment, class transfers, capacity checks, and Prisma transaction architecture. | Inspecting or modifying Student and Class management features. |
-| [`Docs/backend/attendance_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/attendance_api.md) | Daily attendance marking, batch upserts, session cancellations, daily register grids, monthly analytics, and risk level formulas. | Inspecting or modifying Attendance tracking, calculation rules, or risk algorithms. |
+| [`Docs/backend/attendance_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/attendance_api.md) | Daily attendance marking, batch upserts, session cancellations, daily register grids, monthly analytics, risk level formulas, the canonical bulk-upload Zod schema, and the `ON_LEAVE` status. | Inspecting or modifying Attendance tracking, calculation rules, status weights, or risk algorithms. |
+| [`Docs/backend/data_upload_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/data_upload_api.md) | The centralized Excel bulk-upload pipeline: Classes / Students / Attendance Excel contracts, the 5-step wizard, per-entity upload services, and the batch endpoints. | Working on the Data Upload page, spreadsheet templates, or the `/batch` upload endpoints. |
 
 ---
 
 ## 3. Core System Contracts & Enums Summary
 - **Baseline Domains (7)**: `Vocabulary`, `Grammar`, `Phrase_Sentence`, `Listening`, `Speaking`, `Reading`, `Writing`
 - **Baseline Stages**: `S1`, `S2`, `S3`, `S4`, `S5`, `Review`, `AB` (Absent).
-- **Attendance Statuses**: `P` (Present), `A` (Absent), `HALF_DAY` (0.5 weight), `ACTIVITY` (1.0 weight), `CANCELLED` (Session cancelled).
+- **Attendance Statuses** (canonical list: `ATTENDANCE_STATUS_VALUES` in [`attendance.constants.ts`](file:///c:/Users/av311/Desktop/NGO-app/backend/src/constants/attendance.constants.ts)): `P` (Present, 1.0), `A` (Absent, 0.0), `HALF_DAY` (0.5), `ACTIVITY` (held session, 1.0), `ON_LEAVE` (authorised leave, 0.0, **not** an absence streak), `CANCELLED` (session cancelled, excluded from working-day denominator).
+  - Only `CANCELLED` is class-wide and may omit a `studentId`; it requires `remarks`.
+  - `ATTENDANCE_PRESENT_WEIGHT` is typed `Record<AttendanceStatusValue, number>`. **Adding a status without adding its weight would silently produce `NaN` percentages and a `STABLE` risk level**, so the type makes it a compile error. See the checklist in [`attendance_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/attendance_api.md).
+  - `ON_LEAVE` required migration `20260926000000_attendance_status_on_leave`; it had been added to `schema.prisma` without a migration.
 - **Attendance Risk Levels**: `STABLE` ($\ge 85\%$), `WATCH` ($< 85\%$), `AT_RISK` ($< 75\%$ or $\ge 3$ consecutive absences), `CRITICAL` ($< 60\%$ or $\ge 5$ consecutive absences).
 - **Student Statuses**: `ACTIVE`, `INACTIVE`, `TRANSFERRED`.
 - **Enrollment Statuses**: `PRESENT`, `ABSENT`, `TRANSFERRED`, `EXCLUDED`.
+
+---
+
+## 4. Route Prefix Convention
+
+TSOA routes are registered at the **application root** via `RegisterRoutes(app)` in `src/index.ts`. The `/api/v1` Express mount carries only `/health` plus empty legacy router stubs. Frontend services therefore call e.g. `${environment.apiUrl}/attendance/batch-upload`, **not** `/api/v1/attendance/batch-upload`.

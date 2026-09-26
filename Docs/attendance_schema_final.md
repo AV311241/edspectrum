@@ -133,7 +133,7 @@ CREATE TABLE attendance (
     session_date DATE NOT NULL,
     class_id INT NOT NULL,
     student_id VARCHAR(30) NULL, -- NULL when recording class-wide cancellation
-    status VARCHAR(20) NOT NULL, -- 'P', 'A', 'HALF_DAY', 'ACTIVITY', 'CANCELLED'
+    status ENUM('P','A','HALF_DAY','ACTIVITY','ON_LEAVE','CANCELLED') NOT NULL,
     remarks TEXT NULL, -- e.g., 'Teacher on leave', 'School function', 'Dance class'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_att_class FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
@@ -145,6 +145,13 @@ CREATE TABLE attendance (
 CREATE INDEX idx_att_date_class ON attendance(session_date, class_id);
 CREATE INDEX idx_att_status ON attendance(status);
 ```
+
+> [!CAUTION]
+> **`ON_LEAVE` was added to `schema.prisma` without a migration.** The initial migration (`20260923205125_init_schema`) created `attendance.status` as a five-value enum, so `ON_LEAVE` inserts failed with MySQL error 1265 (*Data truncated for column 'status'*), even though the Prisma schema declared it. Migration `20260926000000_attendance_status_on_leave` re-declares the column. Run `npx prisma migrate deploy` and `npx prisma generate` before using `ON_LEAVE`.
+>
+> The enum weights are defined in `backend/src/constants/attendance.constants.ts` and are typed as a total `Record` so a missing weight is a **compile error**. `ON_LEAVE` has weight `0.0` and is excluded from absence streaks; `CANCELLED` is additionally removed from the working-day denominator.
+
+When adding a status, the analytics SQL below must be updated alongside the enum: a new value that is absent from the `CASE` expressions is counted in *neither* the numerator nor the denominator of the attendance percentage.
 
 ---
 
@@ -171,9 +178,10 @@ SELECT
     COUNT(CASE WHEN a.status = 'A' THEN 1 END) AS count_absent,
     COUNT(CASE WHEN a.status = 'HALF_DAY' THEN 1 END) AS count_half_day,
     COUNT(CASE WHEN a.status = 'ACTIVITY' THEN 1 END) AS count_activity,
+    COUNT(CASE WHEN a.status = 'ON_LEAVE' THEN 1 END) AS count_on_leave,
     ROUND(
         (COUNT(CASE WHEN a.status IN ('P', 'HALF_DAY', 'ACTIVITY') THEN 1 END) * 100.0) /
-        NULLIF(COUNT(CASE WHEN a.status IN ('P', 'A', 'HALF_DAY', 'ACTIVITY') THEN 1 END), 0),
+        NULLIF(COUNT(CASE WHEN a.status IN ('P', 'A', 'HALF_DAY', 'ACTIVITY', 'ON_LEAVE') THEN 1 END), 0),
         2
     ) AS class_attendance_percentage
 FROM classes c
@@ -195,18 +203,19 @@ SELECT
     st.student_name,
     DATE_FORMAT(a.session_date, '%Y-%m') AS month_key,
     DATE_FORMAT(a.session_date, '%b-%Y') AS display_month,
-    COUNT(CASE WHEN a.status IN ('P', 'A', 'HALF_DAY', 'ACTIVITY') THEN 1 END) AS sessions_held,
+    COUNT(CASE WHEN a.status IN ('P', 'A', 'HALF_DAY', 'ACTIVITY', 'ON_LEAVE') THEN 1 END) AS sessions_held,
     COUNT(CASE WHEN a.status = 'P' THEN 1 END) AS days_present,
     COUNT(CASE WHEN a.status = 'A' THEN 1 END) AS days_absent,
     COUNT(CASE WHEN a.status = 'HALF_DAY' THEN 1 END) AS days_half_day,
     COUNT(CASE WHEN a.status = 'ACTIVITY' THEN 1 END) AS days_activity,
+    COUNT(CASE WHEN a.status = 'ON_LEAVE' THEN 1 END) AS days_on_leave,
     ROUND(
         (COUNT(CASE WHEN a.status IN ('P', 'HALF_DAY', 'ACTIVITY') THEN 1 END) * 100.0) /
-        NULLIF(COUNT(CASE WHEN a.status IN ('P', 'A', 'HALF_DAY', 'ACTIVITY') THEN 1 END), 0),
+        NULLIF(COUNT(CASE WHEN a.status IN ('P', 'A', 'HALF_DAY', 'ACTIVITY', 'ON_LEAVE') THEN 1 END), 0),
         2
     ) AS attendance_percentage,
-    CASE 
-        WHEN ROUND((COUNT(CASE WHEN a.status IN ('P', 'HALF_DAY', 'ACTIVITY') THEN 1 END) * 100.0) / NULLIF(COUNT(CASE WHEN a.status IN ('P', 'A', 'HALF_DAY', 'ACTIVITY') THEN 1 END), 0), 2) < 75.0 
+    CASE
+        WHEN ROUND((COUNT(CASE WHEN a.status IN ('P', 'HALF_DAY', 'ACTIVITY') THEN 1 END) * 100.0) / NULLIF(COUNT(CASE WHEN a.status IN ('P', 'A', 'HALF_DAY', 'ACTIVITY', 'ON_LEAVE') THEN 1 END), 0), 2) < 75.0
         THEN 'PRIORITY_ATTENTION'
         ELSE 'GOOD'
     END AS student_risk_status
@@ -233,10 +242,11 @@ SELECT
     COUNT(CASE WHEN a.status = 'A' THEN 1 END) AS total_a_markers,
     COUNT(CASE WHEN a.status = 'HALF_DAY' THEN 1 END) AS total_half_day_markers,
     COUNT(CASE WHEN a.status = 'ACTIVITY' THEN 1 END) AS total_activity_markers,
+    COUNT(CASE WHEN a.status = 'ON_LEAVE' THEN 1 END) AS total_on_leave_markers,
     COUNT(CASE WHEN a.status = 'CANCELLED' THEN 1 END) AS total_cancelled_sessions,
     ROUND(
         (COUNT(CASE WHEN a.status IN ('P', 'HALF_DAY', 'ACTIVITY') THEN 1 END) * 100.0) /
-        NULLIF(COUNT(CASE WHEN a.status IN ('P', 'A', 'HALF_DAY', 'ACTIVITY') THEN 1 END), 0),
+        NULLIF(COUNT(CASE WHEN a.status IN ('P', 'A', 'HALF_DAY', 'ACTIVITY', 'ON_LEAVE') THEN 1 END), 0),
         2
     ) AS school_overall_attendance_pct
 FROM schools s

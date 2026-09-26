@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "type": "commonjs",
   "scripts": {
-    "build": "tsoa spec-and-routes && tsc",
-    "tsoa:gen": "tsoa spec-and-routes",
+    "build": "tsoa spec-and-routes --json && tsoa spec --yaml && tsc",
+    "tsoa:gen": "tsoa spec-and-routes --json && tsoa spec --yaml",
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "typecheck": "tsc --noEmit",

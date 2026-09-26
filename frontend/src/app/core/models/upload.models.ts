@@ -28,8 +28,22 @@ export type UploadEntityType = 'CLASSES' | 'STUDENTS' | 'ATTENDANCE';
 /** Row-based layout, or the pivoted Excel grid/matrix layout. */
 export type UploadSheetFormat = 'ROW' | 'MATRIX';
 
-/** Attendance statuses accepted by the daily attendance register. */
-export const ATTENDANCE_STATUSES = ['P', 'A', 'HALF_DAY', 'ACTIVITY', 'CANCELLED'] as const;
+/**
+ * Attendance statuses accepted by the daily attendance register.
+ *
+ * Kept in lockstep with the backend's `ATTENDANCE_STATUS_VALUES`
+ * (backend/src/constants/attendance.constants.ts), which is the single source of
+ * truth. `ON_LEAVE` = authorised leave; `CANCELLED` = the whole session did not
+ * run and is the only status that may omit a studentId.
+ */
+export const ATTENDANCE_STATUSES = [
+  'P',
+  'A',
+  'HALF_DAY',
+  'ACTIVITY',
+  'ON_LEAVE',
+  'CANCELLED',
+] as const;
 export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
 
 /** Per-student markable statuses (CANCELLED is class-wide, so it is excluded). */
@@ -38,7 +52,11 @@ export const MARKABLE_ATTENDANCE_STATUSES: readonly AttendanceStatus[] = [
   'A',
   'HALF_DAY',
   'ACTIVITY',
+  'ON_LEAVE',
 ];
+
+/** Statuses that describe the whole session rather than a single student. */
+export const CLASS_WIDE_ATTENDANCE_STATUSES: readonly AttendanceStatus[] = ['CANCELLED'];
 
 export interface ColumnSpec {
   /** Field name on the row model; also the key used in `GridRow.cells`. */

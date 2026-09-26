@@ -66,6 +66,10 @@ describe('normalizeAttendanceStatus', () => {
       ['HD', 'HALF_DAY'],
       ['ACTIVITY', 'ACTIVITY'],
       ['act', 'ACTIVITY'],
+      ['ON_LEAVE', 'ON_LEAVE'],
+      ['on leave', 'ON_LEAVE'],
+      ['leave', 'ON_LEAVE'],
+      ['OL', 'ON_LEAVE'],
       ['CANCELLED', 'CANCELLED'],
       ['canceled', 'CANCELLED'],
     ];
@@ -74,8 +78,19 @@ describe('normalizeAttendanceStatus', () => {
     }
   });
 
+  it('maps a held session to ACTIVITY, not CANCELLED', () => {
+    // "School function" / "dance" are held sessions in this codebase, so they
+    // must not be folded into CANCELLED (which removes the day from the
+    // working-day denominator and would understate attendance).
+    for (const held of ['school function', 'dance', 'outing', 'sports']) {
+      expect(normalizeAttendanceStatus(held), held).toBe('ACTIVITY');
+    }
+    // A genuine non-session day is expressed as a holiday instead.
+    expect(normalizeAttendanceStatus('holiday')).toBe('CANCELLED');
+  });
+
   it('rejects anything outside the allowed set', () => {
-    for (const bad of ['HOLIDAY', 'PP', 'LEAVE', 'yes', '']) {
+    for (const bad of ['UNKNOWN', 'PP', 'XX', 'maybe', 'yes', '']) {
       expect(normalizeAttendanceStatus(bad), bad).toBeNull();
     }
   });
@@ -132,15 +147,16 @@ describe('AttendanceUploadService — row-based format', () => {
   });
 
   it('rejects a status outside the allowed set', () => {
-    const result = service.validateGrid(grid([row(2, { ...validCells, status: 'HOLIDAY' })]));
+    const result = service.validateGrid(grid([row(2, { ...validCells, status: 'UNKNOWN' })]));
 
     expect(result.isValid).toBe(false);
+    expect(result.validRows).toHaveLength(0);
     const err = result.errors.find((e) => e.columnName === 'status');
-    expect(err?.errorMessage).toContain('P, A, HALF_DAY, ACTIVITY, CANCELLED');
+    expect(err?.errorMessage).toContain('P, A, HALF_DAY, ACTIVITY, ON_LEAVE, CANCELLED');
   });
 
   it('requires studentId for every status except CANCELLED', () => {
-    for (const status of ['P', 'A', 'HALF_DAY', 'ACTIVITY']) {
+    for (const status of ['P', 'A', 'HALF_DAY', 'ACTIVITY', 'ON_LEAVE']) {
       const result = service.validateGrid(
         grid([row(2, { ...validCells, status, studentId: '' })])
       );
@@ -148,6 +164,19 @@ describe('AttendanceUploadService — row-based format', () => {
       const err = result.errors.find((e) => e.columnName === 'studentId');
       expect(err?.errorMessage).toContain(status);
     }
+  });
+
+  it('accepts ON_LEAVE as a per-student status', () => {
+    const result = service.validateGrid(
+      grid([row(2, { ...validCells, status: 'ON_LEAVE', remarks: 'Medical' })])
+    );
+
+    expect(result.isValid).toBe(true);
+    expect(result.validRows[0]).toMatchObject({
+      status: 'ON_LEAVE',
+      studentId: 'EDSF-349',
+      remarks: 'Medical',
+    });
   });
 
   it('allows a blank studentId when status is CANCELLED but demands remarks', () => {
@@ -246,7 +275,7 @@ describe('AttendanceUploadService — Excel matrix format', () => {
     const sheet = [
       ['schoolCode: SCH-001', 'className: 6A', 'academicYear: 2026-2027'],
       ['Student ID', '2026-01-05', '2026-01-06'],
-      ['EDSF-349', 'P', 'HOLIDAY'],
+      ['EDSF-349', 'P', 'UNKNOWN'],
       ['EDSF-350', 'A', 'P'],
     ];
 
@@ -259,7 +288,7 @@ describe('AttendanceUploadService — Excel matrix format', () => {
     expect(result.validRows).toHaveLength(3);
 
     const statusError = result.errors.find((e) => e.columnName === 'status');
-    expect(statusError?.invalidValue).toBe('HOLIDAY');
+    expect(statusError?.invalidValue).toBe('UNKNOWN');
   });
 
   it('falls back to the caller-supplied context when no metadata row exists', () => {

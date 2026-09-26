@@ -7,5 +7,9 @@ export const routes: Routes = [
   { path: '', component: DashboardComponent },
   { path: 'baseline-assessment', component: BaselineAssessmentComponent },
   { path: 'data-upload', component: DataUploadPageComponent },
+  {
+    path: 'schools',
+    loadComponent: () => import('./features/schools/schools-page.component').then((module) => module.SchoolsPageComponent),
+  },
   { path: '**', redirectTo: '' }
 ];

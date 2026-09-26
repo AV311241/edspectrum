@@ -8,6 +8,8 @@ import { UserController } from './../controllers/user.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { StudentController } from './../controllers/student.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { SchoolController } from './../controllers/school.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ClassController } from './../controllers/class.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { BaselineAssessmentController } from './../controllers/baselineAssessment.controller';
@@ -233,6 +235,71 @@ const models: TsoaRoute.Models = {
             "fromClassSectionId": {"dataType":"double"},
             "toClassSectionId": {"dataType":"double","required":true},
             "reason": {"dataType":"string"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "_36_Enums.SchoolStatus": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["ACTIVE"]},{"dataType":"enum","enums":["INACTIVE"]},{"dataType":"enum","enums":["ARCHIVED"]}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SchoolStatus": {
+        "dataType": "refAlias",
+        "type": {"ref":"_36_Enums.SchoolStatus","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SchoolSummaryDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"double","required":true},
+            "code": {"dataType":"string","required":true},
+            "name": {"dataType":"string","required":true},
+            "status": {"ref":"SchoolStatus","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateSchoolInput": {
+        "dataType": "refObject",
+        "properties": {
+            "code": {"dataType":"string","required":true},
+            "name": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_SchoolSummaryDTO.id-or-code-or-name_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"double","required":true},"code":{"dataType":"string","required":true},"name":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SchoolClassDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"double","required":true},
+            "className": {"dataType":"string","required":true},
+            "academicYear": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "totalStudents": {"dataType":"double","required":true},
+            "createdAt": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SchoolClassesResponseDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "school": {"ref":"Pick_SchoolSummaryDTO.id-or-code-or-name_","required":true},
+            "classes": {"dataType":"array","array":{"dataType":"refObject","ref":"SchoolClassDTO"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateSchoolClassInput": {
+        "dataType": "refObject",
+        "properties": {
+            "className": {"dataType":"string","required":true},
+            "academicYear": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -501,7 +568,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "_36_Enums.AttendanceStatus": {
         "dataType": "refAlias",
-        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["P"]},{"dataType":"enum","enums":["A"]},{"dataType":"enum","enums":["HALF_DAY"]},{"dataType":"enum","enums":["ACTIVITY"]},{"dataType":"enum","enums":["CANCELLED"]}],"validators":{}},
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["P"]},{"dataType":"enum","enums":["A"]},{"dataType":"enum","enums":["HALF_DAY"]},{"dataType":"enum","enums":["ACTIVITY"]},{"dataType":"enum","enums":["CANCELLED"]},{"dataType":"enum","enums":["ON_LEAVE"]}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "AttendanceStatus": {
@@ -551,29 +618,12 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "UploadAttendanceStatus": {
-        "dataType": "refAlias",
-        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["P"]},{"dataType":"enum","enums":["A"]},{"dataType":"enum","enums":["HALF_DAY"]},{"dataType":"enum","enums":["ACTIVITY"]},{"dataType":"enum","enums":["CANCELLED"]}],"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "BulkAttendanceUploadRow": {
+    "AttendanceUploadRequestBody": {
         "dataType": "refObject",
         "properties": {
-            "schoolCode": {"dataType":"string","required":true},
-            "className": {"dataType":"string","required":true},
-            "academicYear": {"dataType":"string","required":true},
-            "sessionDate": {"dataType":"string","required":true},
-            "studentId": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
-            "status": {"ref":"UploadAttendanceStatus","required":true},
-            "remarks": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "BulkAttendanceUploadInput": {
-        "dataType": "refObject",
-        "properties": {
-            "records": {"dataType":"array","array":{"dataType":"refObject","ref":"BulkAttendanceUploadRow"},"required":true},
+            "schoolId": {"dataType":"double"},
+            "classSectionId": {"dataType":"double"},
+            "records": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"academicYear":{"dataType":"string"},"className":{"dataType":"string"},"schoolCode":{"dataType":"string"},"remarks":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"status":{"dataType":"string","required":true},"sessionDate":{"dataType":"string","required":true},"studentId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"double"},{"dataType":"enum","enums":[null]}]}}},"required":true},
         },
         "additionalProperties": false,
     },
@@ -678,6 +728,7 @@ const models: TsoaRoute.Models = {
             "absentCount": {"dataType":"double","required":true},
             "halfDayCount": {"dataType":"double","required":true},
             "activityCount": {"dataType":"double","required":true},
+            "leaveCount": {"dataType":"double","required":true},
             "entries": {"dataType":"array","array":{"dataType":"refObject","ref":"DailyRegisterEntryDTO"},"required":true},
         },
         "additionalProperties": false,
@@ -699,6 +750,7 @@ const models: TsoaRoute.Models = {
             "absentDays": {"dataType":"double","required":true},
             "halfDays": {"dataType":"double","required":true},
             "activityDays": {"dataType":"double","required":true},
+            "leaveDays": {"dataType":"double","required":true},
             "unmarkedDays": {"dataType":"double","required":true},
             "workingDays": {"dataType":"double","required":true},
             "attendancePercent": {"dataType":"double","required":true},
@@ -1185,6 +1237,146 @@ export function RegisterRoutes(app: Router) {
                 next,
                 validatedArgs,
                 successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsSchoolController_listSchools: Record<string, TsoaRoute.ParameterSchema> = {
+        };
+        app.get('/schools',
+            ...(fetchMiddlewares<RequestHandler>(SchoolController)),
+            ...(fetchMiddlewares<RequestHandler>(SchoolController.prototype.listSchools)),
+
+            async function SchoolController_listSchools(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsSchoolController_listSchools, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<SchoolController>(SchoolController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'listSchools',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsSchoolController_createSchool: Record<string, TsoaRoute.ParameterSchema> = {
+                requestBody: {"in":"body","name":"requestBody","required":true,"ref":"CreateSchoolInput"},
+        };
+        app.post('/schools',
+            ...(fetchMiddlewares<RequestHandler>(SchoolController)),
+            ...(fetchMiddlewares<RequestHandler>(SchoolController.prototype.createSchool)),
+
+            async function SchoolController_createSchool(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsSchoolController_createSchool, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<SchoolController>(SchoolController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'createSchool',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 201,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsSchoolController_getClassesBySchool: Record<string, TsoaRoute.ParameterSchema> = {
+                schoolId: {"in":"path","name":"schoolId","required":true,"dataType":"double"},
+        };
+        app.get('/schools/:schoolId/classes',
+            ...(fetchMiddlewares<RequestHandler>(SchoolController)),
+            ...(fetchMiddlewares<RequestHandler>(SchoolController.prototype.getClassesBySchool)),
+
+            async function SchoolController_getClassesBySchool(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsSchoolController_getClassesBySchool, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<SchoolController>(SchoolController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getClassesBySchool',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsSchoolController_createClass: Record<string, TsoaRoute.ParameterSchema> = {
+                schoolId: {"in":"path","name":"schoolId","required":true,"dataType":"double"},
+                requestBody: {"in":"body","name":"requestBody","required":true,"ref":"CreateSchoolClassInput"},
+        };
+        app.post('/schools/:schoolId/classes',
+            ...(fetchMiddlewares<RequestHandler>(SchoolController)),
+            ...(fetchMiddlewares<RequestHandler>(SchoolController.prototype.createClass)),
+
+            async function SchoolController_createClass(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsSchoolController_createClass, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<SchoolController>(SchoolController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'createClass',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 201,
               });
             } catch (err) {
                 return next(err);
@@ -1727,7 +1919,7 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsAttendanceController_bulkUploadAttendance: Record<string, TsoaRoute.ParameterSchema> = {
-                requestBody: {"in":"body","name":"requestBody","required":true,"ref":"BulkAttendanceUploadInput"},
+                requestBody: {"in":"body","name":"requestBody","required":true,"ref":"AttendanceUploadRequestBody"},
         };
         app.post('/attendance/batch-upload',
             ...(fetchMiddlewares<RequestHandler>(AttendanceController)),

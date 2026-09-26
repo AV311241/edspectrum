@@ -1,22 +1,27 @@
-import { z } from 'zod';
-import {
-  schoolCodeSchema,
-  classNameSchema,
-  academicYearSchema,
-  RowErrorDTO,
-  BatchUploadResultDTO,
-  MAX_BULK_UPLOAD_ROWS,
-} from './upload-common.dto';
+import { RowErrorDTO, BatchUploadResultDTO } from './upload-common.dto';
 import { AttendanceResponseDTO } from './attendance.dto';
+import {
+  codeBasedAttendanceRowSchema,
+  CodeBasedAttendanceUploadSchema,
+} from '../schemas/attendance-upload.schema';
 
 /**
- * Markable per-student statuses. `CANCELLED` is handled separately because it is
- * a class-wide record (studentId = null) rather than a per-student mark.
+ * Markable per-student statuses. Derived from the canonical constants so
+ * `ON_LEAVE` (and any future status) cannot be missed here.
  */
-export const MARKABLE_ATTENDANCE_STATUSES = ['P', 'A', 'HALF_DAY', 'ACTIVITY'] as const;
+export const MARKABLE_ATTENDANCE_STATUSES = [
+  'P',
+  'A',
+  'HALF_DAY',
+  'ACTIVITY',
+  'ON_LEAVE',
+] as const;
 export type MarkableAttendanceStatus = (typeof MARKABLE_ATTENDANCE_STATUSES)[number];
 
-export const ALL_ATTENDANCE_STATUSES = [...MARKABLE_ATTENDANCE_STATUSES, 'CANCELLED'] as const;
+export const ALL_ATTENDANCE_STATUSES = [
+  ...MARKABLE_ATTENDANCE_STATUSES,
+  'CANCELLED',
+] as const;
 export type UploadAttendanceStatus = (typeof ALL_ATTENDANCE_STATUSES)[number];
 
 export const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -50,51 +55,13 @@ export interface BulkAttendanceUploadResultDTO extends BatchUploadResultDTO<Atte
   sessionsProcessed: number;
 }
 
-export const bulkAttendanceUploadRowSchema = z
-  .object({
-    schoolCode: schoolCodeSchema,
-    className: classNameSchema,
-    academicYear: academicYearSchema,
-    sessionDate: z
-      .string({ required_error: 'sessionDate is required' })
-      .trim()
-      .regex(isoDateRegex, 'sessionDate must be formatted YYYY-MM-DD'),
-    studentId: z
-      .string()
-      .trim()
-      .min(1, 'studentId must not be blank')
-      .max(100)
-      .nullable()
-      .optional(),
-    status: z.enum(ALL_ATTENDANCE_STATUSES, {
-      errorMap: () => ({ message: `status must be one of: ${ALL_ATTENDANCE_STATUSES.join(', ')}` }),
-    }),
-    remarks: z.string().trim().max(2000).nullable().optional(),
-  })
-  .superRefine((row, ctx) => {
-    const isCancellation = row.status === 'CANCELLED';
-    if (isCancellation) {
-      if (!row.remarks) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['remarks'],
-          message: 'remarks is required when status is CANCELLED (e.g. "School function")',
-        });
-      }
-    } else if (!row.studentId) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['studentId'],
-        message: `studentId is required when status is ${row.status}`,
-      });
-    }
-  });
+/**
+ * Row schema for the code-based form. Re-exported from the canonical schema
+ * module so the Excel cleansing rules, the `studentId`/`remarks` conditionals
+ * and the status enum exist in exactly one place.
+ */
+export const bulkAttendanceUploadRowSchema = codeBasedAttendanceRowSchema;
 
-export const bulkAttendanceUploadSchema = z.object({
-  records: z
-    .array(bulkAttendanceUploadRowSchema)
-    .min(1, 'At least one attendance row is required')
-    .max(MAX_BULK_UPLOAD_ROWS, `A single upload cannot exceed ${MAX_BULK_UPLOAD_ROWS} rows`),
-});
+export const bulkAttendanceUploadSchema = CodeBasedAttendanceUploadSchema;
 
 export type { RowErrorDTO };
