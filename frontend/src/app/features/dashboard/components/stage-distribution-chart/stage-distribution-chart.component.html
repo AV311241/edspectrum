@@ -1,8 +1,8 @@
-<app-ui-card customClass="h-full flex flex-col justify-between">
-  <div class="flex items-center justify-between mb-3">
-    <h2 class="text-sm font-bold text-slate-800 tracking-tight">Stage Distribution (All Students)</h2>
+<app-ui-card customClass="stage-distribution-card">
+  <div class="chart-header">
+    <h2 class="chart-title">Stage Distribution (All Students)</h2>
   </div>
-  <div class="flex-1 flex items-center">
+  <div class="chart-body">
     <app-horizontal-bar-chart [items]="dashboardService.stageDistribution()" />
   </div>
 </app-ui-card>

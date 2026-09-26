@@ -6,7 +6,8 @@ import { UiCardComponent } from '../../../../shared/components/ui-card/ui-card.c
   selector: 'app-overall-progress-summary',
   standalone: true,
   imports: [UiCardComponent],
-  templateUrl: './overall-progress-summary.component.html'
+  templateUrl: './overall-progress-summary.component.html',
+  styleUrl: './overall-progress-summary.component.scss'
 })
 export class OverallProgressSummaryComponent {
   readonly dashboardService = inject(DashboardDataService);

@@ -1,48 +1,56 @@
-<header class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 mb-5">
-  <div>
-    <div class="flex items-center gap-2">
-      <h1 class="text-2xl lg:text-3xl font-extrabold text-[#93004e] tracking-tight">Akshara</h1>
-      <span class="text-xl lg:text-2xl font-bold text-slate-800">English Skill Building Program</span>
+<header class="dashboard-header">
+  <div class="dashboard-header-copy">
+    <div class="dashboard-title-wrap">
+      <h1>Akshara</h1>
+      <span>English Skill Building Program</span>
     </div>
-    <p class="text-xs font-semibold text-slate-500 mt-0.5">Practical English for a Brighter Tomorrow</p>
+    <p>Practical English for a Brighter Tomorrow</p>
   </div>
 
-  <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-    <app-ui-select
-      label="Academic Year"
-      [value]="dashboardService.activeFilters().academicYear"
-      [options]="yearOptions"
-      (valueChange)="dashboardService.updateFilter('academicYear', $event)"
-    />
+  <div class="dashboard-filter-wrap">
+    <div class="filter-control">
+      <app-ui-select
+        label="Academic Year"
+        [value]="dashboardService.activeFilters().academicYear"
+        [options]="yearOptions"
+        (valueChange)="dashboardService.updateFilter('academicYear', $event)"
+      />
+    </div>
 
-    <app-ui-select
-      label="Month"
-      [value]="dashboardService.activeFilters().month"
-      [options]="monthOptions"
-      (valueChange)="dashboardService.updateFilter('month', $event)"
-    />
+    <div class="filter-control">
+      <app-ui-select
+        label="Month"
+        [value]="dashboardService.activeFilters().month"
+        [options]="monthOptions"
+        (valueChange)="dashboardService.updateFilter('month', $event)"
+      />
+    </div>
 
-    <app-ui-select
-      label="School"
-      [value]="dashboardService.activeFilters().school"
-      [options]="schoolOptions"
-      (valueChange)="dashboardService.updateFilter('school', $event)"
-    />
+    <div class="filter-control">
+      <app-ui-select
+        label="School"
+        [value]="dashboardService.activeFilters().school"
+        [options]="schoolOptions"
+        (valueChange)="dashboardService.updateFilter('school', $event)"
+      />
+    </div>
 
-    <app-ui-select
-      label="Class"
-      [value]="dashboardService.activeFilters().className"
-      [options]="classOptions"
-      (valueChange)="dashboardService.updateFilter('className', $event)"
-    />
+    <div class="filter-control">
+      <app-ui-select
+        label="Class"
+        [value]="dashboardService.activeFilters().className"
+        [options]="classOptions"
+        (valueChange)="dashboardService.updateFilter('className', $event)"
+      />
+    </div>
 
-    <div class="hidden sm:flex items-center gap-2 bg-pink-50 border border-pink-100 px-3 py-1.5 rounded-xl ml-2 shrink-0">
-      <div class="text-right">
-        <span class="block text-[11px] font-bold text-[#93004e] leading-none">Learning</span>
-        <span class="block text-[11px] font-bold text-[#93004e] leading-none">Confidence</span>
-        <span class="block text-[11px] font-bold text-[#93004e] leading-none">Opportunities</span>
+    <div class="dashboard-header-badge">
+      <div class="dashboard-header-badge-copy">
+        <span>Learning</span>
+        <span>Confidence</span>
+        <span>Opportunities</span>
       </div>
-      <div class="w-7 h-7 rounded-lg bg-[#93004e] flex items-center justify-center text-white">
+      <div class="dashboard-header-badge-icon">
         <app-ui-icon name="leaf" [size]="16" />
       </div>
     </div>

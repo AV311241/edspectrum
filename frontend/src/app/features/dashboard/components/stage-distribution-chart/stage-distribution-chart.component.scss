@@ -1,0 +1,52 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+:host ::ng-deep .stage-distribution-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.stage-distribution-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chart-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #1f2937;
+  line-height: 1.3;
+}
+
+.chart-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-height: 180px;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .chart-title {
+    font-size: 0.8rem;
+  }
+
+  .chart-body {
+    min-height: 150px;
+  }
+}

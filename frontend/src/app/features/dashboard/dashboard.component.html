@@ -1,41 +1,44 @@
-<div class="space-y-5">
+<div class="dashboard-page">
   <app-kpi-ribbon />
 
-  <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
-    <div class="xl:col-span-5">
+  <div class="dashboard-grid dashboard-grid-top">
+    <div class="dashboard-panel dashboard-panel-wide">
       <app-learning-progress-chart />
     </div>
-    <div class="xl:col-span-3">
+    <div class="dashboard-panel">
       <app-stage-distribution-chart />
     </div>
-    <div class="xl:col-span-4 flex flex-col gap-4">
+    <div class="dashboard-panel dashboard-panel-stack">
       <app-overall-progress-summary />
       <app-domain-progress-chart />
     </div>
   </div>
 
-  <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
-    <div class="xl:col-span-5">
+  <div class="dashboard-grid dashboard-grid-middle">
+    <div class="dashboard-panel dashboard-panel-xl">
       <app-school-performance-table />
     </div>
-    <div class="xl:col-span-3">
+    <div class="dashboard-panel dashboard-panel-side">
       <app-needs-attention-list />
     </div>
-    <div class="xl:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-3.5">
+  </div>
+
+  <div class="dashboard-grid dashboard-grid-third">
+    <div class="dashboard-panel dashboard-panel-split">
       <app-stage-movement />
       <app-sas-distribution-chart />
       <app-objective-progress-summary />
     </div>
   </div>
 
-  <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
-    <div class="xl:col-span-4">
+  <div class="dashboard-grid dashboard-grid-bottom">
+    <div class="dashboard-panel">
       <app-engagement-section />
     </div>
-    <div class="xl:col-span-4">
+    <div class="dashboard-panel">
       <app-teaching-section />
     </div>
-    <div class="xl:col-span-4">
+    <div class="dashboard-panel">
       <app-resources-finance-section />
     </div>
   </div>

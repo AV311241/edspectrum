@@ -7,7 +7,8 @@ import { HorizontalBarChartComponent } from '../../../../shared/charts/horizonta
   selector: 'app-stage-distribution-chart',
   standalone: true,
   imports: [UiCardComponent, HorizontalBarChartComponent],
-  templateUrl: './stage-distribution-chart.component.html'
+  templateUrl: './stage-distribution-chart.component.html',
+  styleUrl: './stage-distribution-chart.component.scss'
 })
 export class StageDistributionChartComponent {
   readonly dashboardService = inject(DashboardDataService);

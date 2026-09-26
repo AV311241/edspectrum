@@ -7,7 +7,8 @@ import { BarChartComponent } from '../../../../shared/charts/bar-chart/bar-chart
   selector: 'app-learning-progress-chart',
   standalone: true,
   imports: [UiCardComponent, BarChartComponent],
-  templateUrl: './learning-progress-chart.component.html'
+  templateUrl: './learning-progress-chart.component.html',
+  styleUrl: './learning-progress-chart.component.scss'
 })
 export class LearningProgressChartComponent {
   readonly dashboardService = inject(DashboardDataService);
