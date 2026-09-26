@@ -1,0 +1,80 @@
+<div class="space-y-3">
+  <!-- Hidden native file input, driven by the zone's click handler -->
+  <input
+    #fileInput
+    type="file"
+    [attr.accept]="accept()"
+    class="hidden"
+    (change)="onFileSelected($event)"
+  />
+
+  <div
+    role="button"
+    tabindex="0"
+    class="relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all duration-200"
+    [class.border-pink-400]="isDragOver()"
+    [class.bg-pink-50]="isDragOver()"
+    [class.border-slate-300]="!isDragOver()"
+    [class.bg-slate-50]="!isDragOver()"
+    [class.cursor-pointer]="!disabled()"
+    [class.cursor-not-allowed]="disabled()"
+    [class.opacity-60]="disabled()"
+    (click)="onBrowseClick(fileInput)"
+    (keydown.enter)="onBrowseClick(fileInput)"
+    (keydown.space)="onBrowseClick(fileInput); $event.preventDefault()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+  >
+    <div
+      class="w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-200"
+      [class.bg-pink-100]="isDragOver()"
+      [class.text-pink-700]="isDragOver()"
+      [class.bg-slate-200]="!isDragOver()"
+      [class.text-slate-600]="!isDragOver()"
+    >
+      <app-ui-icon name="upload" [size]="26" />
+    </div>
+
+    @if (isDragOver()) {
+      <p class="text-sm font-bold text-pink-700">Release to load the file</p>
+    } @else {
+      <p class="text-sm font-bold text-slate-800">{{ hint() }}</p>
+      <p class="text-xs text-slate-500">
+        Accepted formats: <span class="font-semibold">.xlsx</span> ·
+        <span class="font-semibold">.xls</span> · <span class="font-semibold">.csv</span> —
+        maximum 10&nbsp;MB
+      </p>
+    }
+  </div>
+
+  <!-- Selected-file summary with size indicator + progress bar -->
+  @if (selectedFileName()) {
+    <div class="rounded-xl border border-slate-200 bg-white p-3 space-y-2">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+          <app-ui-icon name="check" [size]="18" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-bold text-slate-800 truncate">{{ selectedFileName() }}</p>
+          <p class="text-[11px] text-slate-500">{{ selectedFileSize() }}</p>
+        </div>
+        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-emerald-100 text-emerald-800 shrink-0">
+          Loaded
+        </span>
+      </div>
+
+      @if (internalProgress() > 0 && internalProgress() < 100) {
+        <div class="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+          <div
+            class="h-full rounded-full bg-[#93004e] transition-all duration-300"
+            [style.width.%]="internalProgress()"
+          ></div>
+        </div>
+        <p class="text-[10px] font-semibold text-slate-400">
+          Reading &amp; validating… {{ internalProgress() }}%
+        </p>
+      }
+    </div>
+  }
+</div>

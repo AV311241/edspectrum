@@ -61,6 +61,7 @@ enum AttendanceStatus {
   HALF_DAY
   ACTIVITY
   CANCELLED
+  ON_LEAVE
 }
 
 enum AuditAction {

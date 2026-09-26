@@ -25,6 +25,11 @@ import {
 } from '../dtos/attendance.dto';
 import { AttendanceStatus } from '@prisma/client';
 import { AttendanceRiskLevel } from '../constants/attendance.constants';
+import {
+  BulkAttendanceUploadInput,
+  BulkAttendanceUploadResultDTO,
+  bulkAttendanceUploadSchema,
+} from '../dtos/attendance-upload.dto';
 
 @Tags('Attendance')
 @Route('attendance')
@@ -34,6 +39,24 @@ export class AttendanceController extends Controller {
     @inject(AttendanceService) private attendanceService: AttendanceService
   ) {
     super();
+  }
+
+  /**
+   * Bulk upload Daily Attendance from a code-based Excel upload.
+   *
+   * Unlike `POST /attendance/batch` (which takes numeric `classId` / `studentId`
+   * foreign keys for a single class session), this endpoint accepts the
+   * human-facing spreadsheet codes and resolves them server-side. `CANCELLED`
+   * rows become class-wide cancellation records and require `remarks`.
+   */
+  @SuccessResponse('200', 'Success')
+  @Response(400, 'Bad Request - Validation Error')
+  @Post('batch-upload')
+  public async bulkUploadAttendance(
+    @Body() requestBody: BulkAttendanceUploadInput
+  ): Promise<BulkAttendanceUploadResultDTO> {
+    const validated = bulkAttendanceUploadSchema.parse(requestBody);
+    return await this.attendanceService.bulkUploadAttendance(validated as BulkAttendanceUploadInput);
   }
 
   /**

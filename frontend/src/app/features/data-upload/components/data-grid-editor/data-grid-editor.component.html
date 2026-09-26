@@ -1,0 +1,149 @@
+<div class="space-y-3">
+  <!-- Toolbar -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-slate-100 text-slate-600">
+        {{ grid().rows.length }} row{{ grid().rows.length === 1 ? '' : 's' }}
+      </span>
+      @if (errorRowCount() > 0) {
+        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-rose-100 text-rose-800">
+          {{ errorRowCount() }} blocked
+        </span>
+      }
+    </div>
+
+    <p class="text-[11px] text-slate-500 flex items-center gap-1.5">
+      <app-ui-icon name="info" [size]="14" className="text-slate-400" />
+      Click any cell to edit it inline — validation re-runs instantly.
+    </p>
+  </div>
+
+  <!-- Editable grid -->
+  <div class="rounded-xl border border-slate-200 overflow-hidden bg-white">
+    <div class="overflow-auto max-h-[32rem]">
+      <table class="w-full text-left border-collapse">
+        <thead class="sticky top-0 z-10 bg-slate-50">
+          <tr class="border-b border-slate-200">
+            <th class="px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 w-16">Row</th>
+            @for (col of grid().columns; track col.key) {
+              <th class="px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                <span>{{ col.header }}</span>
+                @if (col.required) {
+                  <span class="ml-1 text-pink-600">*</span>
+                }
+                @if (col.help) {
+                  <span class="block text-[9px] font-medium normal-case tracking-normal text-slate-400 whitespace-normal max-w-[14rem]">
+                    {{ col.help }}
+                  </span>
+                }
+              </th>
+            }
+            <th class="px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 w-20 text-right">Use</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of pagedRows(); track row.rowIndex) {
+            <tr
+              class="border-b border-slate-100 last:border-0 transition-colors"
+              [class.bg-rose-50/50]="hasRowError(row) && !row.excluded"
+              [class.bg-slate-50]="row.excluded"
+              [class.opacity-60]="row.excluded"
+            >
+              <td class="px-3 py-2 align-middle">
+                <span class="text-[11px] font-extrabold text-slate-500">{{ row.rowIndex }}</span>
+              </td>
+
+              @for (col of grid().columns; track col.key) {
+                @let cellErr = cellError(row, col.key);
+                @let isEditing = editRowIndex() === row.rowIndex && editColumnKey() === col.key;
+                <td
+                  class="px-1 py-1 align-middle border-l"
+                  [class.border-rose-200]="!!cellErr && cellErr.severity === 'ERROR'"
+                  [class.border-amber-200]="!!cellErr && cellErr.severity === 'WARNING'"
+                  [class.border-slate-100]="!cellErr"
+                >
+                  @if (isEditing) {
+                    <input
+                      type="text"
+                      class="w-full min-w-[7rem] px-2 py-1.5 rounded-md border-2 border-pink-500 text-[11px] font-mono outline-none bg-white"
+                      [value]="editBuffer()"
+                      (input)="editBuffer.set($any($event.target).value)"
+                      (keydown)="onEditorKeydown($event)"
+                      (blur)="commitEdit()"
+                      autofocus
+                    />
+                  } @else {
+                    <button
+                      type="button"
+                      class="w-full text-left px-2 py-1.5 rounded-md text-[11px] font-mono transition-colors"
+                      [class.cursor-text]="col.editable"
+                      [class.cursor-default]="!col.editable"
+                      [class.hover:bg-slate-100]="col.editable"
+                      [class.text-slate-700]="!cellErr"
+                      [class.text-rose-700]="!!cellErr && cellErr.severity === 'ERROR'"
+                      [class.font-bold]="!!cellErr"
+                      [class.bg-rose-50]="!!cellErr && cellErr.severity === 'ERROR'"
+                      [class.bg-amber-50]="!!cellErr && cellErr.severity === 'WARNING'"
+                      (click)="startEdit(row, col.key, col.editable)"
+                      [title]="cellErr ? cellErr.errorMessage : (col.editable ? 'Click to edit' : '')"
+                    >
+                      {{ row.cells[col.key] || '—' }}
+                    </button>
+                  }
+                </td>
+              }
+
+              <td class="px-3 py-2 text-right align-middle">
+                <button
+                  type="button"
+                  (click)="rowExcluded.emit(row.rowIndex)"
+                  class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wide transition-colors"
+                  [class.bg-emerald-100]="row.excluded"
+                  [class.text-emerald-800]="row.excluded"
+                  [class.bg-slate-100]="!row.excluded"
+                  [class.text-slate-600]="!row.excluded"
+                  [class.hover:bg-slate-200]="!row.excluded"
+                >
+                  {{ row.excluded ? 'Excluded' : 'Exclude' }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td [attr.colspan]="grid().columns.length + 2" class="px-4 py-10 text-center">
+                <p class="text-xs font-bold text-slate-500">No rows parsed from this sheet.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (pageCount() > 1) {
+      <div class="flex items-center justify-between gap-2 px-4 py-2.5 border-t border-slate-200 bg-slate-50">
+        <span class="text-[10px] font-bold text-slate-500">
+          Page {{ page() + 1 }} of {{ pageCount() }}
+        </span>
+        <div class="flex items-center gap-1.5">
+          <button
+            type="button"
+            (click)="goToPage(page() - 1)"
+            [disabled]="page() === 0"
+            class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-[10px] font-extrabold uppercase text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Prev
+          </button>
+          <button
+            type="button"
+            (click)="goToPage(page() + 1)"
+            [disabled]="page() >= pageCount() - 1"
+            class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-[10px] font-extrabold uppercase text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

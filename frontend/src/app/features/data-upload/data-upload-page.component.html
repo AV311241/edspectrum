@@ -1,0 +1,426 @@
+<div class="space-y-6">
+  <!-- ═══ Page header ═══ -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+    <div>
+      <div class="flex items-center gap-2 text-xs font-semibold text-pink-700 tracking-wide">
+        <span>EDSPECTRUM NGO</span>
+        <span>•</span>
+        <span>DATA MANAGEMENT</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">Bulk Data Upload</h1>
+      <p class="text-xs text-slate-500 mt-0.5">
+        Upload Classes, Students and Daily Attendance from Excel with full client-side validation
+        before anything is sent to the server.
+      </p>
+    </div>
+
+    <span class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-extrabold uppercase tracking-wide font-mono">
+      {{ activeService().endpointLabel }}
+    </span>
+  </div>
+
+  <!-- ═══ Step indicator ═══ -->
+  <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+    <ol class="flex flex-wrap items-center gap-x-2 gap-y-2">
+      @for (step of [
+        { n: 1, label: 'Select Entity' },
+        { n: 2, label: 'Get Template' },
+        { n: 3, label: 'Upload File' },
+        { n: 4, label: 'Validate & Fix' },
+        { n: 5, label: 'Save to Database' }
+      ]; track step.n) {
+        <li class="flex items-center gap-2">
+          <span
+            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-extrabold transition-colors"
+            [class.bg-[#93004e]]="activeStep() === step.n"
+            [class.text-white]="activeStep() >= step.n"
+            [class.bg-emerald-600]="activeStep() > step.n"
+            [class.bg-slate-200]="activeStep() < step.n"
+            [class.text-slate-500]="activeStep() < step.n"
+          >
+            @if (activeStep() > step.n) { &#10003; } @else { {{ step.n }} }
+          </span>
+          <span
+            class="text-[11px] font-bold"
+            [class.text-slate-900]="activeStep() === step.n"
+            [class.text-slate-400]="activeStep() !== step.n"
+          >
+            {{ step.label }}
+          </span>
+        </li>
+        @if (step.n < 5) {
+          <li class="w-6 h-px bg-slate-200"></li>
+        }
+      }
+    </ol>
+  </div>
+
+  <!-- ═══ High-contrast status banners ═══ -->
+  @if (errorMessage()) {
+    <div class="p-4 rounded-xl bg-rose-50 border-2 border-rose-300 text-rose-900 text-xs font-semibold flex items-start justify-between gap-3">
+      <div class="flex items-start gap-2">
+        <app-ui-icon name="alert-circle" [size]="16" className="text-rose-600 shrink-0 mt-px" />
+        <span>{{ errorMessage() }}</span>
+      </div>
+      <button (click)="errorMessage.set(null)" class="text-rose-500 hover:text-rose-800 shrink-0">✕</button>
+    </div>
+  }
+
+  @if (noticeMessage()) {
+    <div class="p-4 rounded-xl bg-sky-50 border border-sky-200 text-sky-900 text-xs font-semibold flex items-start justify-between gap-3">
+      <div class="flex items-start gap-2">
+        <app-ui-icon name="info" [size]="16" className="text-sky-600 shrink-0 mt-px" />
+        <span>{{ noticeMessage() }}</span>
+      </div>
+      <button (click)="noticeMessage.set(null)" class="text-sky-500 hover:text-sky-800 shrink-0">✕</button>
+    </div>
+  }
+
+  <!-- ═══ Success view (Step 5) ═══ -->
+  @if (outcome(); as result) {
+    <div class="bg-white rounded-2xl border-2 border-emerald-300 shadow-sm overflow-hidden">
+      <div class="bg-emerald-600 px-6 py-5 text-white flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+          <app-ui-icon name="check" [size]="24" className="text-white" />
+        </div>
+        <div>
+          <h2 class="text-lg font-black tracking-tight">Upload Complete</h2>
+          <p class="text-xs font-semibold opacity-90">{{ result.label }} committed to the database.</p>
+        </div>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="rounded-xl bg-slate-50 border border-slate-200 p-3">
+            <span class="block text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Rows Sent</span>
+            <span class="text-2xl font-black text-slate-900">{{ result.response.totalRows }}</span>
+          </div>
+          <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3">
+            <span class="block text-[10px] font-extrabold uppercase tracking-wide text-emerald-600">Saved</span>
+            <span class="text-2xl font-black text-emerald-700">{{ result.response.created }}</span>
+          </div>
+          <div class="rounded-xl bg-amber-50 border border-amber-200 p-3">
+            <span class="block text-[10px] font-extrabold uppercase tracking-wide text-amber-600">Skipped</span>
+            <span class="text-2xl font-black text-amber-700">{{ result.response.skipped }}</span>
+          </div>
+          <div class="rounded-xl bg-rose-50 border border-rose-200 p-3">
+            <span class="block text-[10px] font-extrabold uppercase tracking-wide text-rose-600">Failed</span>
+            <span class="text-2xl font-black text-rose-700">{{ result.response.failed }}</span>
+          </div>
+        </div>
+
+        @if (result.response.cancellations) {
+          <div class="rounded-xl bg-violet-50 border border-violet-200 px-4 py-3 text-xs font-semibold text-violet-800">
+            {{ result.response.cancellations }} class-wide session cancellation(s) created across
+            {{ result.response.sessionsProcessed }} session(s).
+          </div>
+        }
+
+        @if (result.response.errors?.length) {
+          <div class="space-y-2">
+            <h3 class="text-xs font-extrabold uppercase tracking-wide text-slate-500">
+              Server-reported row issues ({{ result.response.errors.length }})
+            </h3>
+            <div class="max-h-72 overflow-auto rounded-xl border border-rose-200 p-3">
+              <app-validation-error-matrix [errors]="result.response.errors" [excludedRowIndices]="emptyRowIndexSet" />
+            </div>
+          </div>
+        }
+
+        <div class="flex justify-end pt-1">
+          <button
+            type="button"
+            (click)="startOver()"
+            class="px-4 py-2.5 rounded-xl bg-[#93004e] hover:bg-[#7a0041] text-white text-xs font-bold transition-all active:scale-95"
+          >
+            Upload Another File
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ STEP 1 — Entity selector + STEP 2 — Template ═══ -->
+  @if (!outcome()) {
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-5">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="w-5 h-5 rounded-full bg-[#93004e] text-white text-[10px] font-extrabold flex items-center justify-center">1</span>
+          <h2 class="text-sm font-black text-slate-900">Select Entity Type</h2>
+        </div>
+        <p class="text-[11px] text-slate-500 ml-7">Choose which master data you are uploading.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        @for (entity of entities; track entity.type) {
+          <button
+            type="button"
+            (click)="selectEntity(entity.type)"
+            class="text-left p-4 rounded-xl border-2 transition-all duration-150 group"
+            [class.border-[#93004e]]="selectedEntity() === entity.type"
+            [class.bg-pink-50]="selectedEntity() === entity.type"
+            [class.shadow-sm]="selectedEntity() === entity.type"
+            [class.border-slate-200]="selectedEntity() !== entity.type"
+            [class.bg-white]="selectedEntity() !== entity.type"
+            [class.hover:border-slate-300]="selectedEntity() !== entity.type"
+          >
+            <div class="flex items-start gap-3">
+              <div
+                class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                [class.bg-[#93004e]]="selectedEntity() === entity.type"
+                [class.text-white]="selectedEntity() === entity.type"
+                [class.bg-slate-100]="selectedEntity() !== entity.type"
+                [class.text-slate-600]="selectedEntity() !== entity.type"
+              >
+                <app-ui-icon [name]="entity.icon" [size]="20" />
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs font-black text-slate-900">{{ entity.label }}</p>
+                <p class="text-[11px] text-slate-500 mt-0.5 leading-snug">{{ entity.description }}</p>
+                <p class="text-[9px] font-mono text-slate-400 mt-1.5">{{ entity.endpoint }}</p>
+              </div>
+            </div>
+          </button>
+        }
+      </div>
+
+      <!-- Selected entity detail + template download -->
+      <div class="rounded-xl bg-slate-50 border border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-xs font-black text-slate-800">{{ activeService().label }}</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">{{ activeService().description }}</p>
+          <div class="flex flex-wrap gap-1.5 mt-2">
+            @for (col of activeService().columns; track col.key) {
+              <span
+                class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold"
+                [class.bg-pink-100]="col.required"
+                [class.text-pink-700]="col.required"
+                [class.bg-slate-200]="!col.required"
+                [class.text-slate-600]="!col.required"
+              >
+                {{ col.header }}{{ col.required ? '*' : '' }}
+              </span>
+            }
+          </div>
+        </div>
+        <button
+          type="button"
+          (click)="downloadTemplate()"
+          class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all active:scale-95"
+        >
+          <app-ui-icon name="download" [size]="16" className="text-white" />
+          <span>Download .xlsx Template</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 3 — Drag & drop ═══ -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-3">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="w-5 h-5 rounded-full bg-[#93004e] text-white text-[10px] font-extrabold flex items-center justify-center">3</span>
+        <h2 class="text-sm font-black text-slate-900">Upload Your Excel File</h2>
+      </div>
+      <app-upload-dropzone
+        [disabled]="parsing()"
+        [selectedFileName]="fileName()"
+        [selectedFileSize]="fileSize()"
+        (fileAccepted)="onFileAccepted($event)"
+        (fileRejected)="onFileRejected($event)"
+      />
+    </div>
+
+    <!-- ═══ STEP 4 — Validation summary + error matrix + inline edit ═══ -->
+    @if (validation()) {
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="w-5 h-5 rounded-full bg-[#93004e] text-white text-[10px] font-extrabold flex items-center justify-center">4</span>
+          <h2 class="text-sm font-black text-slate-900">Validation Summary &amp; Error Matrix</h2>
+        </div>
+
+        <!-- KPI ribbon -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="rounded-xl bg-slate-50 border border-slate-200 p-3">
+            <span class="block text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Total Rows</span>
+            <span class="text-2xl font-black text-slate-900">{{ totalRows() }}</span>
+          </div>
+          <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3">
+            <span class="block text-[10px] font-extrabold uppercase tracking-wide text-emerald-600">Valid Rows</span>
+            <span class="text-2xl font-black text-emerald-700">{{ cleanRowCount() }}</span>
+          </div>
+          <div class="rounded-xl bg-rose-50 border border-rose-200 p-3">
+            <span class="block text-[10px] font-extrabold uppercase tracking-wide text-rose-600">Error Rows</span>
+            <span class="text-2xl font-black text-rose-700">{{ errorRowCount() }}</span>
+          </div>
+          <div class="rounded-xl bg-slate-100 border border-slate-200 p-3">
+            <span class="block text-[10px] font-extrabold uppercase tracking-wide text-slate-500">Excluded</span>
+            <span class="text-2xl font-black text-slate-600">{{ excludedCount() }}</span>
+          </div>
+        </div>
+
+        <!-- Parsed-sheet metadata -->
+        <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold text-slate-500">
+          <span class="px-2 py-1 rounded-lg bg-slate-100 font-mono">
+            Sheet: {{ sheetName() ?? '—' }}
+          </span>
+          <span
+            class="px-2 py-1 rounded-lg font-mono"
+            [class.bg-violet-100]="sheetFormat() === 'MATRIX'"
+            [class.text-violet-700]="sheetFormat() === 'MATRIX'"
+            [class.bg-sky-100]="sheetFormat() === 'ROW'"
+            [class.text-sky-700]="sheetFormat() === 'ROW'"
+          >
+            Format: {{ sheetFormat() === 'MATRIX' ? 'Excel Grid / Matrix (pivoted)' : 'Row-Based' }}
+          </span>
+          <span class="px-2 py-1 rounded-lg bg-slate-100 font-mono">
+            {{ errorCount() }} error{{ errorCount() === 1 ? '' : 's' }} · {{ warningCount() }} warning{{ warningCount() === 1 ? '' : 's' }}
+          </span>
+        </div>
+
+        <!-- Matrix context fallback (only for grid sheets missing a metadata row) -->
+        @if (showMatrixContext()) {
+          <div class="rounded-xl bg-violet-50 border border-violet-200 p-4 space-y-3">
+            <div>
+              <p class="text-xs font-black text-violet-900">Matrix sheet detected</p>
+              <p class="text-[11px] text-violet-700 mt-0.5">
+                Dates across row&nbsp;1 and student IDs down column&nbsp;A were pivoted into rows.
+                If the sheet has no <span class="font-mono font-bold">schoolCode:</span> metadata row,
+                supply the class context below.
+              </p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <label class="block">
+                <span class="block text-[10px] font-extrabold uppercase tracking-wide text-violet-700 mb-1">schoolCode</span>
+                <input
+                  type="text"
+                  [value]="matrixContext().schoolCode"
+                  (input)="updateMatrixContext('schoolCode', $any($event.target).value)"
+                  placeholder="SCH-001"
+                  class="w-full px-2.5 py-1.5 rounded-lg border border-violet-200 bg-white text-[11px] font-mono outline-none focus:border-violet-400"
+                />
+              </label>
+              <label class="block">
+                <span class="block text-[10px] font-extrabold uppercase tracking-wide text-violet-700 mb-1">className</span>
+                <input
+                  type="text"
+                  [value]="matrixContext().className"
+                  (input)="updateMatrixContext('className', $any($event.target).value)"
+                  placeholder="6A"
+                  class="w-full px-2.5 py-1.5 rounded-lg border border-violet-200 bg-white text-[11px] font-mono outline-none focus:border-violet-400"
+                />
+              </label>
+              <label class="block">
+                <span class="block text-[10px] font-extrabold uppercase tracking-wide text-violet-700 mb-1">academicYear</span>
+                <input
+                  type="text"
+                  [value]="matrixContext().academicYear"
+                  (input)="updateMatrixContext('academicYear', $any($event.target).value)"
+                  placeholder="2026-2027"
+                  class="w-full px-2.5 py-1.5 rounded-lg border border-violet-200 bg-white text-[11px] font-mono outline-none focus:border-violet-400"
+                />
+              </label>
+            </div>
+            <button
+              type="button"
+              (click)="applyMatrixContext()"
+              class="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-extrabold uppercase tracking-wide"
+            >
+              Apply Context
+            </button>
+          </div>
+        }
+
+        <!-- Inline cell editor (Step 5 bonus) -->
+        @if (grid().rows.length > 0) {
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <app-ui-icon name="table" [size]="16" className="text-slate-400" />
+              <h3 class="text-xs font-extrabold uppercase tracking-wide text-slate-500">
+                Data Preview &amp; Inline Editor
+              </h3>
+            </div>
+            <app-data-grid-editor
+              [grid]="grid()"
+              (cellEdited)="onCellEdited($event)"
+              (rowExcluded)="toggleRowExclusion($event)"
+            />
+          </div>
+        }
+
+        <!-- Error matrix -->
+        @if (allErrors().length > 0) {
+          <div class="space-y-2 pt-1">
+            <h3 class="text-xs font-extrabold uppercase tracking-wide text-slate-500">
+              Error Matrix
+            </h3>
+            <app-validation-error-matrix
+              [errors]="allErrors()"
+              [excludedRowIndices]="excludedRowIndices()"
+              (rowExcluded)="toggleRowExclusion($event)"
+              (excludeAllErrorRows)="excludeAllErrorRows()"
+              (includeAllRows)="includeAllRows()"
+            />
+          </div>
+        } @else {
+          <div class="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-6 text-center">
+            <div class="flex flex-col items-center gap-2">
+              <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <app-ui-icon name="check" [size]="20" />
+              </div>
+              <p class="text-xs font-black text-emerald-800">
+                No validation issues — all {{ totalRows() }} row(s) are clean.
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═══ STEP 5 — Save to database ═══ -->
+    @if (validation()) {
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-5 h-5 rounded-full bg-[#93004e] text-white text-[10px] font-extrabold flex items-center justify-center">5</span>
+          <h2 class="text-sm font-black text-slate-900">Save Data to Database</h2>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-slate-50 border border-slate-200 p-4">
+          <div class="min-w-0">
+            <p class="text-xs font-bold text-slate-800">
+              {{ cleanRowCount() }} row{{ cleanRowCount() === 1 ? '' : 's' }} ready to upload
+              <span class="text-slate-400 font-normal">
+                ({{ totalRows() }} total
+                @if (excludedCount() > 0) { · {{ excludedCount() }} excluded }
+                @if (errorRowCount() > 0) { · {{ errorRowCount() }} blocked })
+              </span>
+            </p>
+            <p class="text-[10px] font-mono text-slate-400 mt-1">{{ activeService().endpointLabel }}</p>
+
+            @if (errorRowCount() > 0) {
+              <p class="text-[11px] font-semibold text-rose-700 mt-1.5 flex items-center gap-1.5">
+                <app-ui-icon name="alert-circle" [size]="14" className="text-rose-500" />
+                {{ errorRowCount() }} row(s) still have errors and will not be sent. Fix them inline or
+                exclude them.
+              </p>
+            }
+          </div>
+
+          <button
+            type="button"
+            (click)="submit()"
+            [disabled]="!canSubmit()"
+            class="shrink-0 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs font-bold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            [class.bg-[#93004e]]="canSubmit()"
+            [class.hover:bg-[#7a0041]]="canSubmit()"
+            [class.text-white]="canSubmit()"
+            [class.shadow-md]="canSubmit()"
+            [class.shadow-pink-950/20]="canSubmit()"
+            [class.bg-slate-300]="!canSubmit()"
+          >
+            <app-ui-icon name="database" [size]="16" className="text-white" />
+            <span>{{ submitting() ? 'Saving…' : 'Save Data to Database' }}</span>
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

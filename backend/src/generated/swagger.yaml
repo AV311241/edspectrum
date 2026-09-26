@@ -208,6 +208,110 @@ components:
         - lastName
       type: object
       additionalProperties: false
+    RowErrorDTO:
+      description: "A single row-scoped failure. Deliberately mirrors the frontend\r
+
+        `ValidationError` shape so the upload page can render server-detected\r
+
+        problems in exactly the same error matrix as client-side ones."
+      properties:
+        rowIndex:
+          type: number
+          format: double
+          description: 1-based spreadsheet row number, matching what the user sees in Excel.
+        columnName:
+          type: string
+        invalidValue: {}
+        errorMessage:
+          type: string
+        severity:
+          type: string
+          enum:
+            - ERROR
+            - WARNING
+      required:
+        - rowIndex
+        - columnName
+        - invalidValue
+        - errorMessage
+        - severity
+      type: object
+      additionalProperties: false
+    BatchUploadResultDTO_StudentResponseDTO_:
+      properties:
+        totalRows:
+          type: number
+          format: double
+        created:
+          type: number
+          format: double
+        skipped:
+          type: number
+          format: double
+        failed:
+          type: number
+          format: double
+        records:
+          items:
+            $ref: "#/components/schemas/StudentResponseDTO"
+          type: array
+        errors:
+          items:
+            $ref: "#/components/schemas/RowErrorDTO"
+          type: array
+      required:
+        - totalRows
+        - created
+        - skipped
+        - failed
+        - records
+        - errors
+      type: object
+      additionalProperties: false
+    BatchStudentUploadResultDTO:
+      $ref: "#/components/schemas/BatchUploadResultDTO_StudentResponseDTO_"
+    BatchStudentUploadRow:
+      description: "A single row of the \"Students Master\" Excel template.\r
+
+        Columns: studentId, schoolCode, className, academicYear, studentName,
+        isActive"
+      properties:
+        studentId:
+          type: string
+          description: Maps to `Student.studentIdCode`.
+        schoolCode:
+          type: string
+        className:
+          type: string
+        academicYear:
+          type: string
+        studentName:
+          type: string
+          description: Full name; split server-side into firstName / lastName.
+        isActive:
+          type: boolean
+          description: Defaults to `true` when the column is omitted or blank.
+      required:
+        - studentId
+        - schoolCode
+        - className
+        - academicYear
+        - studentName
+      type: object
+      additionalProperties: false
+    BatchStudentUploadInput:
+      properties:
+        students:
+          items:
+            $ref: "#/components/schemas/BatchStudentUploadRow"
+          type: array
+        createdById:
+          type: number
+          format: double
+      required:
+        - students
+      type: object
+      additionalProperties: false
     PaginatedStudentResponseDTO:
       properties:
         records:
@@ -428,6 +532,82 @@ components:
         - className
         - section
         - name
+      type: object
+      additionalProperties: false
+    BatchUploadResultDTO_ClassResponseDTO_:
+      properties:
+        totalRows:
+          type: number
+          format: double
+        created:
+          type: number
+          format: double
+        skipped:
+          type: number
+          format: double
+        failed:
+          type: number
+          format: double
+        records:
+          items:
+            $ref: "#/components/schemas/ClassResponseDTO"
+          type: array
+        errors:
+          items:
+            $ref: "#/components/schemas/RowErrorDTO"
+          type: array
+      required:
+        - totalRows
+        - created
+        - skipped
+        - failed
+        - records
+        - errors
+      type: object
+      additionalProperties: false
+    BatchClassUploadResultDTO:
+      $ref: "#/components/schemas/BatchUploadResultDTO_ClassResponseDTO_"
+    BatchClassUploadRow:
+      description: "A single row of the \"Classes Master\" Excel template.\r
+
+        Columns: schoolCode, className, academicYear (plus two optional
+        overrides)."
+      properties:
+        schoolCode:
+          type: string
+        className:
+          type: string
+        academicYear:
+          type: string
+        section:
+          type: string
+          nullable: true
+          description: Defaults to `'A'` when omitted.
+        name:
+          type: string
+          nullable: true
+          description: Defaults to `"<schoolCode> <className>"` when omitted.
+        capacity:
+          type: number
+          format: double
+          nullable: true
+      required:
+        - schoolCode
+        - className
+        - academicYear
+      type: object
+      additionalProperties: false
+    BatchClassUploadInput:
+      properties:
+        classes:
+          items:
+            $ref: "#/components/schemas/BatchClassUploadRow"
+          type: array
+        createdById:
+          type: number
+          format: double
+      required:
+        - classes
       type: object
       additionalProperties: false
     PaginatedClassResponseDTO:
@@ -821,6 +1001,105 @@ components:
         - status
         - remarks
         - createdAt
+      type: object
+      additionalProperties: false
+    BulkAttendanceUploadResultDTO:
+      properties:
+        totalRows:
+          type: number
+          format: double
+        created:
+          type: number
+          format: double
+        skipped:
+          type: number
+          format: double
+        failed:
+          type: number
+          format: double
+        records:
+          items:
+            $ref: "#/components/schemas/AttendanceResponseDTO"
+          type: array
+        errors:
+          items:
+            $ref: "#/components/schemas/RowErrorDTO"
+          type: array
+        cancellations:
+          type: number
+          format: double
+          description: Number of class-wide cancellation records created.
+        sessionsProcessed:
+          type: number
+          format: double
+          description: Number of distinct (class, date) sessions touched.
+      required:
+        - totalRows
+        - created
+        - skipped
+        - failed
+        - records
+        - errors
+        - cancellations
+        - sessionsProcessed
+      type: object
+      additionalProperties: false
+    UploadAttendanceStatus:
+      type: string
+      enum:
+        - P
+        - A
+        - HALF_DAY
+        - ACTIVITY
+        - CANCELLED
+    BulkAttendanceUploadRow:
+      description: "A single attendance row, in EITHER the row-based format:\r
+
+        \  schoolCode, className, academicYear, sessionDate, studentId, status,
+        remarks\r
+
+        or the pivoted equivalent produced from the Excel matrix (grid)
+        format.\r
+
+        \r
+
+        `studentId` is optional *only* when `status === 'CANCELLED'`, which
+        encodes a\r
+
+        class-wide session cancellation and therefore requires `remarks`."
+      properties:
+        schoolCode:
+          type: string
+        className:
+          type: string
+        academicYear:
+          type: string
+        sessionDate:
+          type: string
+        studentId:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/UploadAttendanceStatus"
+        remarks:
+          type: string
+          nullable: true
+      required:
+        - schoolCode
+        - className
+        - academicYear
+        - sessionDate
+        - status
+      type: object
+      additionalProperties: false
+    BulkAttendanceUploadInput:
+      properties:
+        records:
+          items:
+            $ref: "#/components/schemas/BulkAttendanceUploadRow"
+          type: array
+      required:
+        - records
       type: object
       additionalProperties: false
     BatchUpsertAttendanceResponseDTO:
@@ -1312,6 +1591,35 @@ paths:
           required: false
           schema:
             type: string
+  /students/batch:
+    post:
+      operationId: BatchUploadStudents
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchStudentUploadResultDTO"
+        "400":
+          description: Bad Request - Validation Error
+      description: >-
+        Bulk create Students from a code-based Excel upload.
+
+        Resolves `schoolCode` and `(schoolCode, className, academicYear)` to
+        their
+
+        primary keys server-side, splits `studentName`, and enrols each student.
+      tags:
+        - Students
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchStudentUploadInput"
   /students/{id}:
     get:
       operationId: GetStudentById
@@ -1573,6 +1881,32 @@ paths:
           required: false
           schema:
             type: string
+  /classes/batch:
+    post:
+      operationId: BatchUploadClasses
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchClassUploadResultDTO"
+        "400":
+          description: Bad Request - Validation Error
+      description: |-
+        Bulk create Class Sections from a code-based Excel upload.
+        Resolves `schoolCode` to `School.id` server-side and reports row-level
+        failures without aborting the rest of the upload.
+      tags:
+        - Classes
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchClassUploadInput"
   /classes/{id}:
     get:
       operationId: GetClassById
@@ -1910,6 +2244,41 @@ paths:
           required: true
           schema:
             type: string
+  /attendance/batch-upload:
+    post:
+      operationId: BulkUploadAttendance
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkAttendanceUploadResultDTO"
+        "400":
+          description: Bad Request - Validation Error
+      description: >-
+        Bulk upload Daily Attendance from a code-based Excel upload.
+
+
+        Unlike `POST /attendance/batch` (which takes numeric `classId` /
+        `studentId`
+
+        foreign keys for a single class session), this endpoint accepts the
+
+        human-facing spreadsheet codes and resolves them server-side.
+        `CANCELLED`
+
+        rows become class-wide cancellation records and require `remarks`.
+      tags:
+        - Attendance
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkAttendanceUploadInput"
   /attendance/batch:
     post:
       operationId: BatchUpsertAttendance

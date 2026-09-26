@@ -18,6 +18,11 @@ import {
   studentFilterQuerySchema,
 } from '../dtos/student.dto';
 import { StudentStatus } from '@prisma/client';
+import {
+  BatchStudentUploadInput,
+  BatchStudentUploadResultDTO,
+  batchStudentUploadSchema,
+} from '../dtos/student-upload.dto';
 
 @Tags('Students')
 @Route('students')
@@ -42,6 +47,21 @@ export class StudentController extends Controller {
     const validated = createStudentSchema.parse(requestBody);
     this.setStatus(201);
     return await this.studentService.createStudent(validated as CreateStudentInput);
+  }
+
+  /**
+   * Bulk create Students from a code-based Excel upload.
+   * Resolves `schoolCode` and `(schoolCode, className, academicYear)` to their
+   * primary keys server-side, splits `studentName`, and enrols each student.
+   */
+  @SuccessResponse('200', 'Success')
+  @Response(400, 'Bad Request - Validation Error')
+  @Post('batch')
+  public async batchUploadStudents(
+    @Body() requestBody: BatchStudentUploadInput
+  ): Promise<BatchStudentUploadResultDTO> {
+    const validated = batchStudentUploadSchema.parse(requestBody);
+    return await this.studentService.batchUploadStudents(validated as BatchStudentUploadInput);
   }
 
   /**

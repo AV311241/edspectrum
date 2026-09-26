@@ -21,6 +21,7 @@ export class SidebarComponent {
   readonly navItems = signal<NavItem[]>([
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', route: '/' },
     { id: 'baseline', label: 'Baseline Assessment', icon: 'target', route: '/baseline-assessment' },
+    { id: 'data-upload', label: 'Data Upload', icon: 'upload', route: '/data-upload' },
     { id: 'program', label: 'Program Overview', icon: 'book', route: '/' },
     { id: 'learning', label: 'Learning Outcomes', icon: 'chart-bar', route: '/' },
     { id: 'engagement', label: 'Engagement', icon: 'users-group', route: '/' },

@@ -16,6 +16,11 @@ import { HttpStatusCode } from '../constants/httpStatus.constants';
 import { logger } from '../config/logger.config';
 import { sanitizePII } from '../utils/sanitizer.utils';
 import { ClassStatus, StudentStatus } from '@prisma/client';
+import {
+  BatchStudentUploadInput,
+  BatchStudentUploadResultDTO,
+} from '../dtos/student-upload.dto';
+import { RowErrorDTO } from '../dtos/upload-common.dto';
 
 @provide(StudentService)
 export class StudentService {
@@ -386,5 +391,185 @@ export class StudentService {
 
     const refreshed = await this.studentRepo.findById(studentId);
     return this.mapToDTO(refreshed!);
+  }
+
+  /**
+   * Split a free-form "studentName" into the NOT NULL firstName/lastName pair.
+   * Single-word names become the first name with an empty last name, which the
+   * Student model permits.
+   */
+  private splitStudentName(fullName: string): { firstName: string; lastName: string } {
+    const parts = fullName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return { firstName: '', lastName: '' };
+    if (parts.length === 1) return { firstName: parts[0], lastName: '' };
+    return {
+      firstName: parts.slice(0, -1).join(' '),
+      lastName: parts[parts.length - 1],
+    };
+  }
+
+  /**
+   * Bulk create Students from a code-based Excel upload.
+   *
+   * Resolves `schoolCode` -> `School.id` and
+   * `(schoolCode, className, academicYear)` -> `ClassSection.id`, splits
+   * `studentName` into first/last name, and maps `isActive` onto `StudentStatus`.
+   * Each row is processed independently so one bad row cannot abort the upload.
+   */
+  public async batchUploadStudents(input: BatchStudentUploadInput): Promise<BatchStudentUploadResultDTO> {
+    const startTime = Date.now();
+    logger.info('[StudentService.batchUploadStudents] Starting bulk student upload', {
+      rowCount: input.students.length,
+    });
+
+    const createdById = input.createdById ?? 1;
+    const errors: RowErrorDTO[] = [];
+    const records: StudentResponseDTO[] = [];
+    let failed = 0;
+    let skipped = 0;
+
+    // --- Bulk-resolve schools in a single round-trip ---
+    const distinctCodes = Array.from(
+      new Set(input.students.map((s) => s.schoolCode.trim().toUpperCase()))
+    );
+    const schools = await prisma.school.findMany({
+      where: { code: { in: distinctCodes } },
+      select: { id: true, code: true },
+    });
+    const schoolIdByCode = new Map(schools.map((s) => [s.code.toUpperCase(), s.id]));
+
+    // --- Bulk-resolve class sections in a single round-trip ---
+    const resolvedSchoolIds = input.students
+      .map((s) => schoolIdByCode.get(s.schoolCode.trim().toUpperCase()))
+      .filter((id): id is number => typeof id === 'number');
+    const classSections = await prisma.classSection.findMany({
+      where: {
+        schoolId: { in: Array.from(new Set(resolvedSchoolIds)) },
+        className: { in: Array.from(new Set(input.students.map((s) => s.className.trim()))) },
+      },
+      select: { id: true, schoolId: true, className: true, academicYear: true, status: true },
+    });
+    const classKey = (schoolId: number, className: string, academicYear: string) =>
+      `${schoolId}|${className.toLowerCase()}|${academicYear}`;
+    const classIdByKey = new Map(
+      classSections.map((c) => [
+        classKey(c.schoolId, c.className, c.academicYear ?? ''),
+        { id: c.id, status: c.status },
+      ])
+    );
+
+    for (let i = 0; i < input.students.length; i++) {
+      const row = input.students[i];
+      // +2 => 1-based header row + 1-based data row, so this matches Excel.
+      const rowIndex = i + 2;
+
+      try {
+        const schoolId = schoolIdByCode.get(row.schoolCode.trim().toUpperCase());
+        if (!schoolId) {
+          failed++;
+          errors.push({
+            rowIndex,
+            columnName: 'schoolCode',
+            invalidValue: row.schoolCode,
+            errorMessage: `No school found with code "${row.schoolCode}". Upload the Classes sheet first.`,
+            severity: 'ERROR',
+          });
+          continue;
+        }
+
+        const key = classKey(schoolId, row.className.trim(), row.academicYear.trim());
+        const classMatch = classIdByKey.get(key);
+        if (!classMatch) {
+          failed++;
+          errors.push({
+            rowIndex,
+            columnName: 'className',
+            invalidValue: row.className,
+            errorMessage: `No class "${row.className}" found for school "${row.schoolCode}" in academic year ${row.academicYear}. Upload the Classes sheet first.`,
+            severity: 'ERROR',
+          });
+          continue;
+        }
+        if (classMatch.status !== ClassStatus.ACTIVE) {
+          failed++;
+          errors.push({
+            rowIndex,
+            columnName: 'className',
+            invalidValue: row.className,
+            errorMessage: `Class "${row.className}" is archived and cannot accept new students.`,
+            severity: 'ERROR',
+          });
+          continue;
+        }
+
+        const duplicate = await this.studentRepo.findBySchoolAndStudentIdCode(
+          schoolId,
+          row.studentId.trim()
+        );
+        if (duplicate) {
+          skipped++;
+          errors.push({
+            rowIndex,
+            columnName: 'studentId',
+            invalidValue: row.studentId,
+            errorMessage: `Student "${row.studentId}" already exists in school "${row.schoolCode}". Row skipped.`,
+            severity: 'WARNING',
+          });
+          continue;
+        }
+
+        const { firstName, lastName } = this.splitStudentName(row.studentName);
+        const isActive = row.isActive ?? true;
+
+        const createdStudent = await this.studentRepo.create({
+          schoolId,
+          studentIdCode: row.studentId.trim(),
+          firstName,
+          lastName,
+          dateOfBirth: null,
+          gender: null,
+          classId: classMatch.id,
+          createdById,
+        });
+
+        // Enrol the freshly created student into the resolved class section.
+        await this.studentRepo.enrollInClassTx(createdStudent.id, classMatch.id, schoolId);
+
+        if (!isActive) {
+          await this.studentRepo.update(createdStudent.id, { status: StudentStatus.INACTIVE });
+        }
+
+        const refreshed = await this.studentRepo.findById(createdStudent.id);
+        if (refreshed) records.push(this.mapToDTO(refreshed));
+      } catch (err) {
+        failed++;
+        const message = err instanceof Error ? err.message : 'Unexpected error while creating student';
+        errors.push({
+          rowIndex,
+          columnName: 'studentId',
+          invalidValue: row.studentId,
+          errorMessage: message,
+          severity: 'ERROR',
+        });
+      }
+    }
+
+    const duration = Date.now() - startTime;
+    logger.info('[StudentService.batchUploadStudents] Bulk student upload finished', {
+      totalRows: input.students.length,
+      created: records.length,
+      skipped,
+      failed,
+      durationMs: duration,
+    });
+
+    return {
+      totalRows: input.students.length,
+      created: records.length,
+      skipped,
+      failed,
+      records,
+      errors,
+    };
   }
 }

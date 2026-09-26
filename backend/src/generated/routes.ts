@@ -131,6 +131,58 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "RowErrorDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "rowIndex": {"dataType":"double","required":true},
+            "columnName": {"dataType":"string","required":true},
+            "invalidValue": {"dataType":"any","required":true},
+            "errorMessage": {"dataType":"string","required":true},
+            "severity": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["ERROR"]},{"dataType":"enum","enums":["WARNING"]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BatchUploadResultDTO_StudentResponseDTO_": {
+        "dataType": "refObject",
+        "properties": {
+            "totalRows": {"dataType":"double","required":true},
+            "created": {"dataType":"double","required":true},
+            "skipped": {"dataType":"double","required":true},
+            "failed": {"dataType":"double","required":true},
+            "records": {"dataType":"array","array":{"dataType":"refObject","ref":"StudentResponseDTO"},"required":true},
+            "errors": {"dataType":"array","array":{"dataType":"refObject","ref":"RowErrorDTO"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BatchStudentUploadResultDTO": {
+        "dataType": "refAlias",
+        "type": {"ref":"BatchUploadResultDTO_StudentResponseDTO_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BatchStudentUploadRow": {
+        "dataType": "refObject",
+        "properties": {
+            "studentId": {"dataType":"string","required":true},
+            "schoolCode": {"dataType":"string","required":true},
+            "className": {"dataType":"string","required":true},
+            "academicYear": {"dataType":"string","required":true},
+            "studentName": {"dataType":"string","required":true},
+            "isActive": {"dataType":"boolean"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BatchStudentUploadInput": {
+        "dataType": "refObject",
+        "properties": {
+            "students": {"dataType":"array","array":{"dataType":"refObject","ref":"BatchStudentUploadRow"},"required":true},
+            "createdById": {"dataType":"double"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "PaginatedStudentResponseDTO": {
         "dataType": "refObject",
         "properties": {
@@ -245,6 +297,46 @@ const models: TsoaRoute.Models = {
             "academicYear": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
             "assessmentCycle": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
             "capacity": {"dataType":"double"},
+            "createdById": {"dataType":"double"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BatchUploadResultDTO_ClassResponseDTO_": {
+        "dataType": "refObject",
+        "properties": {
+            "totalRows": {"dataType":"double","required":true},
+            "created": {"dataType":"double","required":true},
+            "skipped": {"dataType":"double","required":true},
+            "failed": {"dataType":"double","required":true},
+            "records": {"dataType":"array","array":{"dataType":"refObject","ref":"ClassResponseDTO"},"required":true},
+            "errors": {"dataType":"array","array":{"dataType":"refObject","ref":"RowErrorDTO"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BatchClassUploadResultDTO": {
+        "dataType": "refAlias",
+        "type": {"ref":"BatchUploadResultDTO_ClassResponseDTO_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BatchClassUploadRow": {
+        "dataType": "refObject",
+        "properties": {
+            "schoolCode": {"dataType":"string","required":true},
+            "className": {"dataType":"string","required":true},
+            "academicYear": {"dataType":"string","required":true},
+            "section": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
+            "name": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
+            "capacity": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}]},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BatchClassUploadInput": {
+        "dataType": "refObject",
+        "properties": {
+            "classes": {"dataType":"array","array":{"dataType":"refObject","ref":"BatchClassUploadRow"},"required":true},
             "createdById": {"dataType":"double"},
         },
         "additionalProperties": false,
@@ -440,6 +532,48 @@ const models: TsoaRoute.Models = {
             "createdAt": {"dataType":"string","required":true},
             "className": {"dataType":"string"},
             "student": {"dataType":"union","subSchemas":[{"ref":"AttendanceStudentSummaryDTO"},{"dataType":"enum","enums":[null]}]},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BulkAttendanceUploadResultDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "totalRows": {"dataType":"double","required":true},
+            "created": {"dataType":"double","required":true},
+            "skipped": {"dataType":"double","required":true},
+            "failed": {"dataType":"double","required":true},
+            "records": {"dataType":"array","array":{"dataType":"refObject","ref":"AttendanceResponseDTO"},"required":true},
+            "errors": {"dataType":"array","array":{"dataType":"refObject","ref":"RowErrorDTO"},"required":true},
+            "cancellations": {"dataType":"double","required":true},
+            "sessionsProcessed": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "UploadAttendanceStatus": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["P"]},{"dataType":"enum","enums":["A"]},{"dataType":"enum","enums":["HALF_DAY"]},{"dataType":"enum","enums":["ACTIVITY"]},{"dataType":"enum","enums":["CANCELLED"]}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BulkAttendanceUploadRow": {
+        "dataType": "refObject",
+        "properties": {
+            "schoolCode": {"dataType":"string","required":true},
+            "className": {"dataType":"string","required":true},
+            "academicYear": {"dataType":"string","required":true},
+            "sessionDate": {"dataType":"string","required":true},
+            "studentId": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
+            "status": {"ref":"UploadAttendanceStatus","required":true},
+            "remarks": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BulkAttendanceUploadInput": {
+        "dataType": "refObject",
+        "properties": {
+            "records": {"dataType":"array","array":{"dataType":"refObject","ref":"BulkAttendanceUploadRow"},"required":true},
         },
         "additionalProperties": false,
     },
@@ -768,6 +902,41 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsStudentController_batchUploadStudents: Record<string, TsoaRoute.ParameterSchema> = {
+                requestBody: {"in":"body","name":"requestBody","required":true,"ref":"BatchStudentUploadInput"},
+        };
+        app.post('/students/batch',
+            ...(fetchMiddlewares<RequestHandler>(StudentController)),
+            ...(fetchMiddlewares<RequestHandler>(StudentController.prototype.batchUploadStudents)),
+
+            async function StudentController_batchUploadStudents(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsStudentController_batchUploadStudents, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<StudentController>(StudentController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'batchUploadStudents',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsStudentController_listStudents: Record<string, TsoaRoute.ParameterSchema> = {
                 page: {"in":"query","name":"page","dataType":"double"},
                 limit: {"in":"query","name":"limit","dataType":"double"},
@@ -1051,6 +1220,41 @@ export function RegisterRoutes(app: Router) {
                 next,
                 validatedArgs,
                 successStatus: 201,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsClassController_batchUploadClasses: Record<string, TsoaRoute.ParameterSchema> = {
+                requestBody: {"in":"body","name":"requestBody","required":true,"ref":"BatchClassUploadInput"},
+        };
+        app.post('/classes/batch',
+            ...(fetchMiddlewares<RequestHandler>(ClassController)),
+            ...(fetchMiddlewares<RequestHandler>(ClassController.prototype.batchUploadClasses)),
+
+            async function ClassController_batchUploadClasses(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsClassController_batchUploadClasses, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<ClassController>(ClassController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'batchUploadClasses',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
               });
             } catch (err) {
                 return next(err);
@@ -1516,6 +1720,41 @@ export function RegisterRoutes(app: Router) {
                 next,
                 validatedArgs,
                 successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAttendanceController_bulkUploadAttendance: Record<string, TsoaRoute.ParameterSchema> = {
+                requestBody: {"in":"body","name":"requestBody","required":true,"ref":"BulkAttendanceUploadInput"},
+        };
+        app.post('/attendance/batch-upload',
+            ...(fetchMiddlewares<RequestHandler>(AttendanceController)),
+            ...(fetchMiddlewares<RequestHandler>(AttendanceController.prototype.bulkUploadAttendance)),
+
+            async function AttendanceController_bulkUploadAttendance(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAttendanceController_bulkUploadAttendance, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<AttendanceController>(AttendanceController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'bulkUploadAttendance',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
               });
             } catch (err) {
                 return next(err);

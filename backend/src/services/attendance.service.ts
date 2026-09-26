@@ -1,5 +1,6 @@
 import { inject } from 'inversify';
 import { provide } from 'inversify-binding-decorators';
+import { prisma } from '../config/db.config';
 import { AttendanceRepository, IAttendanceRepository, AttendanceWithRelations, StudentAttendanceUpsertInput } from '../repositories/attendance.repository';
 import { ClassRepository, IClassRepository } from '../repositories/class.repository';
 import {
@@ -28,6 +29,12 @@ import { parseIsoDate, toIsoDateString, getUtcMonthRange } from '../utils/date.u
 import { collectWorkingDays, calculateStudentMetrics } from '../utils/attendanceCalculator.utils';
 import { AttendanceStatus } from '@prisma/client';
 import { AttendanceRiskLevel } from '../constants/attendance.constants';
+import {
+  BulkAttendanceUploadInput,
+  BulkAttendanceUploadResultDTO,
+  BulkAttendanceUploadRow,
+} from '../dtos/attendance-upload.dto';
+import { RowErrorDTO } from '../dtos/upload-common.dto';
 
 @provide(AttendanceService)
 export class AttendanceService {
@@ -427,6 +434,243 @@ export class AttendanceService {
     return {
       success: true,
       message: `Attendance record ${idStr} deleted successfully`,
+    };
+  }
+
+  /** Resolve a code-based Excel row to its numeric class + student foreign keys. */
+  private resolveUploadRow(
+    row: BulkAttendanceUploadRow,
+    rowIndex: number,
+    schoolIdByCode: Map<string, number>,
+    classIdByKey: Map<string, number>,
+    studentIdByKey: Map<string, number>,
+    errors: RowErrorDTO[]
+  ): { classId: number; sessionDate: string; studentId: number | null; status: AttendanceStatus; remarks: string | null } | null {
+    const pushError = (columnName: string, invalidValue: unknown, errorMessage: string) => {
+      errors.push({ rowIndex, columnName, invalidValue, errorMessage, severity: 'ERROR' });
+    };
+
+    const schoolId = schoolIdByCode.get(row.schoolCode.trim().toUpperCase());
+    if (!schoolId) {
+      pushError('schoolCode', row.schoolCode, `No school found with code "${row.schoolCode}".`);
+      return null;
+    }
+
+    const classKey = `${schoolId}|${row.className.trim().toLowerCase()}|${row.academicYear.trim()}`;
+    const classId = classIdByKey.get(classKey);
+    if (!classId) {
+      pushError(
+        'className',
+        row.className,
+        `No class "${row.className}" found for school "${row.schoolCode}" in academic year ${row.academicYear}. Upload the Classes sheet first.`
+      );
+      return null;
+    }
+
+    let studentId: number | null = null;
+    if (row.status !== 'CANCELLED') {
+      const code = row.studentId?.trim();
+      if (!code) {
+        pushError('studentId', row.studentId, `studentId is required when status is ${row.status}.`);
+        return null;
+      }
+      const resolved = studentIdByKey.get(`${schoolId}|${code.toUpperCase()}`);
+      if (!resolved) {
+        pushError('studentId', code, `No student "${code}" found in school "${row.schoolCode}". Upload the Students sheet first.`);
+        return null;
+      }
+      studentId = resolved;
+    } else if (!row.remarks?.trim()) {
+      pushError('remarks', row.remarks, 'remarks is required when status is CANCELLED (e.g. "School function").');
+      return null;
+    }
+
+    return {
+      classId,
+      sessionDate: row.sessionDate.trim(),
+      studentId,
+      status: row.status as AttendanceStatus,
+      remarks: row.remarks?.trim() || null,
+    };
+  }
+
+  /**
+   * Bulk upsert Daily Attendance from a code-based Excel upload.
+   *
+   * Accepts BOTH the row-based layout and the pivoted form of the Excel
+   * matrix/grid layout (the client pivots the grid before dispatching). Resolves
+   * `schoolCode`/`className`/`studentId` codes to numeric foreign keys, then
+   * groups rows by (class, sessionDate) and reuses the existing
+   * `batchUpsertAttendance` / `cancelClassSession` primitives so transactional
+   * and cancellation semantics stay in exactly one place.
+   *
+   * `CANCELLED` rows are routed to `cancelClassSession` (a class-wide record with
+   * `studentId = null`) and therefore require `remarks`.
+   */
+  public async bulkUploadAttendance(input: BulkAttendanceUploadInput): Promise<BulkAttendanceUploadResultDTO> {
+    const startTime = Date.now();
+    logger.info('[AttendanceService.bulkUploadAttendance] Starting bulk attendance upload', {
+      rowCount: input.records.length,
+    });
+
+    const errors: RowErrorDTO[] = [];
+    const records: AttendanceResponseDTO[] = [];
+    let failed = 0;
+    let skipped = 0;
+    let cancellations = 0;
+
+    // --- Bulk-resolve schools in a single round-trip ---
+    const distinctCodes = Array.from(
+      new Set(input.records.map((r) => r.schoolCode.trim().toUpperCase()))
+    );
+    const schools = await prisma.school.findMany({
+      where: { code: { in: distinctCodes } },
+      select: { id: true, code: true },
+    });
+    const schoolIdByCode = new Map(schools.map((s) => [s.code.toUpperCase(), s.id]));
+    const resolvedSchoolIds = Array.from(new Set(schoolIdByCode.values()));
+
+    // --- Bulk-resolve class sections in a single round-trip ---
+    const classSections = await prisma.classSection.findMany({
+      where: {
+        schoolId: { in: resolvedSchoolIds },
+        className: { in: Array.from(new Set(input.records.map((r) => r.className.trim()))) },
+      },
+      select: { id: true, schoolId: true, className: true, academicYear: true },
+    });
+    const classIdByKey = new Map(
+      classSections.map((c) => [
+        `${c.schoolId}|${c.className.toLowerCase()}|${(c.academicYear ?? '').trim()}`,
+        c.id,
+      ])
+    );
+
+    // --- Bulk-resolve student codes in a single round-trip ---
+    const distinctStudentCodes = Array.from(
+      new Set(
+        input.records
+          .map((r) => r.studentId?.trim())
+          .filter((c): c is string => Boolean(c))
+          .map((c) => c.toUpperCase())
+      )
+    );
+    const students = await prisma.student.findMany({
+      where: { schoolId: { in: resolvedSchoolIds }, studentIdCode: { in: distinctStudentCodes } },
+      select: { id: true, schoolId: true, studentIdCode: true },
+    });
+    const studentIdByKey = new Map(
+      students.map((s) => [`${s.schoolId}|${s.studentIdCode.toUpperCase()}`, s.id])
+    );
+
+    // --- Resolve every row, bucketing survivors by (class, sessionDate) ---
+    interface MarkedRow { studentId: number; status: AttendanceStatus; remarks: string | null }
+    const markBuckets = new Map<string, MarkedRow[]>();
+    const cancelBuckets = new Map<string, string>(); // bucketKey -> remarks
+
+    for (let i = 0; i < input.records.length; i++) {
+      const row = input.records[i];
+      // +2 => 1-based header row + 1-based data row, so this matches Excel.
+      const rowIndex = i + 2;
+
+      const resolved = this.resolveUploadRow(
+        row, rowIndex, schoolIdByCode, classIdByKey, studentIdByKey, errors
+      );
+      if (!resolved) {
+        failed++;
+        continue;
+      }
+
+      const bucketKey = `${resolved.classId}|${resolved.sessionDate}`;
+      if (resolved.status === 'CANCELLED') {
+        cancelBuckets.set(bucketKey, resolved.remarks ?? '');
+      } else {
+        const bucket = markBuckets.get(bucketKey) ?? [];
+        bucket.push({
+          studentId: resolved.studentId as number,
+          status: resolved.status,
+          remarks: resolved.remarks,
+        });
+        markBuckets.set(bucketKey, bucket);
+      }
+    }
+
+    const sessionsProcessed = new Set<string>([...markBuckets.keys(), ...cancelBuckets.keys()]).size;
+
+    // --- Class-wide cancellations first, so per-student marks win on conflict ---
+    for (const [bucketKey, remarks] of cancelBuckets) {
+      const [classIdStr, sessionDate] = bucketKey.split('|');
+      const classId = Number(classIdStr);
+      try {
+        const result = await this.cancelClassSession({ classId, sessionDate, remarks });
+        cancellations++;
+        records.push(result.record);
+      } catch (err) {
+        failed++;
+        errors.push({
+          rowIndex: 0,
+          columnName: 'status',
+          invalidValue: 'CANCELLED',
+          errorMessage: `Failed to cancel session ${sessionDate} for class ID ${classId}: ${
+            err instanceof Error ? err.message : 'unknown error'
+          }`,
+          severity: 'ERROR',
+        });
+      }
+    }
+
+    // --- Per-student marks, chunked to respect the 200-record batch limit ---
+    const CHUNK_SIZE = 200;
+    for (const [bucketKey, bucketRows] of markBuckets) {
+      const [classIdStr, sessionDate] = bucketKey.split('|');
+      const classId = Number(classIdStr);
+
+      for (let offset = 0; offset < bucketRows.length; offset += CHUNK_SIZE) {
+        const chunk = bucketRows.slice(offset, offset + CHUNK_SIZE);
+        try {
+          const result = await this.batchUpsertAttendance({
+            classId,
+            sessionDate,
+            records: chunk.map((r) => ({
+              studentId: r.studentId,
+              status: r.status as 'P' | 'A' | 'HALF_DAY' | 'ACTIVITY',
+              remarks: r.remarks,
+            })),
+          });
+          records.push(...result.records);
+        } catch (err) {
+          failed += chunk.length;
+          errors.push({
+            rowIndex: 0,
+            columnName: 'status',
+            invalidValue: chunk.length,
+            errorMessage: `Failed to save ${chunk.length} attendance record(s) for class ID ${classId} on ${sessionDate}: ${
+              err instanceof Error ? err.message : 'unknown error'
+            }`,
+            severity: 'ERROR',
+          });
+        }
+      }
+    }
+
+    const duration = Date.now() - startTime;
+    logger.info('[AttendanceService.bulkUploadAttendance] Bulk attendance upload finished', {
+      totalRows: input.records.length,
+      saved: records.length,
+      cancellations,
+      sessionsProcessed,
+      failed,
+      durationMs: duration,
+    });
+
+    return {
+      totalRows: input.records.length,
+      created: records.length,
+      skipped,
+      failed,
+      records,
+      errors,
+      cancellations,
+      sessionsProcessed,
     };
   }
 }

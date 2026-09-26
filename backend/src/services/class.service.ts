@@ -14,6 +14,11 @@ import { AppError } from '../utils/appError.utils';
 import { HttpStatusCode } from '../constants/httpStatus.constants';
 import { logger } from '../config/logger.config';
 import { sanitizePII } from '../utils/sanitizer.utils';
+import {
+  BatchClassUploadInput,
+  BatchClassUploadResultDTO,
+} from '../dtos/class-upload.dto';
+import { RowErrorDTO } from '../dtos/upload-common.dto';
 
 @provide(ClassService)
 export class ClassService {
@@ -251,6 +256,118 @@ export class ClassService {
       total,
       page: safePage,
       totalPages: Math.ceil(total / safeLimit) || 1,
+    };
+  }
+
+  /**
+   * Bulk create Class Sections from a code-based Excel upload.
+   *
+   * Unlike `createClass`, this accepts human-facing `schoolCode` values and
+   * resolves them to `School.id` internally. Each row is processed
+   * independently so a single bad row never aborts the whole upload — failures
+   * are collected as row-scoped errors and returned to the client for display in
+   * the same error matrix used for client-side validation failures.
+   */
+  public async batchUploadClasses(input: BatchClassUploadInput): Promise<BatchClassUploadResultDTO> {
+    const startTime = Date.now();
+    logger.info('[ClassService.batchUploadClasses] Starting bulk class upload', {
+      rowCount: input.classes.length,
+    });
+
+    const createdById = input.createdById ?? 1;
+    const errors: RowErrorDTO[] = [];
+    const records: ClassResponseDTO[] = [];
+    let failed = 0;
+    let skipped = 0;
+
+    // Resolve every distinct schoolCode in one round-trip instead of N queries.
+    const distinctCodes = Array.from(new Set(input.classes.map((c) => c.schoolCode)));
+    const schools = await prisma.school.findMany({
+      where: { code: { in: distinctCodes } },
+      select: { id: true, code: true, name: true },
+    });
+    const schoolIdByCode = new Map(schools.map((s) => [s.code.toUpperCase(), s]));
+
+    for (let i = 0; i < input.classes.length; i++) {
+      const row = input.classes[i];
+      // +2 => 1-based header row + 1-based data row, so this matches Excel.
+      const rowIndex = i + 2;
+
+      try {
+        const school = schoolIdByCode.get(row.schoolCode.trim().toUpperCase());
+        if (!school) {
+          failed++;
+          errors.push({
+            rowIndex,
+            columnName: 'schoolCode',
+            invalidValue: row.schoolCode,
+            errorMessage: `No school found with code "${row.schoolCode}". Create the school first, then re-upload.`,
+            severity: 'ERROR',
+          });
+          continue;
+        }
+
+        // `section` and `name` are NOT NULL in the schema but are not part of the
+        // spreadsheet contract, so derive sensible defaults.
+        const section = row.section?.trim() || 'A';
+        const name = row.name?.trim() || `${school.code} ${row.className.trim()}`;
+
+        const existing = await this.classRepo.findBySchoolGradeSection(school.id, null, section);
+        if (existing) {
+          skipped++;
+          errors.push({
+            rowIndex,
+            columnName: 'className',
+            invalidValue: row.className,
+            errorMessage: `A class section "${section}" already exists for school "${school.code}". Row skipped.`,
+            severity: 'WARNING',
+          });
+          continue;
+        }
+
+        const created = await this.classRepo.create({
+          schoolId: school.id,
+          gradeId: null,
+          className: row.className.trim(),
+          section,
+          name,
+          academicYear: row.academicYear.trim(),
+          assessmentCycle: 'DEFAULT',
+          capacity: row.capacity ?? 40,
+          createdById,
+        });
+
+        const refreshed = await this.classRepo.findById(created.id);
+        if (refreshed) records.push(this.mapToDTO(refreshed));
+      } catch (err) {
+        failed++;
+        const message = err instanceof Error ? err.message : 'Unexpected error while creating class';
+        errors.push({
+          rowIndex,
+          columnName: 'className',
+          invalidValue: row.className,
+          errorMessage: message,
+          severity: 'ERROR',
+        });
+      }
+    }
+
+    const duration = Date.now() - startTime;
+    logger.info('[ClassService.batchUploadClasses] Bulk class upload finished', {
+      totalRows: input.classes.length,
+      created: records.length,
+      skipped,
+      failed,
+      durationMs: duration,
+    });
+
+    return {
+      totalRows: input.classes.length,
+      created: records.length,
+      skipped,
+      failed,
+      records,
+      errors,
     };
   }
 }

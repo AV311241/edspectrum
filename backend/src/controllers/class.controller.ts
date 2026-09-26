@@ -13,6 +13,11 @@ import {
   classFilterQuerySchema,
 } from '../dtos/class.dto';
 import { ClassStatus } from '@prisma/client';
+import {
+  BatchClassUploadInput,
+  BatchClassUploadResultDTO,
+  batchClassUploadSchema,
+} from '../dtos/class-upload.dto';
 
 @Tags('Classes')
 @Route('classes')
@@ -38,6 +43,21 @@ export class ClassController extends Controller {
     const validated = createClassSchema.parse(requestBody);
     this.setStatus(201);
     return await this.classService.createClass(validated as CreateClassInput);
+  }
+
+  /**
+   * Bulk create Class Sections from a code-based Excel upload.
+   * Resolves `schoolCode` to `School.id` server-side and reports row-level
+   * failures without aborting the rest of the upload.
+   */
+  @SuccessResponse('200', 'Success')
+  @Response(400, 'Bad Request - Validation Error')
+  @Post('batch')
+  public async batchUploadClasses(
+    @Body() requestBody: BatchClassUploadInput
+  ): Promise<BatchClassUploadResultDTO> {
+    const validated = batchClassUploadSchema.parse(requestBody);
+    return await this.classService.batchUploadClasses(validated as BatchClassUploadInput);
   }
 
   /**
