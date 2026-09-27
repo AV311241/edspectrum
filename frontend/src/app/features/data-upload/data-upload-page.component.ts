@@ -8,8 +8,10 @@ import { BulkUploadService } from '../../core/services/bulk-upload-base.service'
 import { ClassUploadService } from '../../core/services/class-upload.service';
 import { StudentUploadService } from '../../core/services/student-upload.service';
 import { AttendanceUploadService } from '../../core/services/attendance-upload.service';
+import { BaselineAssessmentUploadService } from '../../core/services/baseline-assessment-upload.service';
 import {
   BatchUploadResponse,
+  ColumnSpec,
   DataGrid,
   MatrixContext,
   UploadEntityType,
@@ -55,6 +57,13 @@ const ENTITY_OPTIONS: EntityOption[] = [
     icon: 'calendar',
     endpoint: 'POST /attendance/batch-upload',
   },
+  {
+    type: 'BASELINE_ASSESSMENTS',
+    label: 'Baseline Assessments',
+    description: 'Bulk-import baseline records with all 35 rubric ratings (V1-W5).',
+    icon: 'target',
+    endpoint: 'POST /baseline-assessments/import',
+  },
 ];
 
 /**
@@ -83,6 +92,7 @@ export class DataUploadPageComponent {
   private readonly classService = inject(ClassUploadService);
   private readonly studentService = inject(StudentUploadService);
   private readonly attendanceService = inject(AttendanceUploadService);
+  private readonly baselineService = inject(BaselineAssessmentUploadService);
 
   private readonly dropzone = viewChild(UploadDropzoneComponent);
 
@@ -130,8 +140,25 @@ export class DataUploadPageComponent {
       CLASSES: this.classService as BulkUploadService<unknown>,
       STUDENTS: this.studentService as BulkUploadService<unknown>,
       ATTENDANCE: this.attendanceService as BulkUploadService<unknown>,
+      BASELINE_ASSESSMENTS: this.baselineService as BulkUploadService<unknown>,
     };
     return map[this.selectedEntity()];
+  });
+
+  /**
+   * The active entity's columns, split into labelled blocks. Entities that do
+   * not declare a `group` (Classes, Students, Attendance) collapse back into a
+   * single unlabelled block, so this renders identically for them.
+   */
+  readonly activeColumnGroups = computed<{ name: string; columns: ColumnSpec[] }[]>(() => {
+    const groups: { name: string; columns: ColumnSpec[] }[] = [];
+    for (const col of this.activeService().columns) {
+      const name = col.group ?? '';
+      const last = groups[groups.length - 1];
+      if (last && last.name === name) last.columns.push(col);
+      else groups.push({ name, columns: [col] });
+    }
+    return groups;
   });
 
   readonly totalRows = computed(() => this.grid().rows.length);

@@ -130,6 +130,12 @@ const HEADER_ALIASES: Record<string, string[]> = {
   section: ['section'],
   capacity: ['capacity', 'maxcapacity'],
   name: ['name', 'classfullname'],
+  // Baseline assessments.
+  assessmentDate: ['assessmentdate', 'date', 'assessmentdateonly'],
+  assessorName: ['assessorname', 'assessor', 'assessedby'],
+  keySupportFlag: ['keysupportflag', 'keysupport'],
+  oralFlag: ['oralflag', 'oral'],
+  qcNotes: ['qcnotes', 'qcnote', 'remarks', 'notes', 'comment'],
 };
 
 /**

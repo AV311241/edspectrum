@@ -1,7 +1,7 @@
 # Lumino1 - Centralized Bulk Data Upload (Excel)
 
 ## Overview
-The **Data Upload** page (`/data-upload`) provides a single, centralised Excel-to-database pipeline for three entity types: **Classes Master**, **Students Master**, and **Daily Attendance**. It follows a five-step wizard and performs full client-side parsing and validation *before* any network request is issued.
+The **Data Upload** page (`/data-upload`) provides a single, centralised Excel-to-database pipeline for four entity types: **Classes Master**, **Students Master**, **Daily Attendance**, and **Baseline Assessments**. It follows a five-step wizard and performs full client-side parsing and validation *before* any network request is issued.
 
 > [!NOTE]
 > **Route mount path**: TSOA routes are registered at the application root, not under `/api/v1` (see `attendance_api.md` for the full explanation). The endpoint paths below are the actual effective paths.
@@ -15,7 +15,7 @@ The **Data Upload** page (`/data-upload`) provides a single, centralised Excel-t
 | Wizard page | `frontend/src/app/features/data-upload/data-upload-page.component.ts` | Signal-based state machine, step orchestration, row exclusion, commit |
 | Sub-components | `features/data-upload/components/` | `upload-dropzone`, `validation-error-matrix`, `data-grid-editor` |
 | Shared base | `frontend/src/app/core/services/bulk-upload-base.service.ts` | Parse / validate / dispatch scaffolding (**abstract, not `@Injectable`**) |
-| Entity services | `core/services/{class,student,attendance}-upload.service.ts` | Isolated validation rules + endpoint dispatch per entity |
+| Entity services | `core/services/{class,student,attendance}-upload.service.ts`, `core/services/baseline-assessment-upload.service.ts` | Isolated validation rules + endpoint dispatch per entity |
 | Excel utils | `core/utils/excel-upload.utils.ts` | SheetJS parsing, header detection, Excel-serial dates, boolean coercion, template writer |
 | Models | `core/models/upload.models.ts` | `ValidationError`, `ValidationResult<T>`, `ColumnSpec`, `DataGrid` |
 | Backend DTOs | `backend/src/dtos/{class,student,attendance}-upload.dto.ts` | Zod request contracts |
@@ -37,6 +37,7 @@ The **Data Upload** page (`/data-upload`) provides a single, centralised Excel-t
 | `POST` | `/classes/batch` | Bulk-create class sections from codes |
 | `POST` | `/students/batch` | Bulk-create students + enrol them into classes |
 | `POST` | `/attendance/batch-upload` | Bulk upsert attendance (row-based **and** Excel matrix) |
+| `POST` | `/baseline-assessments/import` | Bulk-create baseline assessments with all 35 rubric ratings |
 
 Each returns `BatchUploadResultDTO`:
 
@@ -109,13 +110,42 @@ Each returns `BatchUploadResultDTO`:
 
    Metadata is auto-detected from a `schoolCode: / className: / academicYear:` row near the top. If absent, the wizard exposes a **Matrix Context** panel where the class is supplied manually.
 
+### Baseline Assessments
+| Column | Required | Rule |
+| :--- | :--- | :--- |
+| `Student_ID` | Yes | Must already exist in the Students master |
+| `Assessment_Date` | Yes | `YYYY-MM-DD` or an Excel serial date (auto-converted) |
+| `Assessor` | Yes | Non-empty; **a blank value falls back to `"Assessor"` with a `WARNING`** |
+| `Status` | No | `Present`, `Absent`, `Partial` (case-insensitive). **Defaults to `Present`** |
+| `Key_Support_Flag` | No | Free text |
+| `Oral_Flag` | No | `C0`, `C1`, `C2`, `C3` |
+| `QC_Notes` | No | Free text |
+| `V1`-`V5` | No | Vocabulary rubric items |
+| `G1`-`G5` | No | Grammar rubric items |
+| `P1`-`P5` | No | Phrase & Sentence rubric items |
+| `L1`-`L5` | No | Listening rubric items |
+| `S1`-`S5` | No | Speaking rubric items |
+| `R1`-`R5` | No | Reading rubric items |
+| `W1`-`W5` | No | Writing rubric items |
+
+**Rubric rule**: every one of the 35 rating cells must be a whole number `0`-`4`, or `AB` / blank for "not rated". Anything else is a hard `ERROR`.
+
+**Status rules**:
+- A student marked `Absent` has **all 35 rubric ratings discarded**, whatever the sheet carried.
+- A student that is *not* marked `Absent` must have **at least one** rated item, otherwise the row is rejected.
+
+**Duplicate rule**: `studentId` + `assessmentDate` must be unique within the file (case-insensitive). The first occurrence is kept; later duplicates are flagged.
+
+> [!NOTE]
+> **Response shape.** `/baseline-assessments/import` predates the shared batch contract and answers `{ importedCount, records }`. `BaselineAssessmentUploadService.dispatch()` maps that onto `BatchUploadResultDTO` (`totalRows` / `created` / `failed`) so the shared success view renders it unchanged.
+
 ---
 
 ## 4. Wizard Flow
 
 | Step | Action |
 | :--- | :--- |
-| 1 | Select entity type (Classes / Students / Attendance cards) |
+| 1 | Select entity type (Classes / Students / Attendance / Baseline Assessments cards) |
 | 2 | Download a sample `.xlsx` template (generated client-side, includes an Instructions sheet) |
 | 3 | Drag & drop or browse for the file. Accepts `.xlsx`, `.xls`, `.csv`, max 10 MB |
 | 4 | Validation summary + error matrix + inline grid editor |

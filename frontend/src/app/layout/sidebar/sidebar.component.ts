@@ -20,14 +20,13 @@ export class SidebarComponent {
 
   readonly navItems = signal<NavItem[]>([
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', route: '/' },
-    { id: 'baseline', label: 'Baseline Assessment', icon: 'target', route: '/baseline-assessment' },
     { id: 'data-upload', label: 'Data Upload', icon: 'upload', route: '/data-upload' },
-    { id: 'program', label: 'Program Overview', icon: 'book', route: '/' },
-    { id: 'learning', label: 'Learning Outcomes', icon: 'chart-bar', route: '/' },
-    { id: 'engagement', label: 'Engagement', icon: 'users-group', route: '/' },
-    { id: 'teaching', label: 'Teaching', icon: 'academic-cap', route: '/' },
-    { id: 'finance', label: 'Resources & Finance', icon: 'wallet', route: '/' },
+    { id: 'program', label: 'Program Overview', icon: 'book', route: '/program-overview' },
+    { id: 'learning', label: 'Learning Outcomes', icon: 'chart-bar', route: '/learning-outcomes' },
+    { id: 'engagement', label: 'Engagement', icon: 'users-group', route: '/engagement' },
+    { id: 'teaching', label: 'Teaching', icon: 'academic-cap', route: '/teaching' },
+    { id: 'finance', label: 'Resources & Finance', icon: 'wallet', route: '/resources-finance' },
     { id: 'schools', label: 'Schools', icon: 'home', route: '/schools' },
-    { id: 'reports', label: 'Reports', icon: 'calendar', route: '/' }
+    { id: 'reports', label: 'Reports', icon: 'calendar', route: '/reports' }
   ]);
 }

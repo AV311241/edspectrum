@@ -6,6 +6,8 @@
  * client-side (before any network call) or server-side (after commit).
  */
 
+import { AssessmentStatus, BaselineDomain, OralFlag } from './api.models';
+
 /** A single cell- or row-scoped validation problem. */
 export interface ValidationError {
   /** 1-based spreadsheet row number, matching what the user sees in Excel. */
@@ -23,7 +25,7 @@ export interface ValidationResult<T> {
   errors: ValidationError[];
 }
 
-export type UploadEntityType = 'CLASSES' | 'STUDENTS' | 'ATTENDANCE';
+export type UploadEntityType = 'CLASSES' | 'STUDENTS' | 'ATTENDANCE' | 'BASELINE_ASSESSMENTS';
 
 /** Row-based layout, or the pivoted Excel grid/matrix layout. */
 export type UploadSheetFormat = 'ROW' | 'MATRIX';
@@ -69,6 +71,12 @@ export interface ColumnSpec {
   example: string;
   /** Short helper text rendered under the column header. */
   help?: string;
+  /**
+   * Optional sub-heading used to break the column chips into labelled blocks.
+   * Consecutive columns sharing a `group` are rendered together; entities that
+   * omit it entirely keep the original single unlabelled chip row.
+   */
+  group?: string;
 }
 
 export interface GridRow {
@@ -152,6 +160,27 @@ export interface BatchStudentUploadInput {
 
 export interface BulkAttendanceUploadInput {
   records: AttendanceUploadRow[];
+}
+
+/**
+ * Baseline Assessments, as a single **flat** row.
+ *
+ * The grid can only hold flat string cells, so the 35 rubric ratings
+ * (7 domains x 5 items) are keyed by their spreadsheet column name — `V1`..`V5`
+ * for Vocabulary, `G1`..`G5` for Grammar, and so on — rather than being nested
+ * up-front. `BaselineAssessmentUploadService.dispatch()` folds them into the
+ * nested `domainScores` array the `/baseline-assessments/import` contract wants.
+ */
+export interface BaselineAssessmentUploadRow {
+  studentId: string;
+  assessmentDate: string;
+  assessorName: string;
+  status: AssessmentStatus;
+  keySupportFlag: string | null;
+  oralFlag: OralFlag | null;
+  qcNotes: string | null;
+  /** Rubric ratings keyed `<prefix><item>`, e.g. `V1`. `null` = not rated. */
+  itemScores: Record<string, number | null>;
 }
 
 /** Fallback context for a matrix sheet that carries no metadata row. */

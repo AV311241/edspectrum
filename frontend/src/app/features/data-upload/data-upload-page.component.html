@@ -9,8 +9,8 @@
       </div>
       <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">Bulk Data Upload</h1>
       <p class="text-xs text-slate-500 mt-0.5">
-        Upload Classes, Students and Daily Attendance from Excel with full client-side validation
-        before anything is sent to the server.
+        Upload Classes, Students, Daily Attendance and Baseline Assessments from Excel with full
+        client-side validation before anything is sent to the server.
       </p>
     </div>
 
@@ -151,7 +151,7 @@
         <p class="text-[11px] text-slate-500 ml-7">Choose which master data you are uploading.</p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         @for (entity of entities; track entity.type) {
           <button
             type="button"
@@ -189,17 +189,26 @@
         <div class="min-w-0">
           <p class="text-xs font-black text-slate-800">{{ activeService().label }}</p>
           <p class="text-[11px] text-slate-500 mt-0.5">{{ activeService().description }}</p>
-          <div class="flex flex-wrap gap-1.5 mt-2">
-            @for (col of activeService().columns; track col.key) {
-              <span
-                class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold"
-                [class.bg-pink-100]="col.required"
-                [class.text-pink-700]="col.required"
-                [class.bg-slate-200]="!col.required"
-                [class.text-slate-600]="!col.required"
-              >
-                {{ col.header }}{{ col.required ? '*' : '' }}
-              </span>
+          <div class="mt-2 space-y-1.5">
+            @for (group of activeColumnGroups(); track $index) {
+              <div class="flex flex-wrap items-center gap-1.5">
+                @if (group.name) {
+                  <span class="w-full text-[9px] font-extrabold uppercase tracking-wide text-slate-400">
+                    {{ group.name }}
+                  </span>
+                }
+                @for (col of group.columns; track col.key) {
+                  <span
+                    class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold"
+                    [class.bg-pink-100]="col.required"
+                    [class.text-pink-700]="col.required"
+                    [class.bg-slate-200]="!col.required"
+                    [class.text-slate-600]="!col.required"
+                  >
+                    {{ col.header }}{{ col.required ? '*' : '' }}
+                  </span>
+                }
+              </div>
             }
           </div>
         </div>
