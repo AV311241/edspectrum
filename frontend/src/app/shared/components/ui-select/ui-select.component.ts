@@ -15,6 +15,7 @@ export class UiSelectComponent {
   readonly label = input<string>('');
   readonly value = input<string>('');
   readonly options = input<SelectOption[]>([]);
+  readonly disabled = input<boolean>(false);
 
   readonly valueChange = output<string>();
 

@@ -5,6 +5,17 @@ export interface FilterOptions {
   className: string;
 }
 
+/**
+ * Sentinel option values shared by the dashboard header filters.
+ *
+ * They are deliberately not human-readable: a school or class section is
+ * selected by its numeric `id`, so a school that happens to be named
+ * "All Schools" can never be confused with the "show everything" option.
+ */
+export const ALL_SCHOOLS_FILTER = '__ALL_SCHOOLS__';
+export const ALL_CLASSES_FILTER = '__ALL_CLASSES__';
+export const NOT_AVAILABLE_FILTER = 'NA';
+
 export interface KpiMetric {
   id: string;
   title: string;

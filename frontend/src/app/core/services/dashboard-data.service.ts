@@ -1,5 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 import {
+  ALL_CLASSES_FILTER,
+  ALL_SCHOOLS_FILTER,
   DashboardData,
   FilterOptions,
   KpiMetric,
@@ -23,8 +25,8 @@ export class DashboardDataService {
   readonly activeFilters = signal<FilterOptions>({
     academicYear: '2026 – 27',
     month: 'Aug 2026',
-    school: 'All Schools',
-    className: 'All Classes'
+    school: ALL_SCHOOLS_FILTER,
+    className: ALL_CLASSES_FILTER
   });
 
   /**

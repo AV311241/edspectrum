@@ -18,6 +18,20 @@ export interface ClassRecord {
   createdAt: string;
 }
 
+/** A row of `GET /classes` (the paginated, cross-school class listing). */
+export interface ClassListRecord {
+  id: number;
+  schoolId: number;
+  className: string;
+  section: string;
+  name: string;
+  academicYear: string | null;
+  status: 'ACTIVE' | 'ARCHIVED';
+  enrolledCount: number;
+  schoolName?: string;
+  gradeName?: string;
+}
+
 export interface StudentRecord {
   id: number;
   studentIdCode: string;
@@ -37,6 +51,14 @@ interface RosterPage {
   totalPages: number;
 }
 
+interface ClassListPage {
+  records: ClassListRecord[];
+  totalPages: number;
+}
+
+/** `GET /classes` caps `limit` at 100, so this is the largest page we can ask for. */
+const CLASS_PAGE_SIZE = 100;
+
 @Injectable({ providedIn: 'root' })
 export class SchoolManagementService {
   private readonly http = inject(HttpClient);
@@ -55,6 +77,32 @@ export class SchoolManagementService {
     return firstValueFrom(
       this.http.get<SchoolClassesResponse>(`${this.schoolsUrl}/${schoolId}/classes`)
     );
+  }
+
+  /**
+   * Lists class sections across every school, or scoped to one school when
+   * `schoolId` is given. The endpoint is paginated, so this transparently
+   * fetches the remaining pages and returns one flat list.
+   */
+  async listClasses(schoolId?: number): Promise<ClassListRecord[]> {
+    const params = (page: number) => ({
+      page,
+      limit: CLASS_PAGE_SIZE,
+      ...(schoolId ? { schoolId } : {}),
+    });
+
+    const firstPage = await firstValueFrom(
+      this.http.get<ClassListPage>(this.classesUrl, { params: params(1) })
+    );
+    const otherPages = await Promise.all(
+      Array.from({ length: Math.max(0, firstPage.totalPages - 1) }, (_, index) =>
+        firstValueFrom(
+          this.http.get<ClassListPage>(this.classesUrl, { params: params(index + 2) })
+        )
+      )
+    );
+
+    return [firstPage, ...otherPages].flatMap((page) => page.records);
   }
 
   createClass(

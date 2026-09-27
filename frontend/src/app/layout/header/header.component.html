@@ -29,18 +29,20 @@
     <div class="filter-control">
       <app-ui-select
         label="School"
-        [value]="dashboardService.activeFilters().school"
-        [options]="schoolOptions"
-        (valueChange)="dashboardService.updateFilter('school', $event)"
+        [value]="selectedSchoolValue()"
+        [options]="schoolOptions()"
+        [disabled]="headerFilters.schoolsLoading()"
+        (valueChange)="onSchoolChange($event)"
       />
     </div>
 
     <div class="filter-control">
       <app-ui-select
         label="Class"
-        [value]="dashboardService.activeFilters().className"
-        [options]="classOptions"
-        (valueChange)="dashboardService.updateFilter('className', $event)"
+        [value]="selectedClassValue()"
+        [options]="classOptions()"
+        [disabled]="headerFilters.classesLoading()"
+        (valueChange)="onClassChange($event)"
       />
     </div>
 
