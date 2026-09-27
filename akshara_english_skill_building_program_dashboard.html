@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akshara English Skill Building Program - Edspectrum Foundation Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#c02672',
+                            pinkDark: '#9e1859',
+                            pinkLight: '#fcf2f7',
+                            pinkSoft: '#fdf2f8',
+                            navy: '#182030',
+                            navyHover: '#232d42',
+                            bg: '#f4f6fa',
+                            textDark: '#1e293b',
+                            textMuted: '#64748b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f6fa;
+            color: #1e293b;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .custom-shadow {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+    </style>
+</head>
+<body class="bg-brand-bg flex min-h-screen overflow-x-hidden text-sm">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-64 bg-brand-navy text-white flex flex-col justify-between shrink-0 shadow-xl fixed lg:static inset-y-0 left-0 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
+        <div>
+            <!-- Header / Logo -->
+            <div class="p-5 border-b border-gray-700/50">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center p-1.5 shadow-md shrink-0">
+                        <!-- Edspectrum Leaf Logo SVG -->
+                        <svg viewBox="0 0 100 100" class="w-full h-full fill-brand-pink">
+                            <path d="M50 10 C30 30, 20 60, 50 90 C80 60, 70 30, 50 10 Z" />
+                            <path d="M50 90 C35 70, 10 50, 20 20 C40 30, 45 60, 50 90 Z" fill="#9e1859" opacity="0.8"/>
+                            <path d="M50 90 C65 70, 90 50, 80 20 C60 30, 55 60, 50 90 Z" fill="#e11d48" opacity="0.8"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-base tracking-tight leading-none text-white">Edspectrum</h1>
+                        <p class="text-[11px] font-semibold tracking-wider uppercase text-pink-400 leading-tight">Foundation</p>
+                        <p class="text-[9px] text-gray-400 mt-0.5">Every Child. A Brighter Future.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="mt-4 px-3 space-y-1">
+                <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-brand-pink text-white font-medium shadow-md transition">
+                    <i class="fa-solid fa-house w-5 text-center text-sm"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="openAiModal('insights')" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-pink-200 hover:bg-brand-navyHover hover:text-white transition group relative">
+                    <i class="fa-solid fa-wand-magic-sparkles w-5 text-center text-sm text-pink-400 group-hover:text-pink-300"></i>
+                    <span>AI Copilot & Insights</span>
+                    <span class="absolute right-2 px-1.5 py-0.5 text-[9px] font-bold bg-pink-500 text-white rounded-full uppercase tracking-wider">New</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-brand-navyHover hover:text-white transition group">
+                    <i class="fa-solid fa-book-open w-5 text-center text-sm text-gray-400 group-hover:text-white"></i>
+                    <span>Program Overview</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-brand-navyHover hover:text-white transition group">
+                    <i class="fa-solid fa-chart-line w-5 text-center text-sm text-gray-400 group-hover:text-white"></i>
+                    <span>Learning Outcomes</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-brand-navyHover hover:text-white transition group">
+                    <i class="fa-solid fa-users w-5 text-center text-sm text-gray-400 group-hover:text-white"></i>
+                    <span>Engagement</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-brand-navyHover hover:text-white transition group">
+                    <i class="fa-solid fa-chalkboard-user w-5 text-center text-sm text-gray-400 group-hover:text-white"></i>
+                    <span>Teaching</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-brand-navyHover hover:text-white transition group">
+                    <i class="fa-solid fa-wallet w-5 text-center text-sm text-gray-400 group-hover:text-white"></i>
+                    <span>Resources & Finance</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-brand-navyHover hover:text-white transition group">
+                    <i class="fa-solid fa-school w-5 text-center text-sm text-gray-400 group-hover:text-white"></i>
+                    <span>Schools</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-brand-navyHover hover:text-white transition group">
+                    <i class="fa-solid fa-file-invoice w-5 text-center text-sm text-gray-400 group-hover:text-white"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer Quote & Copyright -->
+        <div class="p-4 border-t border-gray-700/40 relative overflow-hidden">
+            <div class="relative z-10">
+                <p class="text-xs italic font-medium text-gray-300 leading-snug">
+                    "Confident Learners.<br>Brighter Futures."
+                </p>
+                <p class="text-[10px] text-gray-500 mt-4">
+                    © 2026 Edspectrum Foundation. All rights reserved.
+                </p>
+            </div>
+            <!-- Decorative leaf artwork bottom right -->
+            <div class="absolute -bottom-4 -right-4 w-20 h-20 opacity-30 pointer-events-none">
+                <svg viewBox="0 0 100 100" class="fill-brand-pink w-full h-full">
+                    <path d="M20 80 C40 80, 80 60, 80 20 C60 40, 20 40, 20 80 Z" />
+                    <path d="M10 90 C30 70, 70 70, 90 30 C70 50, 30 50, 10 90 Z" fill="#ec4899"/>
+                </svg>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+
+        <!-- Mobile Header Navigation Toggle -->
+        <div class="lg:hidden bg-white p-4 flex items-center justify-between border-b shadow-sm sticky top-0 z-30">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded bg-brand-pink text-white flex items-center justify-center font-bold text-lg">E</div>
+                <span class="font-bold text-gray-800">Akshara Program</span>
+            </div>
+            <button onclick="toggleSidebar()" class="p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+        </div>
+
+        <!-- HEADER & FILTER SECTION -->
+        <header class="p-4 lg:p-6 pb-2">
+            <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                
+                <!-- Title & Subtitle -->
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+                        <span><span class="text-brand-pink">Akshara</span> English Skill <span class="text-brand-pink">Building Program</span></span>
+                    </h1>
+                    <p class="text-gray-500 font-medium text-xs lg:text-sm mt-0.5">Practical English for a Brighter Tomorrow</p>
+                </div>
+
+                <!-- Right Side: Filters + Learning Banner + AI Button -->
+                <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+                    
+                    <!-- Dropdown Filters Row -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <!-- Academic Year -->
+                        <div>
+                            <label class="block text-[10px] text-gray-500 font-medium mb-0.5">Academic Year</label>
+                            <select id="filterYear" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-pink">
+                                <option>2026 – 27</option>
+                                <option>2025 – 26</option>
+                            </select>
+                        </div>
+                        <!-- Month -->
+                        <div>
+                            <label class="block text-[10px] text-gray-500 font-medium mb-0.5">Month</label>
+                            <select id="filterMonth" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-pink">
+                                <option>Aug 2026</option>
+                                <option>Jul 2026</option>
+                            </select>
+                        </div>
+                        <!-- School -->
+                        <div>
+                            <label class="block text-[10px] text-gray-500 font-medium mb-0.5">School</label>
+                            <select id="filterSchool" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-pink">
+                                <option>All Schools</option>
+                                <option>Navjyoti Public</option>
+                                <option>RS Vidya</option>
+                                <option>Tilpat Public</option>
+                                <option>Shirdi Sai Baba</option>
+                            </select>
+                        </div>
+                        <!-- Class -->
+                        <div>
+                            <label class="block text-[10px] text-gray-500 font-medium mb-0.5">Class</label>
+                            <select id="filterClass" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-pink">
+                                <option>All Classes</option>
+                                <option>Class 6A</option>
+                                <option>Class 7A</option>
+                                <option>Class 8A</option>
+                                <option>Class 9A</option>
+                                <option>Class 10A</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- AI Action Button -->
+                    <button onclick="openAiModal('insights')" class="bg-gradient-to-r from-brand-pink to-pink-600 hover:from-brand-pinkDark hover:to-pink-700 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl shadow-md flex items-center justify-center gap-2 transition transform active:scale-95 shrink-0">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+                        <span>AI Assistant & Studio</span>
+                    </button>
+
+                </div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD BODY CONTENT -->
+        <main class="p-4 lg:p-6 space-y-5">
+
+            <!-- SECTION 1: TOP KEY METRICS CARDS & BANNER CARD -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+                
+                <!-- Metric 1: Students Enrolled -->
+                <div class="bg-white p-3.5 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-2">
+                            <i class="fa-solid fa-users text-sm"></i>
+                        </div>
+                        <div class="text-2xl font-extrabold text-gray-900 leading-tight">500</div>
+                        <div class="text-[11px] font-semibold text-gray-500 mt-0.5">Students Enrolled</div>
+                    </div>
+                    <div class="mt-3 text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                        <span>↑ +8%</span>
+                        <span class="text-gray-400 font-normal">vs last year</span>
+                    </div>
+                </div>
+
+                <!-- Metric 2: Attendance Rate -->
+                <div class="bg-white p-3.5 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2">
+                            <i class="fa-solid fa-graduation-cap text-sm"></i>
+                        </div>
+                        <div class="text-2xl font-extrabold text-gray-900 leading-tight">81%</div>
+                        <div class="text-[11px] font-semibold text-gray-500 mt-0.5">Attendance Rate</div>
+                    </div>
+                    <div class="mt-3 text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                        <span>↑ +7%</span>
+                        <span class="text-gray-400 font-normal">vs last month</span>
+                    </div>
+                </div>
+
+                <!-- Metric 3: Avg Learning Gain -->
+                <div class="bg-white p-3.5 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mb-2">
+                            <i class="fa-solid fa-chart-simple text-sm"></i>
+                        </div>
+                        <div class="text-2xl font-extrabold text-gray-900 leading-tight">+9</div>
+                        <div class="text-[11px] font-semibold text-gray-500 mt-0.5 leading-tight">Avg. Learning Gain <span class="font-normal text-[10px]">(Assessment %)</span></div>
+                    </div>
+                    <div class="mt-3 text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                        <span>↑ +3 points</span>
+                    </div>
+                </div>
+
+                <!-- Metric 4: Objectives Covered -->
+                <div class="bg-white p-3.5 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-2">
+                            <i class="fa-solid fa-bullseye text-sm"></i>
+                        </div>
+                        <div class="text-2xl font-extrabold text-gray-900 leading-tight">62%</div>
+                        <div class="text-[11px] font-semibold text-gray-500 mt-0.5">Objectives Covered</div>
+                    </div>
+                    <div class="mt-3 text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                        <span>↑ +12%</span>
+                        <span class="text-gray-400 font-normal">vs last month</span>
+                    </div>
+                </div>
+
+                <!-- Metric 5: Active Students -->
+                <div class="bg-white p-3.5 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center mb-2">
+                            <i class="fa-solid fa-user-gear text-sm"></i>
+                        </div>
+                        <div class="text-2xl font-extrabold text-gray-900 leading-tight">64%</div>
+                        <div class="text-[11px] font-semibold text-gray-500 mt-0.5 leading-tight">Active Students <span class="font-normal text-[9px] block">(AI/IVRS + Practice)</span></div>
+                    </div>
+                    <div class="mt-3 text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                        <span>↑ +10%</span>
+                        <span class="text-gray-400 font-normal">vs last month</span>
+                    </div>
+                </div>
+
+                <!-- Banner Illustration Card -->
+                <div class="bg-gradient-to-r from-pink-100 to-pink-50 p-3.5 rounded-xl border border-pink-200/60 custom-shadow flex items-center justify-between relative overflow-hidden sm:col-span-2 md:col-span-3 lg:col-span-1">
+                    <div class="z-10 max-w-[65%]">
+                        <p class="text-brand-pinkDark font-semibold text-xs leading-snug italic">
+                            “Every small step in English builds a bigger future.”
+                        </p>
+                    </div>
+                    <!-- SVG Student Illustration -->
+                    <div class="w-20 h-24 relative flex-shrink-0 z-10 flex items-end justify-center">
+                        <svg viewBox="0 0 100 120" class="w-full h-full">
+                            <!-- Student graphic details -->
+                            <circle cx="50" cy="30" r="18" fill="#1e293b"/>
+                            <circle cx="50" cy="32" r="14" fill="#fcd34d"/>
+                            <path d="M35 30 Q50 15 65 30 Q50 22 35 30 Z" fill="#1e293b"/>
+                            <path d="M30 60 Q50 50 70 60 L75 110 L25 110 Z" fill="#3b82f6"/>
+                            <rect x="58" y="70" width="22" height="28" rx="2" fill="#e11d48" transform="rotate(-10 58 70)"/>
+                            <circle cx="43" cy="32" r="2" fill="#1e293b"/>
+                            <circle cx="57" cy="32" r="2" fill="#1e293b"/>
+                            <path d="M46 40 Q50 44 54 40" stroke="#1e293b" stroke-width="2" fill="none"/>
+                        </svg>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SECTION 2: LEARNING PROGRESS & STAGES (3 CARDS ROW) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                
+                <!-- Chart 1: Learning Progress (Average %) -->
+                <div class="lg:col-span-5 bg-white p-4 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold text-gray-800 text-sm">Learning Progress (Average %)</h3>
+                            <!-- Chart Legend -->
+                            <div class="flex items-center space-x-3 text-[11px] font-medium">
+                                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-pink-200"></span> Baseline</span>
+                                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-brand-pink"></span> Current</span>
+                            </div>
+                        </div>
+                        <div class="h-48 relative">
+                            <canvas id="learningProgressChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Stage Distribution (All Students) -->
+                <div class="lg:col-span-3 bg-white p-4 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-sm mb-3">Stage Distribution (All Students)</h3>
+                        <div class="space-y-3.5 my-2">
+                            <!-- Stage 1 -->
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold mb-1">
+                                    <span class="text-gray-600">Stage 1</span>
+                                    <span class="text-gray-700">28%</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-3">
+                                    <div class="bg-brand-pink h-3 rounded-full" style="width: 28%"></div>
+                                </div>
+                            </div>
+                            <!-- Stage 2 -->
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold mb-1">
+                                    <span class="text-gray-600">Stage 2</span>
+                                    <span class="text-gray-700">24%</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-3">
+                                    <div class="bg-pink-400 h-3 rounded-full" style="width: 24%"></div>
+                                </div>
+                            </div>
+                            <!-- Stage 3 -->
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold mb-1">
+                                    <span class="text-gray-600">Stage 3</span>
+                                    <span class="text-gray-700">23%</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-3">
+                                    <div class="bg-pink-300 h-3 rounded-full" style="width: 23%"></div>
+                                </div>
+                            </div>
+                            <!-- Stage 4 -->
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold mb-1">
+                                    <span class="text-gray-600">Stage 4</span>
+                                    <span class="text-gray-700">15%</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-3">
+                                    <div class="bg-pink-200 h-3 rounded-full" style="width: 15%"></div>
+                                </div>
+                            </div>
+                            <!-- Stage 5 -->
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold mb-1">
+                                    <span class="text-gray-600">Stage 5</span>
+                                    <span class="text-gray-700">5%</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-3">
+                                    <div class="bg-pink-100 h-3 rounded-full" style="width: 5%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart 3: Overall Progress & Domain-wise Progress -->
+                <div class="lg:col-span-4 bg-white p-4 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-sm mb-2">Overall Progress (Average %)</h3>
+                        
+                        <!-- 3 Stat boxes -->
+                        <div class="grid grid-cols-3 gap-2 mb-3">
+                            <div class="bg-gray-50 border border-gray-100 rounded-lg p-2 text-center">
+                                <div class="text-base font-extrabold text-brand-pink">49%</div>
+                                <div class="text-[10px] text-gray-500 font-medium">Baseline</div>
+                            </div>
+                            <div class="bg-gray-50 border border-gray-100 rounded-lg p-2 text-center">
+                                <div class="text-base font-extrabold text-emerald-600">61%</div>
+                                <div class="text-[10px] text-gray-500 font-medium">Current</div>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-2 text-center">
+                                <div class="text-base font-extrabold text-emerald-600">+12</div>
+                                <div class="text-[10px] text-emerald-700 font-medium">Increase</div>
+                            </div>
+                        </div>
+
+                        <!-- Sub Header -->
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-bold text-gray-700 text-xs">Domain-wise Progress</h4>
+                            <div class="flex items-center space-x-2 text-[10px] font-medium">
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-pink-200"></span> Baseline</span>
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-brand-pink"></span> Current</span>
+                            </div>
+                        </div>
+
+                        <!-- Chart canvas -->
+                        <div class="h-32 relative">
+                            <canvas id="domainProgressChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SECTION 3: SCHOOL PERFORMANCE, NEEDS ATTENTION, STAGE MOVEMENT, OBJECTIVES -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                
+                <!-- School Performance Table (5 Columns width) -->
+                <div class="lg:col-span-5 bg-white p-4 rounded-xl border border-gray-100 custom-shadow">
+                    <h3 class="font-bold text-gray-800 text-sm mb-3">School Performance</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-gray-400 border-b border-gray-100">
+                                    <th class="pb-2 font-semibold">School</th>
+                                    <th class="pb-2 font-semibold text-center">Students</th>
+                                    <th class="pb-2 font-semibold text-center">Attendance</th>
+                                    <th class="pb-2 font-semibold text-center">Learning Gain</th>
+                                    <th class="pb-2 font-semibold text-center">Objectives</th>
+                                    <th class="pb-2 font-semibold text-right">M&E Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50 text-gray-700 font-medium">
+                                <tr>
+                                    <td class="py-2.5 font-semibold text-gray-800">Navjyoti Public School</td>
+                                    <td class="py-2.5 text-center">112</td>
+                                    <td class="py-2.5 text-center">84%</td>
+                                    <td class="py-2.5 text-center text-emerald-600 font-bold">+11</td>
+                                    <td class="py-2.5 text-center">68%</td>
+                                    <td class="py-2.5 text-right">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> On Track
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 font-semibold text-gray-800">RS Vidya School</td>
+                                    <td class="py-2.5 text-center">128</td>
+                                    <td class="py-2.5 text-center">78%</td>
+                                    <td class="py-2.5 text-center text-emerald-600 font-bold">+9</td>
+                                    <td class="py-2.5 text-center">63%</td>
+                                    <td class="py-2.5 text-right">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> On Track
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 font-semibold text-gray-800">Tilpat Public School</td>
+                                    <td class="py-2.5 text-center">94</td>
+                                    <td class="py-2.5 text-center">86%</td>
+                                    <td class="py-2.5 text-center text-emerald-600 font-bold">+12</td>
+                                    <td class="py-2.5 text-center">72%</td>
+                                    <td class="py-2.5 text-right">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Watch
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 font-semibold text-gray-800">Shirdi Sai Baba School</td>
+                                    <td class="py-2.5 text-center">166</td>
+                                    <td class="py-2.5 text-center">76%</td>
+                                    <td class="py-2.5 text-center text-emerald-600 font-bold">+8</td>
+                                    <td class="py-2.5 text-center">69%</td>
+                                    <td class="py-2.5 text-right">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> On Track
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Needs Attention Panel (2.5 Columns width) -->
+                <div class="lg:col-span-3 bg-brand-pinkSoft p-4 rounded-xl border border-pink-100 custom-shadow flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2.5">
+                            <h3 class="font-bold text-gray-900 text-sm">Needs Attention</h3>
+                            <button onclick="openAiModal('remediation')" class="text-brand-pink font-semibold text-xs hover:underline flex items-center gap-1 bg-pink-100/80 px-2 py-0.5 rounded-md">
+                                <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> AI Action Plan
+                            </button>
+                        </div>
+                        <div class="space-y-2.5">
+                            <!-- Alert 1 -->
+                            <div class="flex items-start gap-2.5 p-1.5 rounded-lg bg-white/60">
+                                <div class="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 text-xs mt-0.5">!</div>
+                                <div>
+                                    <div class="font-bold text-gray-800 text-xs">Speaking practice (Tilpat)</div>
+                                    <div class="text-[11px] text-gray-500">Lower participation</div>
+                                </div>
+                            </div>
+                            <!-- Alert 2 -->
+                            <div class="flex items-start gap-2.5 p-1.5 rounded-lg bg-white/60">
+                                <div class="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 text-xs mt-0.5">!</div>
+                                <div>
+                                    <div class="font-bold text-gray-800 text-xs">Writing performance (Navjyoti)</div>
+                                    <div class="text-[11px] text-gray-500">Needs additional support</div>
+                                </div>
+                            </div>
+                            <!-- Alert 3 -->
+                            <div class="flex items-start gap-2.5 p-1.5 rounded-lg bg-white/60">
+                                <div class="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 text-xs mt-0.5">!</div>
+                                <div>
+                                    <div class="font-bold text-gray-800 text-xs">Parental engagement (RS Vidya)</div>
+                                    <div class="text-[11px] text-gray-500">Follow-up pending</div>
+                                </div>
+                            </div>
+                            <!-- Alert 4 -->
+                            <div class="flex items-start gap-2.5 p-1.5 rounded-lg bg-white/60">
+                                <div class="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 text-xs mt-0.5">!</div>
+                                <div>
+                                    <div class="font-bold text-gray-800 text-xs">Attendance (Shirdi)</div>
+                                    <div class="text-[11px] text-gray-500">Irregular in some classes</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage Movement & Donut Chart & Objective Progress (4.5 Columns width) -->
+                <div class="lg:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    
+                    <!-- Stage Movement -->
+                    <div class="bg-white p-3 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between">
+                        <h4 class="font-bold text-gray-800 text-xs mb-2">Stage Movement</h4>
+                        <div class="space-y-2">
+                            <div>
+                                <div class="flex justify-between text-[10px] text-gray-600"><span>Stage 1</span><span>25%</span></div>
+                                <div class="w-full bg-gray-100 h-1.5 rounded-full"><div class="bg-brand-pink h-1.5 rounded-full" style="width: 25%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[10px] text-gray-600"><span>Stage 2</span><span>24%</span></div>
+                                <div class="w-full bg-gray-100 h-1.5 rounded-full"><div class="bg-pink-400 h-1.5 rounded-full" style="width: 24%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[10px] text-gray-600"><span>Stage 3</span><span>23%</span></div>
+                                <div class="w-full bg-gray-100 h-1.5 rounded-full"><div class="bg-pink-300 h-1.5 rounded-full" style="width: 23%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[10px] text-gray-600"><span>Stage 4</span><span>15%</span></div>
+                                <div class="w-full bg-gray-100 h-1.5 rounded-full"><div class="bg-pink-200 h-1.5 rounded-full" style="width: 15%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[10px] text-gray-600"><span>Stage 5</span><span>5%</span></div>
+                                <div class="w-full bg-gray-100 h-1.5 rounded-full"><div class="bg-pink-100 h-1.5 rounded-full" style="width: 5%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SAS Distribution (Donut Chart) -->
+                    <div class="bg-white p-3 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between">
+                        <h4 class="font-bold text-gray-800 text-xs mb-1">SAS Distribution (Current)</h4>
+                        <div class="h-24 relative flex items-center justify-center my-1">
+                            <canvas id="sasDonutChart"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span class="text-sm font-extrabold text-gray-800 leading-none">500</span>
+                                <span class="text-[9px] text-gray-400 font-medium">Students</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-around text-[10px] text-gray-600 mt-1">
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-brand-pink"></span> Support 24%</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Stretch 25%</span>
+                        </div>
+                    </div>
+
+                    <!-- Objective Progress -->
+                    <div class="bg-white p-3 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-xs mb-1">Objective Progress</h4>
+                            <div class="text-xs font-bold text-gray-700 mb-2">12 <span class="font-normal text-[10px] text-gray-500">Planned</span></div>
+                            
+                            <!-- Multi-segment bar -->
+                            <div class="w-full h-3 bg-gray-100 rounded-full flex overflow-hidden mb-3">
+                                <div class="bg-emerald-500 h-full" style="width: 58%" title="7 Completed"></div>
+                                <div class="bg-amber-400 h-full" style="width: 17%" title="2 In Progress"></div>
+                                <div class="bg-gray-300 h-full" style="width: 25%" title="3 Upcoming"></div>
+                            </div>
+
+                            <div class="space-y-1 text-[10px]">
+                                <div class="flex items-center justify-between text-gray-600">
+                                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-emerald-500"></span> 7 Completed</span>
+                                </div>
+                                <div class="flex items-center justify-between text-gray-600">
+                                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-amber-400"></span> 2 In Progress</span>
+                                </div>
+                                <div class="flex items-center justify-between text-gray-600">
+                                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-gray-300"></span> 3 Upcoming</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SECTION 4: BOTTOM 3 COLUMNS - ENGAGEMENT, TEACHING, RESOURCES & FINANCE -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                
+                <!-- COLUMN 1: ENGAGEMENT -->
+                <div class="bg-white p-4 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between">
+                    <div>
+                        <!-- Header & Dropdown -->
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-800 text-sm">Engagement</h3>
+                            <select class="text-xs bg-gray-50 border border-gray-200 rounded-md px-2 py-1 font-medium text-gray-600">
+                                <option>All Schools</option>
+                            </select>
+                        </div>
+
+                        <!-- 4 Stat Mini Cards with Sparklines -->
+                        <div class="grid grid-cols-2 gap-3">
+                            
+                            <!-- Stat 1 -->
+                            <div class="bg-gray-50/70 p-2.5 rounded-lg border border-gray-100">
+                                <div class="w-6 h-6 rounded-md bg-pink-100 text-brand-pink flex items-center justify-center mb-1">
+                                    <i class="fa-solid fa-users text-xs"></i>
+                                </div>
+                                <div class="text-lg font-extrabold text-gray-900 leading-tight">81%</div>
+                                <div class="text-[10px] text-gray-500 font-medium">Class Participation</div>
+                                <div class="text-[9px] text-emerald-600 font-semibold mt-1">↑ 7% vs last month</div>
+                                <div class="h-6 mt-1"><canvas id="sparkline1"></canvas></div>
+                            </div>
+
+                            <!-- Stat 2 -->
+                            <div class="bg-gray-50/70 p-2.5 rounded-lg border border-gray-100">
+                                <div class="w-6 h-6 rounded-md bg-pink-100 text-brand-pink flex items-center justify-center mb-1">
+                                    <i class="fa-solid fa-headset text-xs"></i>
+                                </div>
+                                <div class="text-lg font-extrabold text-gray-900 leading-tight">64%</div>
+                                <div class="text-[10px] text-gray-500 font-medium">AI/IVRS Active Students</div>
+                                <div class="text-[9px] text-emerald-600 font-semibold mt-1">↑ 10% vs last month</div>
+                                <div class="h-6 mt-1"><canvas id="sparkline2"></canvas></div>
+                            </div>
+
+                            <!-- Stat 3 -->
+                            <div class="bg-gray-50/70 p-2.5 rounded-lg border border-gray-100">
+                                <div class="w-6 h-6 rounded-md bg-pink-100 text-brand-pink flex items-center justify-center mb-1">
+                                    <i class="fa-solid fa-people-roof text-xs"></i>
+                                </div>
+                                <div class="text-lg font-extrabold text-gray-900 leading-tight">221</div>
+                                <div class="text-[10px] text-gray-500 font-medium leading-tight">Parent Engagement <span class="font-normal text-[9px] block">(Parents Reached)</span></div>
+                                <div class="text-[9px] text-emerald-600 font-semibold mt-1">↑ 14% vs last month</div>
+                                <div class="h-6 mt-1"><canvas id="sparkline3"></canvas></div>
+                            </div>
+
+                            <!-- Stat 4 -->
+                            <div class="bg-gray-50/70 p-2.5 rounded-lg border border-gray-100">
+                                <div class="w-6 h-6 rounded-md bg-pink-100 text-brand-pink flex items-center justify-center mb-1">
+                                    <i class="fa-solid fa-house-chimney-user text-xs"></i>
+                                </div>
+                                <div class="text-lg font-extrabold text-gray-900 leading-tight">147</div>
+                                <div class="text-[10px] text-gray-500 font-medium">Home Visits Completed</div>
+                                <div class="text-[9px] text-emerald-600 font-semibold mt-1">↑ 58 students reached</div>
+                                <div class="h-6 mt-1"><canvas id="sparkline4"></canvas></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMN 2: TEACHING & OBJECTIVE COVERAGE MATRIX -->
+                <div class="bg-white p-4 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between">
+                    <div>
+                        <!-- Header & AI Trigger -->
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold text-gray-800 text-sm">Teaching</h3>
+                            <button onclick="openAiModal('remediation')" class="text-[11px] text-brand-pink font-semibold bg-pink-50 hover:bg-pink-100 border border-pink-200 px-2.5 py-1 rounded-md transition flex items-center gap-1">
+                                <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> AI Lesson Generator
+                            </button>
+                        </div>
+
+                        <!-- 4 Stat Summary Cards -->
+                        <div class="grid grid-cols-4 gap-1.5 text-center mb-3">
+                            <div class="bg-pink-50/60 p-2 rounded-lg border border-pink-100/60">
+                                <div class="text-base font-extrabold text-brand-pink">12</div>
+                                <div class="text-[9px] text-gray-500 font-medium">Objectives Planned</div>
+                            </div>
+                            <div class="bg-emerald-50/60 p-2 rounded-lg border border-emerald-100/60">
+                                <div class="text-base font-extrabold text-emerald-600">7</div>
+                                <div class="text-[9px] text-gray-500 font-medium">Completed</div>
+                            </div>
+                            <div class="bg-amber-50/60 p-2 rounded-lg border border-amber-100/60">
+                                <div class="text-base font-extrabold text-amber-600">2</div>
+                                <div class="text-[9px] text-gray-500 font-medium">In Progress</div>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                <div class="text-base font-extrabold text-gray-600">3</div>
+                                <div class="text-[9px] text-gray-500 font-medium">Upcoming</div>
+                            </div>
+                        </div>
+
+                        <!-- Objective Coverage Matrix Table -->
+                        <div class="overflow-x-auto">
+                            <h4 class="font-bold text-gray-800 text-xs mb-2">Objective Coverage by Class</h4>
+                            <table class="w-full text-center text-[11px]">
+                                <thead>
+                                    <tr class="text-gray-400 font-medium border-b border-gray-100">
+                                        <th class="text-left pb-1 font-semibold">Class</th>
+                                        <th class="pb-1">M01</th>
+                                        <th class="pb-1">M02</th>
+                                        <th class="pb-1">M04</th>
+                                        <th class="pb-1">M05</th>
+                                        <th class="pb-1">M06</th>
+                                        <th class="pb-1">M07</th>
+                                        <th class="pb-1">M08</th>
+                                        <th class="pb-1">M09</th>
+                                        <th class="pb-1">M10</th>
+                                        <th class="pb-1 text-right font-semibold">%</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-50 font-medium text-gray-700">
+                                    <tr>
+                                        <td class="text-left py-1.5 font-bold text-gray-800">6A</td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td class="text-right font-bold text-gray-800">64%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left py-1.5 font-bold text-gray-800">7A</td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td class="text-right font-bold text-gray-800">72%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left py-1.5 font-bold text-gray-800">8A</td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td class="text-right font-bold text-gray-800">68%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left py-1.5 font-bold text-gray-800">9A</td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td class="text-right font-bold text-gray-800">76%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left py-1.5 font-bold text-gray-800">10A</td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span></td>
+                                        <td class="text-right font-bold text-gray-800">59%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMN 3: RESOURCES & FINANCE -->
+                <div class="bg-white p-4 rounded-xl border border-gray-100 custom-shadow flex flex-col justify-between">
+                    <div>
+                        <!-- Header & Month Filter -->
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold text-gray-800 text-sm">Resources & Finance</h3>
+                            <select class="text-xs bg-gray-50 border border-gray-200 rounded-md px-2 py-1 font-medium text-gray-600">
+                                <option>Aug 2026</option>
+                            </select>
+                        </div>
+
+                        <!-- 3 Financial Stat Cards -->
+                        <div class="grid grid-cols-3 gap-2 mb-3">
+                            <div class="bg-emerald-50/50 p-2 rounded-lg border border-emerald-100">
+                                <div class="text-[10px] text-gray-500 font-medium">Budget (Annual)</div>
+                                <div class="text-xs font-extrabold text-emerald-700 mt-0.5">₹ 45,00,000</div>
+                            </div>
+                            <div class="bg-pink-50/50 p-2 rounded-lg border border-pink-100">
+                                <div class="text-[10px] text-gray-500 font-medium">Spent (Till Aug)</div>
+                                <div class="text-xs font-extrabold text-brand-pink mt-0.5">₹ 18,20,000</div>
+                            </div>
+                            <div class="bg-blue-50/50 p-2 rounded-lg border border-blue-100">
+                                <div class="text-[10px] text-gray-500 font-medium">Balance</div>
+                                <div class="text-xs font-extrabold text-blue-700 mt-0.5">₹ 26,80,000</div>
+                            </div>
+                        </div>
+
+                        <!-- Spend by Category & Monthly Trend Grid -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <!-- Category Progress Bars -->
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-xs mb-2">Spend by Category</h4>
+                                <div class="space-y-1.5 text-[10px]">
+                                    <div>
+                                        <div class="flex justify-between text-gray-600 font-medium"><span>Human Resources</span><span>32%</span></div>
+                                        <div class="w-full bg-gray-100 h-1.5 rounded-full"><div class="bg-brand-pink h-1.5 rounded-full" style="width: 32%"></div></div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-gray-600 font-medium"><span>Travel</span><span>18%</span></div>
+                                        <div class="w-full bg-gray-100 h-1.5 rounded-full"><div class="bg-pink-400 h-1.5 rounded-full" style="width: 18%"></div></div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-gray-600 font-medium"><span>Teaching Materials</span><span>16%</span></div>
+                                        <div class="w-full bg-gray-100 h-1.5 rounded-full"><div class="bg-pink-300 h-1.5 rounded-full" style="width: 16%"></div></div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-gray-600 font-medium"><span>Technology (AI/IVRS)</span><span>14%</span></div>
+                                        <div class="w-full bg-gray-100 h-1.5 rounded-full"><div class="bg-pink-200 h-1.5 rounded-full" style="width: 14%"></div></div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-gray-600 font-medium"><span>Events & Showcase</span><span>12%</span></div>
+                                        <div class="w-full bg-gray-100 h-1.5 rounded-full"><div class="bg-pink-100 h-1.5 rounded-full" style="width: 12%"></div></div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-gray-600 font-medium"><span>Others</span><span>8%</span></div>
+                                        <div class="w-full bg-gray-100 h-1.5 rounded-full"><div class="bg-gray-300 h-1.5 rounded-full" style="width: 8%"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Monthly Spend Trend Chart -->
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-xs mb-1">Monthly Spend Trend</h4>
+                                <div class="h-28 relative">
+                                    <canvas id="spendTrendChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- DASHBOARD FOOTER -->
+        <footer class="p-4 lg:px-6 border-t border-gray-200 bg-white mt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-2">
+            <div>© 2026 Edspectrum Foundation. All rights reserved.</div>
+            <div class="font-semibold text-gray-600">Data for Learning. Impact for Life.</div>
+        </footer>
+
+    </div>
+
+    <!-- AI ASSISTANT MODAL DIALOG -->
+    <div id="aiModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <!-- Modal Header -->
+            <div class="bg-brand-navy text-white px-6 py-4 flex items-center justify-between border-b border-gray-800 shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-brand-pink flex items-center justify-center shadow-lg text-white">
+                        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-base tracking-tight">Akshara AI Copilot & Content Studio</h2>
+                        <p class="text-xs text-pink-300 font-medium">Powered by Gemini AI • Real-time Insights & Material Generation</p>
+                    </div>
+                </div>
+                <button onclick="closeAiModal()" class="text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Navigation Tabs -->
+            <div class="bg-gray-50 border-b border-gray-200 px-6 pt-3 flex space-x-2 sm:space-x-4 overflow-x-auto text-xs font-semibold text-gray-600 shrink-0">
+                <button id="tabBtn-insights" onclick="switchAiTab('insights')" class="pb-2.5 px-3 border-b-2 border-brand-pink text-brand-pink flex items-center gap-2 shrink-0 font-bold">
+                    <i class="fa-solid fa-chart-line text-sm"></i>
+                    <span>Executive Analytics</span>
+                </button>
+                <button id="tabBtn-remediation" onclick="switchAiTab('remediation')" class="pb-2.5 px-3 border-b-2 border-transparent text-gray-600 hover:text-gray-900 flex items-center gap-2 shrink-0">
+                    <i class="fa-solid fa-graduation-cap text-sm"></i>
+                    <span>Remediation & Lessons</span>
+                </button>
+                <button id="tabBtn-poster" onclick="switchAiTab('poster')" class="pb-2.5 px-3 border-b-2 border-transparent text-gray-600 hover:text-gray-900 flex items-center gap-2 shrink-0">
+                    <i class="fa-solid fa-image text-sm"></i>
+                    <span>Visual Learning Poster</span>
+                </button>
+                <button id="tabBtn-tts" onclick="switchAiTab('tts')" class="pb-2.5 px-3 border-b-2 border-transparent text-gray-600 hover:text-gray-900 flex items-center gap-2 shrink-0">
+                    <i class="fa-solid fa-volume-high text-sm"></i>
+                    <span>Audio Pronunciation Drill</span>
+                </button>
+            </div>
+
+            <!-- Modal Content Panels -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-4">
+
+                <!-- TAB 1: EXECUTIVE ANALYTICS -->
+                <div id="aiTab-insights" class="space-y-4">
+                    <div class="bg-pink-50 border border-pink-100 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-sm">Program Health & Strategic Summary</h3>
+                            <p class="text-xs text-gray-600 mt-0.5">Generates a live synthesis of baseline vs current progress, attention alerts, and recommended admin interventions.</p>
+                        </div>
+                        <button id="btnGenerateInsights" onclick="generateExecutiveInsights()" class="bg-brand-pink hover:bg-brand-pinkDark text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 shrink-0 transition">
+                            <i class="fa-solid fa-rotate text-xs"></i>
+                            <span>Analyze Data with Gemini</span>
+                        </button>
+                    </div>
+
+                    <div id="insightsOutput" class="bg-gray-50 rounded-xl p-5 border border-gray-200 min-h-[220px] text-xs text-gray-700 leading-relaxed font-sans">
+                        <div class="flex flex-col items-center justify-center py-8 text-center text-gray-400 space-y-2">
+                            <i class="fa-solid fa-chart-pie text-3xl text-pink-300"></i>
+                            <p class="font-medium text-gray-500">Click "Analyze Data with Gemini" to generate live strategic insights.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: REMEDIATION & LESSON GENERATOR -->
+                <div id="aiTab-remediation" class="space-y-4 hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Target School/Class</label>
+                            <select id="aiClassSelect" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs font-medium text-gray-800">
+                                <option value="Class 10A - Grammar & Writing (59% coverage)">Class 10A (Focus: Grammar & Writing)</option>
+                                <option value="Tilpat Public School - Speaking Practice">Tilpat Public School (Focus: Speaking Drill)</option>
+                                <option value="Navjyoti Public School - Writing Support">Navjyoti Public School (Focus: Sentence Writing)</option>
+                                <option value="Class 6A - Beginner English Vocabulary">Class 6A (Focus: Beginner Vocabulary)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Activity Type</label>
+                            <select id="aiActivityType" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs font-medium text-gray-800">
+                                <option value="15-minute Interactive Speaking Drill">15-min Interactive Speaking Drill</option>
+                                <option value="Structured Writing & Grammar Remediation Sheet">Structured Writing & Grammar Worksheet</option>
+                                <option value="Parent Engagement Storytelling Activity">Parent-Child Home Practice Activity</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="generateRemediationPlan()" class="w-full bg-brand-pink hover:bg-brand-pinkDark text-white font-semibold text-xs py-2 px-3 rounded-lg shadow-sm flex items-center justify-center gap-2 transition">
+                                <i class="fa-solid fa-bolt text-amber-300"></i>
+                                <span>Generate Material</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="remediationOutput" class="bg-gray-50 rounded-xl p-5 border border-gray-200 min-h-[220px] text-xs text-gray-700 leading-relaxed font-mono whitespace-pre-wrap">
+                        <div class="flex flex-col items-center justify-center py-8 text-center text-gray-400 space-y-2">
+                            <i class="fa-solid fa-book-bookmark text-3xl text-pink-300"></i>
+                            <p class="font-medium text-gray-500">Select class parameters and click "Generate Material".</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: VISUAL POSTER STUDIO -->
+                <div id="aiTab-poster" class="space-y-4 hidden">
+                    <div class="bg-pink-50 border border-pink-100 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-gray-800 text-sm">Classroom Visual Poster Generator</h3>
+                            <span class="text-[10px] font-bold bg-pink-200 text-brand-pinkDark px-2 py-0.5 rounded-full">Gemini 3.1 Flash Image</span>
+                        </div>
+                        <p class="text-xs text-gray-600">Generate high-quality visual learning flashcards and infographic posters with clear text and English vocabulary for classroom walls.</p>
+                        
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input id="posterPrompt" type="text" placeholder="e.g. Educational classroom poster showing English greeting phrases for Grade 6 students with clear text and colorful illustrations" class="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-pink focus:outline-none">
+                            <button id="btnGeneratePoster" onclick="generateLearningPoster()" class="bg-brand-pink hover:bg-brand-pinkDark text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-sm flex items-center justify-center gap-2 shrink-0 transition">
+                                <i class="fa-solid fa-palette"></i>
+                                <span>Generate Poster</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="posterOutput" class="bg-gray-50 rounded-xl p-4 border border-gray-200 min-h-[260px] flex items-center justify-center">
+                        <div class="text-center text-gray-400 py-8 space-y-2">
+                            <i class="fa-solid fa-image text-4xl text-pink-300"></i>
+                            <p class="font-medium text-xs text-gray-500">Enter a topic or press Generate to create a custom visual learning poster.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: AUDIO PRONUNCIATION DRILL -->
+                <div id="aiTab-tts" class="space-y-4 hidden">
+                    <div class="bg-pink-50 border border-pink-100 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-gray-800 text-sm">AI Voice English Pronunciation Generator</h3>
+                            <span class="text-[10px] font-bold bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full">Gemini 2.5 TTS</span>
+                        </div>
+                        <p class="text-xs text-gray-600">Generate clear spoken English audio models for classroom practice, speaking drills, or audio quizzes.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <div class="sm:col-span-2">
+                                <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">Spoken Text / Script</label>
+                                <input id="ttsText" type="text" value="Say clearly: Welcome students! Today we are practicing English conversation about our community." class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-pink focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">Voice Model</label>
+                                <select id="ttsVoice" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium">
+                                    <option value="Zephyr">Zephyr (Bright)</option>
+                                    <option value="Kore">Kore (Firm)</option>
+                                    <option value="Puck">Puck (Upbeat)</option>
+                                    <option value="Fenrir">Fenrir (Excitable)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button id="btnGenerateAudio" onclick="generateTtsAudio()" class="bg-brand-pink hover:bg-brand-pinkDark text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 transition">
+                                <i class="fa-solid fa-play text-xs"></i>
+                                <span>Generate & Play Audio</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="ttsOutput" class="bg-gray-50 rounded-xl p-4 border border-gray-200 min-h-[140px] flex items-center justify-center">
+                        <div class="text-center text-gray-400 py-4 space-y-2">
+                            <i class="fa-solid fa-headphones text-3xl text-pink-300"></i>
+                            <p class="font-medium text-xs text-gray-500">Generated audio player will appear here.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-gray-50 px-6 py-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500 shrink-0">
+                <span class="flex items-center gap-1.5 font-medium"><i class="fa-solid fa-shield-halved text-emerald-600"></i> Edspectrum Foundation Secure Gemini AI Engine</span>
+                <button onclick="closeAiModal()" class="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Safe Canvas Context retriever to prevent null reference errors
+        function safeGetContext(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) {
+                console.warn(`Canvas element with id '${canvasId}' not found.`);
+                return null;
+            }
+            return canvas.getContext('2d');
+        }
+
+        // Toggle Sidebar on Mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar) sidebar.classList.toggle('-translate-x-full');
+            if (overlay) overlay.classList.toggle('hidden');
+        }
+
+        // AI Modal Handlers
+        function openAiModal(tab = 'insights') {
+            const modal = document.getElementById('aiModal');
+            if (modal) modal.classList.remove('hidden');
+            switchAiTab(tab);
+        }
+
+        function closeAiModal() {
+            const modal = document.getElementById('aiModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function switchAiTab(tabName) {
+            const tabs = ['insights', 'remediation', 'poster', 'tts'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tabBtn-${t}`);
+                const panel = document.getElementById(`aiTab-${t}`);
+                if (btn && panel) {
+                    if (t === tabName) {
+                        btn.className = "pb-2.5 px-3 border-b-2 border-brand-pink text-brand-pink flex items-center gap-2 shrink-0 font-bold";
+                        panel.classList.remove('hidden');
+                    } else {
+                        btn.className = "pb-2.5 px-3 border-b-2 border-transparent text-gray-600 hover:text-gray-900 flex items-center gap-2 shrink-0";
+                        panel.classList.add('hidden');
+                    }
+                }
+            });
+        }
+
+        // Exponential backoff fetch wrapper
+        async function fetchWithBackoff(url, options, maxRetries = 3) {
+            let delay = 1000;
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const res = await fetch(url, options);
+                    if (res.ok) return await res.json();
+                    if (res.status !== 429 && res.status < 500) {
+                        const errText = await res.text();
+                        throw new Error(`API Error ${res.status}: ${errText}`);
+                    }
+                } catch (e) {
+                    if (i === maxRetries - 1) throw e;
+                }
+                await new Promise(r => setTimeout(r, delay));
+                delay *= 2;
+            }
+        }
+
+        // 1. EXECUTIVE INSIGHTS (gemini-3-flash-preview)
+        async function generateExecutiveInsights() {
+            const output = document.getElementById('insightsOutput');
+            const btn = document.getElementById('btnGenerateInsights');
+            if (!output || !btn) return;
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> Analyzing...`;
+            
+            output.innerHTML = `
+                <div class="flex items-center justify-center py-10 space-x-3 text-brand-pink">
+                    <i class="fa-solid fa-circle-notch fa-spin text-2xl"></i>
+                    <span class="font-semibold text-xs text-gray-700">Synthesizing school metrics & student outcomes with Gemini...</span>
+                </div>
+            `;
+
+            const school = document.getElementById('filterSchool')?.value || 'All Schools';
+            const month = document.getElementById('filterMonth')?.value || 'Aug 2026';
+
+            const systemPrompt = "You are a senior educational analyst at Edspectrum Foundation. Synthesize dashboard performance metrics for the Akshara English Skill Building Program into concise, actionable executive bullet points.";
+            const userQuery = `Analyze program data for Month: ${month}, School Filter: ${school}.
+Key Statistics:
+- Total Enrolled: 500 students across 4 schools
+- Attendance Rate: 81% (+7% increase)
+- Learning Gain: +9 points average
+- Stage Distribution: Stage 1 (28%), Stage 2 (24%), Stage 3 (23%), Stage 4 (15%), Stage 5 (5%)
+- Domain Gains: Speaking +12% (39% to 51%), Listening +12% (44% to 56%), Reading +8% (61% to 69%), Writing +10% (43% to 53%), Vocabulary (66%), Grammar (37% to 48%)
+- Attention Alerts: Tilpat Public has lower speaking participation; Navjyoti Public needs writing support; RS Vidya pending parental follow-up; Class 10A has 59% objective coverage.
+- Financials: Annual Budget ₹45,00,000, Spent ₹18,20,000 (40.4%), Balance ₹26,80,000.
+
+Provide:
+1. Executive Summary (2 sentences)
+2. Top 3 Strengths
+3. Top 3 Risk Areas & Recommended Remedial Actions
+4. Budget & Resource Allocation Efficiency Comment`;
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            try {
+                const data = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userQuery }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] }
+                    })
+                });
+
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
+                
+                const formattedHtml = text
+                    .replace(/^### (.*$)/gim, '<h4 class="font-bold text-brand-pink text-sm mt-3 mb-1">$1</h4>')
+                    .replace(/^## (.*$)/gim, '<h3 class="font-bold text-gray-900 text-sm mt-3 mb-1">$1</h3>')
+                    .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc text-gray-700 font-medium my-0.5">$1</li>')
+                    .replace(/^\d+\.\s+(.*$)/gim, '<div class="font-bold text-gray-800 mt-2">$1</div>');
+
+                output.innerHTML = `<div class="prose prose-sm max-w-none">${formattedHtml}</div>`;
+            } catch (err) {
+                output.innerHTML = `<div class="text-red-500 font-medium">Error generating insights: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-rotate text-xs"></i> <span>Analyze Data with Gemini</span>`;
+            }
+        }
+
+        // 2. REMEDIATION PLAN (gemini-3-flash-preview)
+        async function generateRemediationPlan() {
+            const output = document.getElementById('remediationOutput');
+            const target = document.getElementById('aiClassSelect')?.value || 'Class 10A';
+            const activity = document.getElementById('aiActivityType')?.value || 'Interactive Drill';
+            if (!output) return;
+
+            output.innerText = `Generating targeted remediation content... Please wait...`;
+
+            const systemPrompt = "You are a master teacher trainer for Akshara English Skill Building Program in rural/semi-urban schools in India. Create practical, zero-cost, high-engagement English learning activities.";
+            const userQuery = `Create a detailed ${activity} tailored for: ${target}. Include learning objectives, step-by-step 15-minute execution guide, teacher prompts, student practice sentences, and a simple assessment check.`;
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            try {
+                const data = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userQuery }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] }
+                    })
+                });
+
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No plan generated.";
+                output.innerText = text;
+            } catch (err) {
+                output.innerText = `Error: ${err.message}`;
+            }
+        }
+
+        // 3. VISUAL POSTER GENERATION (gemini-3.1-flash-image)
+        async function generateLearningPoster() {
+            const output = document.getElementById('posterOutput');
+            const btn = document.getElementById('btnGeneratePoster');
+            if (!output || !btn) return;
+
+            let userPrompt = document.getElementById('posterPrompt')?.value.trim();
+            if (!userPrompt) {
+                userPrompt = "A colorful educational classroom poster for Indian primary students learning English greetings and daily phrases, with clear English text labels, bright friendly illustrations, and high legibility.";
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> Generating...`;
+            
+            output.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-12 space-y-3 text-brand-pink">
+                    <i class="fa-solid fa-wand-magic-sparkles text-3xl fa-spin"></i>
+                    <span class="font-semibold text-xs text-gray-700">Creating custom classroom learning poster with Gemini 3.1 Flash Image...</span>
+                </div>
+            `;
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${apiKey}`;
+
+            try {
+                const data = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userPrompt }] }],
+                        generationConfig: {
+                            responseModalities: ['IMAGE'],
+                            imageConfig: { aspectRatio: "4:3" }
+                        }
+                    })
+                });
+
+                const part = data?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+                if (part && part.inlineData) {
+                    const imgSrc = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                    output.innerHTML = `
+                        <div class="flex flex-col items-center space-y-3 w-full">
+                            <img src="${imgSrc}" class="max-h-[380px] rounded-xl shadow-lg border border-gray-200 object-contain w-full" alt="Generated Learning Poster" />
+                            <a href="${imgSrc}" download="akshara-classroom-poster.png" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow transition flex items-center gap-2">
+                                <i class="fa-solid fa-download"></i> Download Poster for Classroom Print
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    output.innerHTML = `<div class="text-red-500 font-medium text-xs">Failed to generate image. Please try again.</div>`;
+                }
+            } catch (err) {
+                output.innerHTML = `<div class="text-red-500 font-medium text-xs">Image Generation Error: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-palette"></i> <span>Generate Poster</span>`;
+            }
+        }
+
+        // 4. TTS AUDIO GENERATION (gemini-2.5-flash-preview-tts)
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function pcmToWav(pcmInt16, sampleRate = 24000) {
+            const numChannels = 1;
+            const bitsPerSample = 16;
+            const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+            const blockAlign = numChannels * (bitsPerSample / 8);
+            const dataSize = pcmInt16.length * 2;
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+
+            const writeString = (v, offset, str) => {
+                for (let i = 0; i < str.length; i++) v.setUint8(offset + i, str.charCodeAt(i));
+            };
+
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitsPerSample, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataSize, true);
+
+            let offset = 44;
+            for (let i = 0; i < pcmInt16.length; i++, offset += 2) {
+                view.setInt16(offset, pcmInt16[i], true);
+            }
+
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        async function generateTtsAudio() {
+            const output = document.getElementById('ttsOutput');
+            const btn = document.getElementById('btnGenerateAudio');
+            const text = document.getElementById('ttsText')?.value || 'Hello';
+            const voice = document.getElementById('ttsVoice')?.value || 'Zephyr';
+
+            if (!output || !btn) return;
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> Synthesizing...`;
+            
+            output.innerHTML = `
+                <div class="flex items-center justify-center py-6 space-x-2 text-brand-pink">
+                    <i class="fa-solid fa-circle-notch fa-spin text-xl"></i>
+                    <span class="font-semibold text-xs text-gray-700">Synthesizing audio voice drill with Gemini TTS...</span>
+                </div>
+            `;
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{
+                    parts: [{ text: text }]
+                }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                        voiceConfig: {
+                            prebuiltVoiceConfig: { voiceName: voice }
+                        }
+                    }
+                }
+            };
+
+            try {
+                const data = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const candidate = data?.candidates?.[0];
+                const part = candidate?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType || "";
+
+                if (audioData) {
+                    let sampleRate = 24000;
+                    const rateMatch = mimeType.match(/rate=(\d+)/);
+                    if (rateMatch) sampleRate = parseInt(rateMatch[1], 10);
+
+                    const pcmBuffer = base64ToArrayBuffer(audioData);
+                    const pcm16 = new Int16Array(pcmBuffer);
+                    const wavBlob = pcmToWav(pcm16, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+
+                    output.innerHTML = `
+                        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm w-full max-w-md text-center space-y-3">
+                            <div class="flex items-center justify-center gap-2 text-brand-pink font-bold text-xs">
+                                <i class="fa-solid fa-volume-high text-sm"></i>
+                                <span>Voice Practice Prompt (${voice})</span>
+                            </div>
+                            <audio controls autoplay class="w-full">
+                                <source src="${audioUrl}" type="audio/wav">
+                                Your browser does not support audio playback.
+                            </audio>
+                            <p class="text-[11px] text-gray-500 font-medium italic">"${text}"</p>
+                        </div>
+                    `;
+                } else {
+                    output.innerHTML = `<div class="text-red-500 text-xs">No audio returned from Gemini TTS.</div>`;
+                }
+            } catch (err) {
+                output.innerHTML = `<div class="text-red-500 text-xs">Audio generation error: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-play text-xs"></i> <span>Generate & Play Audio</span>`;
+            }
+        }
+
+        // CHART INITIALIZATION WITH SAFE CONTEXT CHECKS
+        document.addEventListener('DOMContentLoaded', () => {
+            // CHART 1: Learning Progress Grouped Bar Chart
+            const ctxProgress = safeGetContext('learningProgressChart');
+            if (ctxProgress) {
+                new Chart(ctxProgress, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Listening', 'Speaking', 'Reading', 'Writing'],
+                        datasets: [
+                            {
+                                label: 'Baseline',
+                                data: [44, 39, 61, 43],
+                                backgroundColor: '#fbcfe8',
+                                borderRadius: 4,
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.6
+                            },
+                            {
+                                label: 'Current',
+                                data: [56, 51, 69, 53],
+                                backgroundColor: '#c02672',
+                                borderRadius: 4,
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: { color: '#f1f5f9' },
+                                ticks: { font: { size: 10 }, color: '#94a3b8' }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 11, weight: '600' }, color: '#475569' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // CHART 2: Domain-wise Progress Grouped Bar Chart
+            const ctxDomain = safeGetContext('domainProgressChart');
+            if (ctxDomain) {
+                new Chart(ctxDomain, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Listening', 'Speaking', 'Reading', 'Writing', 'Vocabulary', 'Grammar'],
+                        datasets: [
+                            {
+                                label: 'Baseline',
+                                data: [46, 39, 61, 43, 66, 37],
+                                backgroundColor: '#fbcfe8',
+                                borderRadius: 3,
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.6
+                            },
+                            {
+                                label: 'Current',
+                                data: [56, 51, 69, 53, 66, 48],
+                                backgroundColor: '#c02672',
+                                borderRadius: 3,
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: { color: '#f1f5f9' },
+                                ticks: { font: { size: 9 }, color: '#94a3b8' }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 9 }, color: '#475569' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // CHART 3: SAS Donut Chart
+            const ctxSas = safeGetContext('sasDonutChart');
+            if (ctxSas) {
+                new Chart(ctxSas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Support', 'Stretch', 'Core'],
+                        datasets: [{
+                            data: [24, 25, 51],
+                            backgroundColor: ['#c02672', '#f59e0b', '#e2e8f0'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '72%',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            // CHART 4: Spend Trend Line Chart
+            const ctxSpend = safeGetContext('spendTrendChart');
+            if (ctxSpend) {
+                new Chart(ctxSpend, {
+                    type: 'line',
+                    data: {
+                        labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+                        datasets: [{
+                            data: [10, 20, 26, 29, 27, 24],
+                            borderColor: '#c02672',
+                            backgroundColor: 'rgba(192, 38, 114, 0.08)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#c02672'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                display: true,
+                                grid: { color: '#f1f5f9' },
+                                ticks: { font: { size: 8 }, color: '#94a3b8' }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 8 }, color: '#475569' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Helper function for micro sparklines
+            function createSparkline(id, data) {
+                const ctx = safeGetContext(id);
+                if (!ctx) return;
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map((_, i) => i),
+                        datasets: [{
+                            data: data,
+                            borderColor: '#c02672',
+                            borderWidth: 1.5,
+                            pointRadius: 0,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        scales: { x: { display: false }, y: { display: false } }
+                    }
+                });
+            }
+
+            createSparkline('sparkline1', [40, 52, 60, 58, 75, 81]);
+            createSparkline('sparkline2', [30, 42, 50, 48, 55, 64]);
+            createSparkline('sparkline3', [120, 140, 160, 180, 200, 221]);
+            createSparkline('sparkline4', [60, 80, 95, 110, 130, 147]);
+        });
+    </script>
+</body>
+</html>

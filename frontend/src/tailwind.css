@@ -1,47 +1,83 @@
 @import "tailwindcss";
 
-@theme {
-  --color-primary: #93004e;
-  --color-primary-container: #b81d67;
-  --color-on-primary-container: #ffd2de;
-  --color-secondary: #006398;
-  --color-secondary-container: #5bb8fe;
-  --color-tertiary: #005539;
-  --color-tertiary-container: #00704c;
-  --color-error: #ba1a1a;
-  --color-error-container: #ffdad6;
-  --color-surface: #faf8ff;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container: #eaedff;
-  --color-on-surface: #131b2e;
-  --color-on-surface-variant: #584047;
-  --color-outline: #8b7077;
-  --color-navy-900: #0E1726;
-  --color-navy-800: #10172A;
-  --color-navy-700: #1E293B;
+/*
+ * Akshara English Skill Building Program — design tokens.
+ * Typography: Inter. Palette: Edspectrum brand pink on dark navy.
+ * Every token below maps to the "Akshara Dashboard — Typography & Color
+ * Schema" spec so components can reference names instead of raw hex.
+ *
+ * `static` keeps every variable in the emitted CSS even when no template
+ * happens to reference it yet, so the tokens are also readable from the
+ * component SCSS files via var(--color-brand-pink) and friends.
+ */
+@theme static {
+  /* --- Brand & layout ---------------------------------------------------- */
+  --color-brand-pink: #c02672;
+  --color-brand-pink-dark: #9e1859;
+  --color-brand-pink-soft: #fdf2f8;
+  --color-brand-pink-light: #fcf2f7;
+  --color-brand-navy: #182030;
+  --color-brand-navy-hover: #232d42;
+  --color-brand-bg: #f4f6fa;
+  --color-brand-surface: #ffffff;
 
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* --- Text & neutral palette ------------------------------------------- */
+  --color-brand-ink: #1e293b;
+  --color-brand-muted: #64748b;
+  --color-brand-line: #e2e8f0;
 
-  --font-display-lg: 700 32px/40px var(--font-sans);
-  --font-headline-lg: 700 22px/28px var(--font-sans);
-  --font-headline-md: 600 18px/24px var(--font-sans);
-  --font-body-lg: 500 14px/20px var(--font-sans);
-  --font-label-md: 600 11px/14px var(--font-sans);
-  --font-metric-xl: 800 28px/34px var(--font-sans);
+  /* --- Data visualisation: stage ramp (Stage 1 -> Stage 5) --------------- */
+  --color-stage-1: #c02672;
+  --color-stage-2: #f472b6;
+  --color-stage-3: #f87171;
+  --color-stage-4: #fbcfe8;
+  --color-stage-5: #fce7f3;
 
+  /* --- Semantic & status indicators -------------------------------------- */
+  --color-status-positive: #10b981;
+  --color-status-warning: #f59e0b;
+  --color-status-alert: #ef4444;
+  --color-status-info: #3b82f6;
+  --color-status-accent: #8b5cf6;
+
+  /* --- Typography: Inter ------------------------------------------------- */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /*
+   * Tailwind v4 exposes font sizes through the `--text-*` namespace (each entry
+   * also yields a `text-<name>` utility). Scale per the Akshara spec: 800 for
+   * titles, 700 card titles, 600 sub-headers, 500 values, 400 body, 9-11px
+   * sub-labels.
+   */
+  --text-display-lg: 800 1.875rem/2.25rem var(--font-sans);     /* 30px — page title   */
+  --text-metric-xl: 800 1.5rem/1.875rem var(--font-sans);       /* 24px — KPI metric   */
+  --text-headline-lg: 700 1.125rem/1.5rem var(--font-sans);     /* 18px — section head */
+  --text-card-title: 700 0.875rem/1.25rem var(--font-sans);     /* 14px — card title   */
+  --text-body-md: 400 0.875rem/1.35rem var(--font-sans);        /* 14px — body copy    */
+  --text-table-md: 500 0.75rem/1rem var(--font-sans);           /* 12px — table text   */
+  --text-label-sm: 600 0.6875rem/0.875rem var(--font-sans);     /* 11px — sub label    */
+  --text-label-xs: 600 0.625rem/0.75rem var(--font-sans);       /* 10px — filter label */
+  --text-micro: 400 0.5625rem/0.75rem var(--font-sans);         /*  9px — legal / meta */
+
+  /* --- Radii ------------------------------------------------------------- */
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
   --radius-full: 9999px;
 
-  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
-  --shadow-card-hover: 0 4px 16px rgba(15, 23, 42, 0.08), 0 10px 24px -4px rgba(15, 23, 42, 0.06);
+  /* --- Elevation: light drop shadow + soft border separation ------------- */
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.03);
+  --shadow-card-hover: 0 10px 24px -6px rgba(192, 38, 114, 0.18);
 }
 
 @layer base {
-  body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    background-color: #f8fafc;
-    color: #131b2e;
+  html {
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-brand-bg);
+    color: var(--color-brand-ink);
   }
 }

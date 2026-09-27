@@ -24,12 +24,13 @@
   gap: 8px;
 }
 
+/* Card title: 14px bold per the Akshara type scale. */
 .chart-title {
   margin: 0;
   font-size: 0.875rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: #1f2937;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #1e293b;
   line-height: 1.3;
 }
 

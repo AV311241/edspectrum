@@ -38,6 +38,20 @@ export function scaleBarWidth(val: number, ceiling: number): number {
   return Math.max(0, Math.min(100, Math.round(width * 100) / 100));
 }
 
+/**
+ * Stage ramp from the Akshara data-visualisation palette, Stage 1 -> Stage 5.
+ * Stage 1 is the strongest brand pink; the ramp lightens towards the baseline
+ * level so bars read as a progression rather than five unrelated colours.
+ * Extra rows fall back to the lightest tone.
+ */
+export const STAGE_COLOR_CLASSES: readonly string[] = [
+  'bg-stage-1',
+  'bg-stage-2',
+  'bg-stage-3',
+  'bg-stage-4',
+  'bg-stage-5'
+];
+
 @Component({
   selector: 'app-horizontal-bar-chart',
   standalone: true,
@@ -63,17 +77,6 @@ export class HorizontalBarChartComponent {
   }
 
   getBarColorClass(idx: number): string {
-    switch (idx) {
-      case 0:
-        return 'bg-[#93004e]';
-      case 1:
-        return 'bg-[#b81d67]';
-      case 2:
-        return 'bg-[#d94688]';
-      case 3:
-        return 'bg-[#e8bcd4]';
-      default:
-        return 'bg-[#f5d5e5]';
-    }
+    return STAGE_COLOR_CLASSES[idx] ?? STAGE_COLOR_CLASSES[STAGE_COLOR_CLASSES.length - 1];
   }
 }

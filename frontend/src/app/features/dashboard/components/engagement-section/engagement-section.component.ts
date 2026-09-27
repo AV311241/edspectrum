@@ -3,13 +3,12 @@ import { DashboardDataService } from '../../../../core/services/dashboard-data.s
 import { UiCardComponent } from '../../../../shared/components/ui-card/ui-card.component';
 import { UiSelectComponent, SelectOption } from '../../../../shared/components/ui-select/ui-select.component';
 import { UiIconComponent } from '../../../../shared/components/ui-icon/ui-icon.component';
-import { UiBadgeComponent } from '../../../../shared/components/ui-badge/ui-badge.component';
 import { LineChartComponent } from '../../../../shared/charts/line-chart/line-chart.component';
 
 @Component({
   selector: 'app-engagement-section',
   standalone: true,
-  imports: [UiCardComponent, UiSelectComponent, UiIconComponent, UiBadgeComponent, LineChartComponent],
+  imports: [UiCardComponent, UiSelectComponent, UiIconComponent, LineChartComponent],
   templateUrl: './engagement-section.component.html'
 })
 export class EngagementSectionComponent {

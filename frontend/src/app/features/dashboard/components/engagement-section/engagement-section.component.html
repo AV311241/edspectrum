@@ -1,6 +1,6 @@
 <app-ui-card customClass="h-full flex flex-col justify-between">
-  <div class="flex items-center justify-between mb-4">
-    <h2 class="text-sm font-bold text-slate-800 tracking-tight">Engagement</h2>
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-sm font-bold text-brand-ink tracking-tight">Engagement</h2>
     <app-ui-select
       value="All Schools"
       [options]="schoolOptions"
@@ -9,32 +9,31 @@
 
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 flex-1">
     @for (item of dashboardService.engagementMetrics(); track item.id) {
-      <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 flex flex-col justify-between hover:bg-white hover:shadow-xs transition-all">
+      <div class="p-2.5 rounded-xl bg-brand-bg border border-gray-100 flex flex-col justify-between hover:bg-white hover:shadow-card transition-all">
         <div class="flex items-center justify-between mb-2">
-          <div class="w-8 h-8 rounded-lg bg-pink-50 border border-pink-100 flex items-center justify-center text-[#93004e]">
-            <app-ui-icon [name]="item.icon" [size]="16" />
+          <div class="w-7 h-7 rounded-lg bg-brand-pink-soft flex items-center justify-center text-brand-pink">
+            <app-ui-icon [name]="item.icon" [size]="14" />
           </div>
         </div>
 
         <div>
-          <div class="text-xl font-black text-slate-900 leading-tight">
+          <div class="text-lg font-extrabold text-brand-ink leading-tight">
             {{ item.value }}
           </div>
-          <div class="text-[11px] font-semibold text-slate-600 truncate">
+          <div class="text-[10px] font-semibold text-slate-500 truncate">
             {{ item.title }}
           </div>
           @if (item.subtitle) {
-            <div class="text-[9px] font-medium text-slate-400">
+            <div class="text-[9px] font-normal text-slate-400">
               {{ item.subtitle }}
             </div>
           }
         </div>
 
-        <div class="mt-2 pt-2 border-t border-slate-200/40">
-          <app-ui-badge variant="success" customClass="bg-emerald-50 text-emerald-700 text-[9px] py-0 px-1.5 mb-2">
-            <span>{{ item.trend }}</span>
-          </app-ui-badge>
-
+        <div class="mt-2">
+          <div class="text-[10px] font-semibold text-emerald-600 mb-1 truncate">
+            {{ item.trend }}
+          </div>
           <app-line-chart [isSparkline]="true" [points]="item.sparkline" />
         </div>
       </div>

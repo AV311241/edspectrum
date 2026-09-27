@@ -1,17 +1,19 @@
 <app-ui-card customClass="h-full flex flex-col justify-between">
-  <h2 class="text-sm font-bold text-slate-800 tracking-tight mb-3">Stage Movement</h2>
+  <h2 class="text-sm font-bold text-brand-ink tracking-tight mb-3">Stage Movement</h2>
 
-  <div class="space-y-2">
-    @for (item of dashboardService.stageMovement(); track item.stage) {
+  <!-- Bars follow the Stage 1 -> Stage 5 pink ramp from the spec. -->
+  <div class="space-y-2.5">
+    @for (item of dashboardService.stageMovement(); track item.stage; let idx = $index) {
       <div class="flex items-center gap-2">
-        <span class="w-14 text-[11px] font-semibold text-slate-600 shrink-0">{{ item.stage }}</span>
-        <div class="flex-1 bg-pink-50 h-3 rounded-full overflow-hidden p-0.5 border border-pink-100/60">
-          <div 
-            class="h-full bg-[#93004e] rounded-full transition-all duration-300"
+        <span class="w-14 text-[11px] font-medium text-slate-600 shrink-0">{{ item.stage }}</span>
+        <div class="flex-1 bg-brand-bg h-2 rounded-full overflow-hidden">
+          <div
+            [class]="getStageBarClass(idx)"
+            class="h-full rounded-full transition-all duration-300"
             [style.width.%]="item.percentage">
           </div>
         </div>
-        <span class="w-8 text-right text-[11px] font-bold text-slate-700 shrink-0">{{ item.percentage }}%</span>
+        <span class="w-8 text-right text-[11px] font-semibold text-brand-ink shrink-0">{{ item.percentage }}%</span>
       </div>
     }
   </div>

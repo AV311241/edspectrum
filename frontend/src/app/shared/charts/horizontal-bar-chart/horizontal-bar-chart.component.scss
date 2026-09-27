@@ -25,9 +25,9 @@
 .chart-label {
   width: 72px;
   flex-shrink: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: #334155;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
   text-align: left;
 }
 
@@ -36,7 +36,7 @@
   min-width: 0;
   height: 18px;
   border-radius: 8px;
-  background: rgba(251, 207, 232, 0.38);
+  background: #f4f6fa;
   overflow: hidden;
 }
 
@@ -51,9 +51,9 @@
   width: 42px;
   flex-shrink: 0;
   text-align: right;
-  font-size: 13px;
-  font-weight: 700;
-  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
 }
 
 @media (max-width: 640px) {
@@ -63,11 +63,11 @@
 
   .chart-label {
     width: 60px;
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .value {
     width: 34px;
-    font-size: 12px;
+    font-size: 11px;
   }
 }

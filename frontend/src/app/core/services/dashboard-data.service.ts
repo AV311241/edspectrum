@@ -27,6 +27,10 @@ export class DashboardDataService {
     className: 'All Classes'
   });
 
+  /**
+   * KPI icon containers use the spec's semantic palette: blue for enrollment,
+   * emerald for attendance, purple for learning gain, amber for objectives.
+   */
   readonly kpiMetrics = signal<KpiMetric[]>([
     {
       id: 'students-enrolled',
@@ -36,7 +40,7 @@ export class DashboardDataService {
       trend: '+8% vs last year',
       isPositive: true,
       icon: 'users',
-      badgeBg: 'bg-blue-100',
+      badgeBg: 'bg-blue-50',
       badgeIconColor: 'text-blue-600'
     },
     {
@@ -47,7 +51,7 @@ export class DashboardDataService {
       trend: '+7% vs last month',
       isPositive: true,
       icon: 'academic-cap',
-      badgeBg: 'bg-emerald-100',
+      badgeBg: 'bg-emerald-50',
       badgeIconColor: 'text-emerald-600'
     },
     {
@@ -58,8 +62,8 @@ export class DashboardDataService {
       trend: '+3 points',
       isPositive: true,
       icon: 'chart-bar',
-      badgeBg: 'bg-pink-100',
-      badgeIconColor: 'text-pink-600'
+      badgeBg: 'bg-purple-50',
+      badgeIconColor: 'text-purple-600'
     },
     {
       id: 'objectives-covered',
@@ -69,7 +73,7 @@ export class DashboardDataService {
       trend: '+12% vs last month',
       isPositive: true,
       icon: 'target',
-      badgeBg: 'bg-amber-100',
+      badgeBg: 'bg-amber-50',
       badgeIconColor: 'text-amber-600'
     },
     {
@@ -80,8 +84,8 @@ export class DashboardDataService {
       trend: '+10% vs last month',
       isPositive: true,
       icon: 'user-voice',
-      badgeBg: 'bg-indigo-100',
-      badgeIconColor: 'text-indigo-600'
+      badgeBg: 'bg-brand-pink-soft',
+      badgeIconColor: 'text-brand-pink'
     }
   ]);
 
