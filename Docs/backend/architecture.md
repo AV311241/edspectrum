@@ -33,6 +33,14 @@ backend/
 │   ├── routes/          # Express route registration mappings
 │   ├── services/        # Business logic domain, transactional boundaries, stage calculations
 │   ├── utils/           # Helper scripts (AppError class, formatters, stage calculator)
+├─── metrics/             # Akshara dashboard module (read-only, GET-only)
+├─── │   ├─── constants/  # Threshold tables, M&E bands, SAS & stage vocabulary
+├─── │   ├─── models/     # Narrow read-model contracts (NOT Prisma models)
+├─── │   ├─── dtos/       # Request filters + one response DTO per dashboard aspect
+├─── │   ├─── repositories/ # Read-only Prisma projections for the metrics-owned tables
+├─── │   ├─── services/   # MetricsService (orchestration) + 2 pure calculators
+├─── │   ├─── utils/      # MetricsCalculationUtils: percentage, deltas, Gini, risk score
+├─── │   └─── controllers/ # MetricsController (TSOA) -> /metrics/... (+ /api/v1/metrics alias)
 │   └── index.ts         # Application entry point, server runtime listener
 ```
 
@@ -44,3 +52,10 @@ backend/
    - Computes suggested stage ratings (`S1`-`S5`, `Review`, `AB`) across all 7 domains (Vocabulary, Grammar, Phrase/Sentence, Listening, Speaking, Reading, Writing) using individual item ratings (0-4).
    - Manages bi-directional Excel translation.
 4. **Repository Layer**: Handles persistence logic against `baseline_assessments` (Header) and `baseline_domain_scores` (Detail scores) tables.
+
+### Metrics Module Boundary Rules
+
+The `metrics/` package follows the same Controller -> Service -> Repository layering, with two additional constraints:
+
+1. **Purity boundary.** `utils/MetricsCalculationUtils.ts`, `DomainMetricsCalculator.service.ts` and `KPIMetricsCalculator.service.ts` perform **no I/O** and hold no state. Only `metrics.service.ts` and `metrics.repository.ts` touch Prisma. This keeps the entire calculation surface unit-testable with plain object fixtures.
+2. **Reuse over duplication.** The module imports `ATTENDANCE_PRESENT_WEIGHT` from `constants/attendance.constants.ts` instead of re-deriving attendance weights, and reads `finalStage ?? suggestedStage` with the same precedence the class summary uses. A new attendance status or a change to the override rule is therefore honoured in one place only.

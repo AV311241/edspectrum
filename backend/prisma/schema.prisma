@@ -138,6 +138,13 @@ model User {
   updatedClassProfiles             ClassProfile[]       @relation("ClassProfileUpdater")
   auditLogs                        AuditLog[]           @relation("UserAuditLogs")
 
+  // --- Metrics module back-relations (additive; virtual fields, no DDL) ---
+  createdProgramBudgets            ProgramBudget[]      @relation("ProgramBudgetCreator")
+  createdFinanceRecords            FinanceRecord[]      @relation("FinanceRecordCreator")
+  createdProgramObjectives         ProgramObjective[]   @relation("ProgramObjectiveCreator")
+  updatedObjectiveCoverages        ObjectiveCoverage[]  @relation("ObjectiveCoverageUpdater")
+  createdHomeVisits                HomeVisit[]          @relation("HomeVisitCreator")
+
   @@index([email], map: "idx_users_email")
   @@index([schoolId], map: "idx_users_school_id")
   @@index([roleId], map: "idx_users_role_id")
@@ -173,6 +180,15 @@ model School {
   baselineAssessments BaselineAssessment[]
   classSummaries     ClassSummary[]
   classProfiles      ClassProfile[]
+
+  // --- Metrics module back-relations (additive; virtual fields, no DDL) ---
+  programBudgets     ProgramBudget[]
+  financeRecords     FinanceRecord[]
+  programObjectives  ProgramObjective[]
+  objectiveCoverages ObjectiveCoverage[]
+  engagementActivities StudentEngagementActivity[]
+  parentEngagements  ParentEngagement[]
+  homeVisits         HomeVisit[]
 
   @@index([code], map: "idx_schools_code")
   @@index([status], map: "idx_schools_status")
@@ -219,6 +235,13 @@ model ClassSection {
   classProfiles      ClassProfile[]
   attendances        Attendance[]
 
+  // --- Metrics module back-relations (additive; virtual fields, no DDL) ---
+  programObjectives  ProgramObjective[]
+  objectiveCoverages ObjectiveCoverage[]
+  engagementActivities StudentEngagementActivity[]
+  parentEngagements  ParentEngagement[]
+  homeVisits         HomeVisit[]
+
   @@unique([schoolId, gradeId, section], map: "uq_class_section")
   @@index([schoolId], map: "idx_class_sections_school_id")
   @@index([gradeId], map: "idx_class_sections_grade_id")
@@ -249,6 +272,11 @@ model Student {
   enrollments        StudentClassEnrollment[]
   baselineAssessments BaselineAssessment[]
   attendances        Attendance[]
+
+  // --- Metrics module back-relations (additive; virtual fields, no DDL) ---
+  engagementActivities StudentEngagementActivity[]
+  parentEngagements  ParentEngagement[]
+  homeVisits         HomeVisit[]
 
   @@unique([schoolId, studentIdCode], map: "uq_school_student_id")
   @@index([schoolId], map: "idx_students_school_id")
@@ -666,4 +694,310 @@ model AuditLog {
   @@index([action], map: "idx_audit_logs_action")
   @@index([entityName, entityId], map: "idx_audit_logs_entity")
   @@map("audit_logs")
+}
+
+// ==========================================
+// 9. METRICS MODULE (Akshara Dashboard KPIs)
+// ==========================================
+// Everything below is ADDITIVE. No existing table, column, index or enum is
+// altered, dropped or renamed. The only edits made to pre-existing models are
+// extra back-relation array fields (declared further up in this file) that
+// Prisma requires in order to make these new relations bidirectional; such
+// fields are virtual and generate no DDL.
+
+enum ObjectiveModuleStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COVERED
+}
+
+enum ObjectivePlanStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  UPCOMING
+}
+
+enum BudgetCategory {
+  HUMAN_RESOURCES
+  TRAVEL
+  TEACHING_MATERIALS
+  TECHNOLOGY
+  EVENTS
+  OTHERS
+}
+
+enum FinanceEntryType {
+  BUDGET
+  EXPENSE
+}
+
+enum EngagementActivityType {
+  CLASS_PARTICIPATION
+  AI_IVRS
+  PRACTICE
+}
+
+enum HomeVisitStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum ParentEngagementChannel {
+  SCHOOL_MEETING
+  PHONE_CALL
+  HOME_VISIT
+  MESSAGE
+  OTHER
+}
+
+// VERIFICATION NEEDED: Verify schema definition against existing DB models.
+// A single annual programme budget. A NULL `school_id` denotes the NGO-wide
+// consolidated budget; a populated one denotes a per-school allocation.
+// UNIQUE(school_id, academic_year) is deliberately NOT declared because MySQL
+// treats NULLs as distinct inside a unique index, so a global budget row could
+// be inserted more than once. That invariant is therefore enforced in the
+// service layer (MetricsService -> resolveProgramBudget) instead of the schema.
+model ProgramBudget {
+  id           Int       @id @default(autoincrement())
+  schoolId     Int?      @map("school_id")
+  academicYear String    @map("academic_year") @db.VarChar(20)
+  totalAmount  Decimal   @map("total_amount") @db.Decimal(14, 2)
+  currency     String    @default("INR") @db.VarChar(3)
+  approvedOn   DateTime? @map("approved_on") @db.Date
+  notes        String?   @db.Text
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  createdById  Int       @map("created_by")
+
+  school      School?            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdBy   User               @relation("ProgramBudgetCreator", fields: [createdById], references: [id])
+  allocations BudgetAllocation[]
+
+  @@index([schoolId], map: "idx_program_budgets_school_id")
+  @@index([academicYear], map: "idx_program_budgets_academic_year")
+  @@map("program_budgets")
+}
+
+// VERIFICATION NEEDED: Verify schema definition against existing DB models.
+// The sanctioned split of a ProgramBudget across the six dashboard spend
+// categories. Used for planned-vs-actual reporting; the dashboard "category
+// spend %" figure is derived from FinanceRecord, not from this table.
+model BudgetAllocation {
+  id              Int            @id @default(autoincrement())
+  programBudgetId Int            @map("program_budget_id")
+  category        BudgetCategory
+  allocatedAmount Decimal        @map("allocated_amount") @db.Decimal(14, 2)
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  programBudget ProgramBudget @relation(fields: [programBudgetId], references: [id], onDelete: Cascade)
+
+  @@unique([programBudgetId, category], map: "uq_budget_allocation_category")
+  @@index([category], map: "idx_budget_allocations_category")
+  @@map("budget_allocations")
+}
+
+// VERIFICATION NEEDED: Verify schema definition against existing DB models.
+// Append-only finance ledger. `entry_type` separates a sanctioned budget line
+// (BUDGET) from an actual outflow (EXPENSE); the dashboard budget, spent and
+// balance figures are all derived from this single table.
+model FinanceRecord {
+  id           Int              @id @default(autoincrement())
+  schoolId     Int?             @map("school_id")
+  academicYear String           @map("academic_year") @db.VarChar(20)
+  entryType    FinanceEntryType @default(EXPENSE) @map("entry_type")
+  category     BudgetCategory
+  amount       Decimal          @db.Decimal(14, 2)
+  description  String?          @db.VarChar(255)
+  referenceNo  String?          @map("reference_no") @db.VarChar(100)
+  vendor       String?          @db.VarChar(150)
+  spentOn      DateTime         @map("spent_on") @db.Date
+  remarks      String?          @db.Text
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+  createdById  Int              @map("created_by")
+
+  school    School? @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdBy User    @relation("FinanceRecordCreator", fields: [createdById], references: [id])
+
+  @@index([schoolId], map: "idx_finance_records_school_id")
+  @@index([academicYear], map: "idx_finance_records_academic_year")
+  @@index([entryType], map: "idx_finance_records_entry_type")
+  @@index([category], map: "idx_finance_records_category")
+  @@index([spentOn], map: "idx_finance_records_spent_on")
+  @@map("finance_records")
+}
+
+// VERIFICATION NEEDED: Verify schema definition against existing DB models.
+// The M01..M10 teaching-module catalogue that forms the columns of the
+// "Objective Coverage by Class & Module" matrix. The dashboard column order is
+// `sequence_number`, NOT the primary key, so modules can be inserted out of
+// order without reshuffling the UI.
+model TeachingModule {
+  id             Int      @id @default(autoincrement())
+  code           String   @unique @db.VarChar(10)
+  name           String   @db.VarChar(150)
+  description    String?  @db.Text
+  sequenceNumber Int      @map("sequence_number")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  objectives ProgramObjective[]
+  coverages  ObjectiveCoverage[]
+
+  @@index([sequenceNumber], map: "idx_teaching_modules_sequence_number")
+  @@map("teaching_modules")
+}
+
+// VERIFICATION NEEDED: Verify schema definition against existing DB models.
+// A planned teaching objective; the source for the "Objective Overview"
+// (planned / completed / in-progress / upcoming) tiles. Per-class delivery
+// progress lives in ObjectiveCoverage, so the two never drift apart.
+model ProgramObjective {
+  id             Int                 @id @default(autoincrement())
+  moduleId       Int                 @map("module_id")
+  schoolId       Int?                @map("school_id")
+  classSectionId Int?                @map("class_section_id")
+  title          String              @db.VarChar(255)
+  description    String?             @db.Text
+  status         ObjectivePlanStatus @default(PLANNED)
+  academicYear   String              @map("academic_year") @db.VarChar(20)
+  targetMonth    Int?                @map("target_month")
+  completedAt    DateTime?           @map("completed_at") @db.Date
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  createdById    Int                 @map("created_by")
+
+  module       TeachingModule @relation(fields: [moduleId], references: [id])
+  school       School?        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classSection ClassSection?  @relation(fields: [classSectionId], references: [id], onDelete: Cascade)
+  createdBy    User           @relation("ProgramObjectiveCreator", fields: [createdById], references: [id])
+
+  @@index([moduleId], map: "idx_program_objectives_module_id")
+  @@index([schoolId], map: "idx_program_objectives_school_id")
+  @@index([classSectionId], map: "idx_program_objectives_class_section_id")
+  @@index([status], map: "idx_program_objectives_status")
+  @@index([academicYear], map: "idx_program_objectives_academic_year")
+  @@map("program_objectives")
+}
+
+// VERIFICATION NEEDED: Verify schema definition against existing DB models.
+// One cell of the class x module coverage matrix. A row exists only once a
+// module has actually been planned for that class, which is why the matrix
+// treats an absent cell as NOT_STARTED rather than as a numeric zero.
+model ObjectiveCoverage {
+  id                Int                  @id @default(autoincrement())
+  classSectionId    Int                  @map("class_section_id")
+  moduleId          Int                  @map("module_id")
+  schoolId          Int?                 @map("school_id")
+  status            ObjectiveModuleStatus @default(NOT_STARTED)
+  completionPercent Decimal?             @map("completion_percent") @db.Decimal(5, 2)
+  plannedMonth      Int?                 @map("planned_month")
+  deliveredOn       DateTime?            @map("delivered_on") @db.Date
+  academicYear      String               @map("academic_year") @db.VarChar(20)
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  updatedById       Int?                 @map("updated_by")
+
+  classSection ClassSection  @relation(fields: [classSectionId], references: [id], onDelete: Cascade)
+  module       TeachingModule @relation(fields: [moduleId], references: [id])
+  school       School?        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  updatedBy    User?          @relation("ObjectiveCoverageUpdater", fields: [updatedById], references: [id])
+
+  @@unique([classSectionId, moduleId], map: "uq_objective_coverage_class_module")
+  @@index([schoolId], map: "idx_objective_coverages_school_id")
+  @@index([moduleId], map: "idx_objective_coverages_module_id")
+  @@index([status], map: "idx_objective_coverages_status")
+  @@map("objective_coverages")
+}
+
+// VERIFICATION NEEDED: Verify schema definition against existing DB models.
+// Per-student digital / practice activity. CLASS_PARTICIPATION feeds the class
+// participation rate; AI_IVRS and PRACTICE together feed the "AI/IVRS + Practice"
+// active-students rate. Deliberately append-only: it is an activity log, not a
+// mutable profile field.
+model StudentEngagementActivity {
+  id              Int                    @id @default(autoincrement())
+  studentId       Int                    @map("student_id")
+  classSectionId  Int?                   @map("class_section_id")
+  schoolId        Int?                   @map("school_id")
+  activityType    EngagementActivityType @map("activity_type")
+  activityDate    DateTime               @map("activity_date") @db.Date
+  durationMinutes Int?                   @map("duration_minutes")
+  completed       Boolean                @default(true)
+  remarks         String?                @db.VarChar(255)
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+
+  student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classSection ClassSection? @relation(fields: [classSectionId], references: [id], onDelete: Cascade)
+  school       School?       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@index([studentId], map: "idx_engagement_activities_student_id")
+  @@index([classSectionId], map: "idx_engagement_activities_class_section_id")
+  @@index([schoolId], map: "idx_engagement_activities_school_id")
+  @@index([activityDate], map: "idx_engagement_activities_activity_date")
+  @@index([activityType], map: "idx_engagement_activities_activity_type")
+  @@map("student_engagement_activities")
+}
+
+// VERIFICATION NEEDED: Verify schema definition against existing DB models.
+// One reached parent/guardian. `student_id` is nullable so a whole-school
+// parents' meeting can be recorded without fabricating one row per student.
+model ParentEngagement {
+  id             Int                     @id @default(autoincrement())
+  schoolId       Int?                    @map("school_id")
+  classSectionId Int?                    @map("class_section_id")
+  studentId      Int?                    @map("student_id")
+  guardianName   String?                 @map("guardian_name") @db.VarChar(150)
+  channel        ParentEngagementChannel @default(SCHOOL_MEETING)
+  engagedOn      DateTime                @map("engaged_on") @db.Date
+  remarks        String?                 @db.Text
+  createdAt      DateTime                @default(now()) @map("created_at")
+  updatedAt      DateTime                @updatedAt @map("updated_at")
+
+  school       School?       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classSection ClassSection? @relation(fields: [classSectionId], references: [id], onDelete: Cascade)
+  student      Student?      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId], map: "idx_parent_engagements_school_id")
+  @@index([classSectionId], map: "idx_parent_engagements_class_section_id")
+  @@index([studentId], map: "idx_parent_engagements_student_id")
+  @@index([engagedOn], map: "idx_parent_engagements_engaged_on")
+  @@map("parent_engagements")
+}
+
+// VERIFICATION NEEDED: Verify schema definition against existing DB models.
+// A home visit. Only COMPLETED rows count toward the dashboard "home visits
+// completed" figure. `students_reached` is stored rather than derived so that a
+// single visit which reached several siblings is not simultaneously counted as
+// one visit and as one distinct student.
+model HomeVisit {
+  id              Int             @id @default(autoincrement())
+  schoolId        Int?            @map("school_id")
+  classSectionId  Int?            @map("class_section_id")
+  studentId       Int?            @map("student_id")
+  visitDate       DateTime        @map("visit_date") @db.Date
+  status          HomeVisitStatus @default(SCHEDULED)
+  studentsReached Int             @default(0) @map("students_reached")
+  parentsPresent  Int?            @map("parents_present")
+  outcome         String?         @db.VarChar(255)
+  remarks         String?         @db.Text
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  createdById     Int             @map("created_by")
+
+  school       School?       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classSection ClassSection? @relation(fields: [classSectionId], references: [id], onDelete: Cascade)
+  student      Student?      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdBy    User          @relation("HomeVisitCreator", fields: [createdById], references: [id])
+
+  @@index([schoolId], map: "idx_home_visits_school_id")
+  @@index([classSectionId], map: "idx_home_visits_class_section_id")
+  @@index([studentId], map: "idx_home_visits_student_id")
+  @@index([visitDate], map: "idx_home_visits_visit_date")
+  @@index([status], map: "idx_home_visits_status")
+  @@map("home_visits")
 }

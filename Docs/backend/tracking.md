@@ -60,7 +60,27 @@
 | `GET` | `/baseline-assessments/export/flat` | Export wide pivoted assessment dataset (Matching 75-column Excel) | Admin / Teacher |
 
 
-## 6. Standardized JSON Response Formats
+## 6. Metrics (Akshara Dashboard) Endpoints Summary
+
+> [!NOTE]
+> Canonical paths are at the **application root** (see the note at the top of this
+> file). Each endpoint is also reachable under `/api/v1/metrics/...` via the
+> read-only compatibility alias. See [`metrics_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/metrics_api.md).
+
+All metrics endpoints are `GET` and accept the same filters: `academicYear`, `fromDate`, `toDate`, `schoolId`, `classId`, `month` (requires `year`).
+
+| Method | Endpoint Path | Description |
+| :--- | :--- | :--- |
+| `GET` | `/metrics/dashboard` | **Unified payload**: all 7 aspects + derived insights (Risk Score, Equity Score, MoM delta) |
+| `GET` | `/metrics/kpis` | Aspect 1 - the 5 headline KPIs (enrollment, attendance, learning gain, objectives, active students) |
+| `GET` | `/metrics/learning-outcomes` | Aspect 2 - overall & per-domain progress, S1-S5 distribution, stage movement, SAS split |
+| `GET` | `/metrics/school-performance` | Aspect 3 - school matrix with M&E status and risk score |
+| `GET` | `/metrics/needs-attention` | Aspect 4 - dynamically generated alerts with severity and recommended actions |
+| `GET` | `/metrics/teaching-objectives` | Aspect 5 - objective overview tiles + the class x module coverage matrix |
+| `GET` | `/metrics/engagement` | Aspect 6 - participation, AI/IVRS active rate, parents reached, home visits |
+| `GET` | `/metrics/finance` | Aspect 7 - budget vs spend, category split, monthly spend trend (Apr-Mar) |
+
+## 7. Standardized JSON Response Formats
 
 ### Success Response (`200 OK`, `201 Created`)
 ```json

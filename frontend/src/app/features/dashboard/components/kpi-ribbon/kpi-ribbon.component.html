@@ -8,21 +8,21 @@
       </div>
 
       <div>
-        <div class="text-2xl font-extrabold text-brand-ink tracking-tight leading-tight">
+        <div class="text-2xl font-extrabold text-brand-ink tracking-tight leading-tight tabular-nums">
           {{ item.value }}
         </div>
-        <div class="text-[11px] font-semibold text-slate-500 mt-0.5 leading-tight">
+        <div class="text-[11px] font-semibold text-slate-600 mt-1 leading-tight break-words">
           {{ item.title }}
         </div>
         @if (item.subtext && item.subtext !== item.title) {
-          <div class="text-[10px] font-normal text-slate-400 leading-tight">
+          <div class="text-[10px] font-medium text-slate-500 leading-tight mt-0.5 break-words">
             {{ item.subtext }}
           </div>
         }
       </div>
 
-      <div class="mt-3 text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
-        <span>↑ {{ item.trend }}</span>
+      <div class="mt-3 text-[11px] font-semibold text-emerald-700 flex items-start gap-1 leading-tight">
+        <span class="break-words">↑ {{ item.trend }}</span>
       </div>
     </app-ui-card>
   }

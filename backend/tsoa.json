@@ -1,7 +1,10 @@
 {
   "entryFile": "src/index.ts",
   "noImplicitAdditionalProperties": "throw-on-extras",
-  "controllerPathGlobs": ["src/controllers/*.controller.ts"],
+  "controllerPathGlobs": [
+    "src/controllers/*.controller.ts",
+    "src/metrics/controllers/*.controller.ts"
+  ],
   "iocModule": "src/ioc.ts",
   "routes": {
     "routesDir": "src/generated",
@@ -14,6 +17,9 @@
     "yaml": true,
     "entryFile": "src/index.ts",
     "noImplicitAdditionalProperties": "throw-on-extras",
-    "controllerPathGlobs": ["src/controllers/*.controller.ts"]
+    "controllerPathGlobs": [
+      "src/controllers/*.controller.ts",
+      "src/metrics/controllers/*.controller.ts"
+    ]
   }
 }

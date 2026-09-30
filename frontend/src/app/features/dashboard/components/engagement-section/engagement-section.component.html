@@ -7,34 +7,43 @@
     />
   </div>
 
+  <!--
+    The four tiles sit in a 1/3-width panel, so the grid collapses to 2 columns
+    on narrow viewports. Labels wrap rather than truncate: a card reading
+    "Class Par…" or "↑ 7% vs L…" hid the very numbers it was reporting.
+  -->
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 flex-1">
     @for (item of dashboardService.engagementMetrics(); track item.id) {
-      <div class="p-2.5 rounded-xl bg-brand-bg border border-gray-100 flex flex-col justify-between hover:bg-white hover:shadow-card transition-all">
-        <div class="flex items-center justify-between mb-2">
-          <div class="w-7 h-7 rounded-lg bg-brand-pink-soft flex items-center justify-center text-brand-pink">
+      <div class="p-3.5 rounded-xl bg-brand-bg border border-gray-100 flex flex-col justify-between gap-3 hover:bg-white hover:shadow-card transition-all">
+        <div class="flex items-center justify-between">
+          <div class="w-7 h-7 rounded-lg bg-brand-pink-soft flex items-center justify-center text-brand-pink shrink-0">
             <app-ui-icon [name]="item.icon" [size]="14" />
           </div>
         </div>
 
-        <div>
-          <div class="text-lg font-extrabold text-brand-ink leading-tight">
+        <div class="min-w-0">
+          <div class="text-lg font-extrabold text-brand-ink leading-tight tabular-nums">
             {{ item.value }}
           </div>
-          <div class="text-[10px] font-semibold text-slate-500 truncate">
+          <div class="text-[11px] font-semibold text-slate-600 leading-snug mt-1 break-words hyphens-auto">
             {{ item.title }}
           </div>
           @if (item.subtitle) {
-            <div class="text-[9px] font-normal text-slate-400">
+            <div class="text-[10px] font-medium text-slate-500 leading-snug mt-0.5 break-words">
               {{ item.subtitle }}
             </div>
           }
         </div>
 
-        <div class="mt-2">
-          <div class="text-[10px] font-semibold text-emerald-600 mb-1 truncate">
+        <div class="min-w-0">
+          <div class="text-[11px] font-semibold text-emerald-700 leading-snug mb-2 break-words">
             {{ item.trend }}
           </div>
-          <app-line-chart [isSparkline]="true" [points]="item.sparkline" />
+          <app-line-chart
+            [isSparkline]="true"
+            [points]="item.sparkline"
+            [ariaLabel]="item.title + ' trend'"
+          />
         </div>
       </div>
     }

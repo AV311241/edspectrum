@@ -29,6 +29,7 @@ When detailed context is required for specific tasks, refer strictly to the foll
 | [`Docs/backend/student_class_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/student_class_api.md) | Student & Class Section CRUD, enrollment, unenrollment, class transfers, capacity checks, and Prisma transaction architecture. | Inspecting or modifying Student and Class management features. |
 | [`Docs/backend/attendance_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/attendance_api.md) | Daily attendance marking, batch upserts, session cancellations, daily register grids, monthly analytics, risk level formulas, the canonical bulk-upload Zod schema, and the `ON_LEAVE` status. | Inspecting or modifying Attendance tracking, calculation rules, status weights, or risk algorithms. |
 | [`Docs/backend/data_upload_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/data_upload_api.md) | The centralized Excel bulk-upload pipeline: Classes / Students / Attendance Excel contracts, the 5-step wizard, per-entity upload services, and the batch endpoints. | Working on the Data Upload page, spreadsheet templates, or the `/batch` upload endpoints. |
+| [`Docs/backend/metrics_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/metrics_api.md) | The read-only Akshara dashboard module: 5 top KPIs, learning progress & SAS distribution, school performance matrix, dynamic Needs-Attention alerts, objective coverage matrix, engagement, finance, plus 3 derived metrics. | Working on the dashboard, any KPI/chart/alert figure, or the metrics-owned tables. |
 
 ---
 
@@ -42,9 +43,22 @@ When detailed context is required for specific tasks, refer strictly to the foll
 - **Attendance Risk Levels**: `STABLE` ($\ge 85\%$), `WATCH` ($< 85\%$), `AT_RISK` ($< 75\%$ or $\ge 3$ consecutive absences), `CRITICAL` ($< 60\%$ or $\ge 5$ consecutive absences).
 - **Student Statuses**: `ACTIVE`, `INACTIVE`, `TRANSFERRED`.
 - **Enrollment Statuses**: `PRESENT`, `ABSENT`, `TRANSFERRED`, `EXCLUDED`.
+- **Metrics Module** (see [`metrics_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/metrics_api.md)): read-only, `GET`-only. Reuses `ATTENDANCE_PRESENT_WEIGHT` rather than re-deriving attendance weights, and reuses the `finalStage ?? suggestedStage` precedence so the dashboard cannot contradict the class summary.
+  - **M&E Status Bands**: `ON_TRACK` / `WATCH` / `CRITICAL`. Escalation to `CRITICAL` requires breaching **both** the attendance and objectives thresholds (or having no assessment data). Emits `meStatus` (`'On Track' | 'Watch' | 'Critical'`) **and** `meStatusCategory` (`… | 'Needs Attention'`) so the existing Angular `SchoolPerformanceItem.meStatus` union keeps type-checking unchanged.
+  - **SAS (Student Achievement Status)**: a *student-level attainment status* from mean stage (`< 2` Support, `>= 4` Stretch, else Core). **Not** the HOD-entered Support/Anchor/Stretch **Bands** in `class_domain_summaries`, which [`Class-summary.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/Class-summary.md) (section 11) forbids auto-assigning. Nothing in the metrics module touches those columns.
+  - **Stage normalisation**: `Review` / `AB` and unassessed students are excluded (not counted as `S1`); only `SUBMITTED` / `REVIEWED` / `REVIEWED_OVERRIDE` / `LOCKED` assessments are read; `S1..S5` map to `20..100`.
+  - **Growth vs points**: counts use percentage growth (`growthDelta`), rates use percentage **points** (`pointDelta`). `growthDelta` returns `percent: null` on a zero base.
+  - **New enums**: `ObjectiveModuleStatus`, `ObjectivePlanStatus`, `BudgetCategory`, `FinanceEntryType`, `EngagementActivityType`, `HomeVisitStatus`, `ParentEngagementChannel`. **New tables**: `program_budgets`, `budget_allocations`, `finance_records`, `teaching_modules`, `program_objectives`, `objective_coverages`, `student_engagement_activities`, `parent_engagements`, `home_visits` (migration `20260927120000_metrics_module`, additive only). Every new model carries a `// VERIFICATION NEEDED` header.
 
 ---
 
 ## 4. Route Prefix Convention
 
 TSOA routes are registered at the **application root** via `RegisterRoutes(app)` in `src/index.ts`. The `/api/v1` Express mount carries only `/health` plus empty legacy router stubs. Frontend services therefore call e.g. `${environment.apiUrl}/attendance/batch-upload`, **not** `/api/v1/attendance/batch-upload`.
+
+> [!NOTE]
+> **One documented exception: the metrics module.** The Akshara dashboard product
+> specification names `/api/v1/metrics/...`, so `src/routes/index.ts` registers a
+> read-only alias that forwards to the same `MetricsController` singleton. Both
+> `/metrics/dashboard` and `/api/v1/metrics/dashboard` work and execute identical
+> code. See [`metrics_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/metrics_api.md).

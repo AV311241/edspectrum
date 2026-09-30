@@ -15,6 +15,8 @@ import { ClassController } from './../controllers/class.controller';
 import { BaselineAssessmentController } from './../controllers/baselineAssessment.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AttendanceController } from './../controllers/attendance.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { MetricsController } from './../metrics/controllers/metrics.controller';
 import { iocContainer } from './../ioc';
 import type { IocContainer, IocContainerFactory } from '@tsoa/runtime';
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
@@ -794,6 +796,589 @@ const models: TsoaRoute.Models = {
         "properties": {
             "status": {"ref":"AttendanceStatus"},
             "remarks": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MetricsFilterEchoDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "academicYear": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "fromDate": {"dataType":"string","required":true},
+            "toDate": {"dataType":"string","required":true},
+            "schoolId": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "classId": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "month": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "year": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "generatedAt": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "KpiTrendDirection": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["UP"]},{"dataType":"enum","enums":["DOWN"]},{"dataType":"enum","enums":["FLAT"]}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "KpiDeltaDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "value": {"dataType":"double","required":true},
+            "percent": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "comparisonLabel": {"dataType":"string","required":true},
+            "direction": {"ref":"KpiTrendDirection","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "KpiMetricDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "title": {"dataType":"string","required":true},
+            "value": {"dataType":"double","required":true},
+            "unit": {"dataType":"string","required":true},
+            "subtext": {"dataType":"string","required":true},
+            "delta": {"ref":"KpiDeltaDTO","required":true},
+            "isPositive": {"dataType":"boolean","required":true},
+            "icon": {"dataType":"string","required":true},
+            "trend": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "OverallProgressSummaryDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "baseline": {"dataType":"double","required":true},
+            "current": {"dataType":"double","required":true},
+            "increase": {"dataType":"double","required":true},
+            "baselineStudents": {"dataType":"double","required":true},
+            "currentStudents": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DomainProgressDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "domain": {"dataType":"string","required":true},
+            "baseline": {"dataType":"double","required":true},
+            "current": {"dataType":"double","required":true},
+            "gain": {"dataType":"double","required":true},
+            "baselineStudents": {"dataType":"double","required":true},
+            "currentStudents": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MetricsStageCode": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["S1"]},{"dataType":"enum","enums":["S2"]},{"dataType":"enum","enums":["S3"]},{"dataType":"enum","enums":["S4"]},{"dataType":"enum","enums":["S5"]}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "StageDistributionItemDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "stage": {"dataType":"string","required":true},
+            "stageCode": {"ref":"MetricsStageCode","required":true},
+            "studentCount": {"dataType":"double","required":true},
+            "percentage": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "StageMovementItemDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "stage": {"dataType":"string","required":true},
+            "stageCode": {"ref":"MetricsStageCode","required":true},
+            "baselinePercentage": {"dataType":"double","required":true},
+            "currentPercentage": {"dataType":"double","required":true},
+            "deltaPoints": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SasCategory": {
+        "dataType": "refEnum",
+        "enums": ["Support","Core","Stretch"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SasDistributionItemDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "category": {"ref":"SasCategory","required":true},
+            "percentage": {"dataType":"double","required":true},
+            "studentCount": {"dataType":"double","required":true},
+            "color": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "LearningProgressDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "overallProgress": {"ref":"OverallProgressSummaryDTO","required":true},
+            "learningProgress": {"dataType":"array","array":{"dataType":"refObject","ref":"DomainProgressDTO"},"required":true},
+            "domainProgress": {"dataType":"array","array":{"dataType":"refObject","ref":"DomainProgressDTO"},"required":true},
+            "stageDistribution": {"dataType":"array","array":{"dataType":"refObject","ref":"StageDistributionItemDTO"},"required":true},
+            "stageMovement": {"dataType":"array","array":{"dataType":"refObject","ref":"StageMovementItemDTO"},"required":true},
+            "sasDistribution": {"dataType":"array","array":{"dataType":"refObject","ref":"SasDistributionItemDTO"},"required":true},
+            "studentsAssessed": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MetricsStatusBand": {
+        "dataType": "refEnum",
+        "enums": ["ON_TRACK","WATCH","CRITICAL"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SchoolPerformanceDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "school": {"dataType":"string","required":true},
+            "students": {"dataType":"double","required":true},
+            "attendance": {"dataType":"double","required":true},
+            "learningGain": {"dataType":"double","required":true},
+            "objectives": {"dataType":"double","required":true},
+            "meStatus": {"dataType":"string","required":true},
+            "meStatusCategory": {"dataType":"string","required":true},
+            "schoolId": {"dataType":"double","required":true},
+            "schoolCode": {"dataType":"string","required":true},
+            "studentCount": {"dataType":"double","required":true},
+            "attendancePercent": {"dataType":"double","required":true},
+            "learningGainPoints": {"dataType":"double","required":true},
+            "objectivesCoveredPercent": {"dataType":"double","required":true},
+            "meStatusBand": {"ref":"MetricsStatusBand","required":true},
+            "riskScore": {"dataType":"double","required":true},
+            "dataCompletenessPercent": {"dataType":"double","required":true},
+            "classCount": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "NeedsAttentionCategory": {
+        "dataType": "refEnum",
+        "enums": ["Attendance","Speaking Practice","Learning Gain","Objectives Coverage","Parental Engagement","Data Gap"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "AlertSeverity": {
+        "dataType": "refEnum",
+        "enums": ["CRITICAL","WARNING","INFO"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "NeedsAttentionDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "title": {"dataType":"string","required":true},
+            "subtitle": {"dataType":"string","required":true},
+            "category": {"ref":"NeedsAttentionCategory","required":true},
+            "severity": {"ref":"AlertSeverity","required":true},
+            "schoolId": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "schoolName": {"dataType":"string","required":true},
+            "classSectionId": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "className": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "issueDescription": {"dataType":"string","required":true},
+            "actionNeeded": {"dataType":"string","required":true},
+            "observedValue": {"dataType":"double","required":true},
+            "thresholdValue": {"dataType":"double","required":true},
+            "unit": {"dataType":"string","required":true},
+            "gapPoints": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ObjectiveProgressDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "planned": {"dataType":"double","required":true},
+            "completed": {"dataType":"double","required":true},
+            "inProgress": {"dataType":"double","required":true},
+            "upcoming": {"dataType":"double","required":true},
+            "completionPercent": {"dataType":"double","required":true},
+            "total": {"dataType":"double","required":true},
+            "momDeltaPoints": {"dataType":"double","required":true},
+            "momDirection": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TeachingModuleColumnDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "moduleId": {"dataType":"double","required":true},
+            "code": {"dataType":"string","required":true},
+            "name": {"dataType":"string","required":true},
+            "sequenceNumber": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MetricsModuleStatus": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["covered"]},{"dataType":"enum","enums":["in-progress"]},{"dataType":"enum","enums":["not-started"]}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TeachingMatrixRowDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "classSectionId": {"dataType":"double","required":true},
+            "schoolId": {"dataType":"double","required":true},
+            "schoolName": {"dataType":"string","required":true},
+            "className": {"dataType":"string","required":true},
+            "modules": {"dataType":"array","array":{"dataType":"refAlias","ref":"MetricsModuleStatus"},"required":true},
+            "coveragePercent": {"dataType":"double","required":true},
+            "coveredCount": {"dataType":"double","required":true},
+            "inProgressCount": {"dataType":"double","required":true},
+            "notStartedCount": {"dataType":"double","required":true},
+            "enrolledStudents": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TeachingObjectivesDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "objectiveProgress": {"ref":"ObjectiveProgressDTO","required":true},
+            "moduleColumns": {"dataType":"array","array":{"dataType":"refObject","ref":"TeachingModuleColumnDTO"},"required":true},
+            "teachingMatrix": {"dataType":"array","array":{"dataType":"refObject","ref":"TeachingMatrixRowDTO"},"required":true},
+            "overallCoveragePercent": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ClassParticipationRowDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "classSectionId": {"dataType":"double","required":true},
+            "className": {"dataType":"string","required":true},
+            "schoolName": {"dataType":"string","required":true},
+            "participatingStudents": {"dataType":"double","required":true},
+            "enrolledStudents": {"dataType":"double","required":true},
+            "participationRatePercent": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ClassParticipationDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "participatingStudents": {"dataType":"double","required":true},
+            "enrolledStudents": {"dataType":"double","required":true},
+            "participationRatePercent": {"dataType":"double","required":true},
+            "delta": {"ref":"KpiDeltaDTO","required":true},
+            "byClass": {"dataType":"array","array":{"dataType":"refObject","ref":"ClassParticipationRowDTO"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ActivityTypeBreakdownDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "activityType": {"dataType":"string","required":true},
+            "activeStudents": {"dataType":"double","required":true},
+            "percentOfActive": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ActiveStudentsDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "activeStudents": {"dataType":"double","required":true},
+            "enrolledStudents": {"dataType":"double","required":true},
+            "activeRatePercent": {"dataType":"double","required":true},
+            "delta": {"ref":"KpiDeltaDTO","required":true},
+            "byActivityType": {"dataType":"array","array":{"dataType":"refObject","ref":"ActivityTypeBreakdownDTO"},"required":true},
+            "sparkline": {"dataType":"array","array":{"dataType":"double"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ParentChannelBreakdownDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "channel": {"dataType":"string","required":true},
+            "count": {"dataType":"double","required":true},
+            "percent": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ParentEngagementDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "parentsReached": {"dataType":"double","required":true},
+            "previousMonthParentsReached": {"dataType":"double","required":true},
+            "momPercentChange": {"dataType":"double","required":true},
+            "delta": {"ref":"KpiDeltaDTO","required":true},
+            "byChannel": {"dataType":"array","array":{"dataType":"refObject","ref":"ParentChannelBreakdownDTO"},"required":true},
+            "sparkline": {"dataType":"array","array":{"dataType":"double"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "HomeVisitsDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "completedVisits": {"dataType":"double","required":true},
+            "previousMonthCompletedVisits": {"dataType":"double","required":true},
+            "studentsReached": {"dataType":"double","required":true},
+            "previousMonthStudentsReached": {"dataType":"double","required":true},
+            "studentsReachedDelta": {"dataType":"double","required":true},
+            "delta": {"ref":"KpiDeltaDTO","required":true},
+            "sparkline": {"dataType":"array","array":{"dataType":"double"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "EngagementMetricsDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "classParticipation": {"ref":"ClassParticipationDTO","required":true},
+            "activeStudents": {"ref":"ActiveStudentsDTO","required":true},
+            "parentEngagement": {"ref":"ParentEngagementDTO","required":true},
+            "homeVisits": {"ref":"HomeVisitsDTO","required":true},
+            "overallEngagementScore": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BudgetTrackingDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "totalAnnualBudget": {"dataType":"double","required":true},
+            "spentTillDate": {"dataType":"double","required":true},
+            "balanceRemaining": {"dataType":"double","required":true},
+            "currency": {"dataType":"string","required":true},
+            "utilisationPercent": {"dataType":"double","required":true},
+            "expectedUtilisationPercent": {"dataType":"double","required":true},
+            "burnRateDeltaPercent": {"dataType":"double","required":true},
+            "academicYear": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "hasBudget": {"dataType":"boolean","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CategorySpendDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "name": {"dataType":"string","required":true},
+            "category": {"dataType":"string","required":true},
+            "amount": {"dataType":"double","required":true},
+            "percentage": {"dataType":"double","required":true},
+            "allocatedAmount": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "varianceAmount": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MonthlySpendPointDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "month": {"dataType":"string","required":true},
+            "monthNumber": {"dataType":"double","required":true},
+            "year": {"dataType":"double","required":true},
+            "amount": {"dataType":"double","required":true},
+            "deltaFromPrevious": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ResourceFinanceDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "budget": {"ref":"BudgetTrackingDTO","required":true},
+            "categorySpend": {"dataType":"array","array":{"dataType":"refObject","ref":"CategorySpendDTO"},"required":true},
+            "monthlySpendTrend": {"dataType":"array","array":{"dataType":"refObject","ref":"MonthlySpendPointDTO"},"required":true},
+            "totalSpendInAcademicYear": {"dataType":"double","required":true},
+            "monthsWithSpend": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "EquityOutlierDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "classId": {"dataType":"double","required":true},
+            "className": {"dataType":"string","required":true},
+            "schoolName": {"dataType":"string","required":true},
+            "classProgressPercent": {"dataType":"double","required":true},
+            "gapPoints": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DerivedInsightsDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "overallRiskScore": {"dataType":"double","required":true},
+            "overallRiskBand": {"dataType":"string","required":true},
+            "classEquityScore": {"dataType":"double","required":true},
+            "equityOutliers": {"dataType":"array","array":{"dataType":"refObject","ref":"EquityOutlierDTO"},"required":true},
+            "learningGainMomDeltaPoints": {"dataType":"double","required":true},
+            "learningGainMomDirection": {"dataType":"string","required":true},
+            "dataCompletenessPercent": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DashboardSummaryResponseDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "filter": {"ref":"MetricsFilterEchoDTO","required":true},
+            "kpiMetrics": {"dataType":"array","array":{"dataType":"refObject","ref":"KpiMetricDTO"},"required":true},
+            "learningOutcomes": {"ref":"LearningProgressDTO","required":true},
+            "schoolPerformance": {"dataType":"array","array":{"dataType":"refObject","ref":"SchoolPerformanceDTO"},"required":true},
+            "needsAttention": {"dataType":"array","array":{"dataType":"refObject","ref":"NeedsAttentionDTO"},"required":true},
+            "teachingObjectives": {"ref":"TeachingObjectivesDTO","required":true},
+            "engagement": {"ref":"EngagementMetricsDTO","required":true},
+            "resources": {"ref":"ResourceFinanceDTO","required":true},
+            "derivedInsights": {"ref":"DerivedInsightsDTO","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "StudentsEnrolledDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "value": {"dataType":"double","required":true},
+            "unit": {"dataType":"string","required":true},
+            "subtext": {"dataType":"string","required":true},
+            "totalStudents": {"dataType":"double","required":true},
+            "activeStudents": {"dataType":"double","required":true},
+            "inactiveStudents": {"dataType":"double","required":true},
+            "transferredStudents": {"dataType":"double","required":true},
+            "delta": {"ref":"KpiDeltaDTO","required":true},
+            "schoolsCount": {"dataType":"double","required":true},
+            "classesCount": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "AttendanceRateDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "value": {"dataType":"double","required":true},
+            "unit": {"dataType":"string","required":true},
+            "subtext": {"dataType":"string","required":true},
+            "attendancePercent": {"dataType":"double","required":true},
+            "weightedPresentDays": {"dataType":"double","required":true},
+            "workingDays": {"dataType":"double","required":true},
+            "cancelledSessions": {"dataType":"double","required":true},
+            "unmarkedRecords": {"dataType":"double","required":true},
+            "delta": {"ref":"KpiDeltaDTO","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "LearningGainDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "value": {"dataType":"double","required":true},
+            "unit": {"dataType":"string","required":true},
+            "subtext": {"dataType":"string","required":true},
+            "gainPoints": {"dataType":"double","required":true},
+            "baselinePercent": {"dataType":"double","required":true},
+            "currentPercent": {"dataType":"double","required":true},
+            "studentsWithBothAssessments": {"dataType":"double","required":true},
+            "strongestDomain": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "weakestDomain": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "delta": {"ref":"KpiDeltaDTO","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ObjectivesCoveredDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "value": {"dataType":"double","required":true},
+            "unit": {"dataType":"string","required":true},
+            "subtext": {"dataType":"string","required":true},
+            "completionPercent": {"dataType":"double","required":true},
+            "coveragePercent": {"dataType":"double","required":true},
+            "totals": {"ref":"ObjectiveProgressDTO","required":true},
+            "delta": {"ref":"KpiDeltaDTO","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ActiveStudentsKpiDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "value": {"dataType":"double","required":true},
+            "unit": {"dataType":"string","required":true},
+            "subtext": {"dataType":"string","required":true},
+            "activeRatePercent": {"dataType":"double","required":true},
+            "activeStudents": {"dataType":"double","required":true},
+            "enrolledStudents": {"dataType":"double","required":true},
+            "delta": {"ref":"KpiDeltaDTO","required":true},
+            "detail": {"ref":"ActiveStudentsDTO","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "KpiSummaryResponseDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "filter": {"ref":"MetricsFilterEchoDTO","required":true},
+            "studentsEnrolled": {"ref":"StudentsEnrolledDTO","required":true},
+            "attendanceRate": {"ref":"AttendanceRateDTO","required":true},
+            "averageLearningGain": {"ref":"LearningGainDTO","required":true},
+            "objectivesCovered": {"ref":"ObjectivesCoveredDTO","required":true},
+            "activeStudents": {"ref":"ActiveStudentsKpiDTO","required":true},
+            "kpiMetrics": {"dataType":"array","array":{"dataType":"refObject","ref":"KpiMetricDTO"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SchoolProgrammeAverageDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "attendancePercent": {"dataType":"double","required":true},
+            "learningGainPoints": {"dataType":"double","required":true},
+            "objectivesCoveredPercent": {"dataType":"double","required":true},
+            "riskScore": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SchoolPerformanceResponseDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "schools": {"dataType":"array","array":{"dataType":"refObject","ref":"SchoolPerformanceDTO"},"required":true},
+            "totalSchools": {"dataType":"double","required":true},
+            "programmeAverage": {"ref":"SchoolProgrammeAverageDTO","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "AlertSeverityCountsDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "critical": {"dataType":"double","required":true},
+            "warning": {"dataType":"double","required":true},
+            "info": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "NeedsAttentionResponseDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "alerts": {"dataType":"array","array":{"dataType":"refObject","ref":"NeedsAttentionDTO"},"required":true},
+            "totalAlerts": {"dataType":"double","required":true},
+            "bySeverity": {"ref":"AlertSeverityCountsDTO","required":true},
+            "truncatedCount": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
     },
@@ -2306,6 +2891,334 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'deleteAttendance',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMetricsController_getDashboard: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                fromDate: {"in":"query","name":"fromDate","dataType":"string"},
+                toDate: {"in":"query","name":"toDate","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+                classId: {"in":"query","name":"classId","dataType":"double"},
+                month: {"in":"query","name":"month","dataType":"double"},
+                year: {"in":"query","name":"year","dataType":"double"},
+        };
+        app.get('/metrics/dashboard',
+            ...(fetchMiddlewares<RequestHandler>(MetricsController)),
+            ...(fetchMiddlewares<RequestHandler>(MetricsController.prototype.getDashboard)),
+
+            async function MetricsController_getDashboard(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMetricsController_getDashboard, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<MetricsController>(MetricsController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getDashboard',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMetricsController_getKpis: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                fromDate: {"in":"query","name":"fromDate","dataType":"string"},
+                toDate: {"in":"query","name":"toDate","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+                classId: {"in":"query","name":"classId","dataType":"double"},
+                month: {"in":"query","name":"month","dataType":"double"},
+                year: {"in":"query","name":"year","dataType":"double"},
+        };
+        app.get('/metrics/kpis',
+            ...(fetchMiddlewares<RequestHandler>(MetricsController)),
+            ...(fetchMiddlewares<RequestHandler>(MetricsController.prototype.getKpis)),
+
+            async function MetricsController_getKpis(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMetricsController_getKpis, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<MetricsController>(MetricsController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getKpis',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMetricsController_getLearningOutcomes: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                fromDate: {"in":"query","name":"fromDate","dataType":"string"},
+                toDate: {"in":"query","name":"toDate","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+                classId: {"in":"query","name":"classId","dataType":"double"},
+                month: {"in":"query","name":"month","dataType":"double"},
+                year: {"in":"query","name":"year","dataType":"double"},
+        };
+        app.get('/metrics/learning-outcomes',
+            ...(fetchMiddlewares<RequestHandler>(MetricsController)),
+            ...(fetchMiddlewares<RequestHandler>(MetricsController.prototype.getLearningOutcomes)),
+
+            async function MetricsController_getLearningOutcomes(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMetricsController_getLearningOutcomes, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<MetricsController>(MetricsController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getLearningOutcomes',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMetricsController_getSchoolPerformance: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                fromDate: {"in":"query","name":"fromDate","dataType":"string"},
+                toDate: {"in":"query","name":"toDate","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+                classId: {"in":"query","name":"classId","dataType":"double"},
+                month: {"in":"query","name":"month","dataType":"double"},
+                year: {"in":"query","name":"year","dataType":"double"},
+        };
+        app.get('/metrics/school-performance',
+            ...(fetchMiddlewares<RequestHandler>(MetricsController)),
+            ...(fetchMiddlewares<RequestHandler>(MetricsController.prototype.getSchoolPerformance)),
+
+            async function MetricsController_getSchoolPerformance(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMetricsController_getSchoolPerformance, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<MetricsController>(MetricsController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getSchoolPerformance',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMetricsController_getNeedsAttention: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                fromDate: {"in":"query","name":"fromDate","dataType":"string"},
+                toDate: {"in":"query","name":"toDate","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+                classId: {"in":"query","name":"classId","dataType":"double"},
+                month: {"in":"query","name":"month","dataType":"double"},
+                year: {"in":"query","name":"year","dataType":"double"},
+        };
+        app.get('/metrics/needs-attention',
+            ...(fetchMiddlewares<RequestHandler>(MetricsController)),
+            ...(fetchMiddlewares<RequestHandler>(MetricsController.prototype.getNeedsAttention)),
+
+            async function MetricsController_getNeedsAttention(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMetricsController_getNeedsAttention, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<MetricsController>(MetricsController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getNeedsAttention',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMetricsController_getTeachingObjectives: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                fromDate: {"in":"query","name":"fromDate","dataType":"string"},
+                toDate: {"in":"query","name":"toDate","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+                classId: {"in":"query","name":"classId","dataType":"double"},
+                month: {"in":"query","name":"month","dataType":"double"},
+                year: {"in":"query","name":"year","dataType":"double"},
+        };
+        app.get('/metrics/teaching-objectives',
+            ...(fetchMiddlewares<RequestHandler>(MetricsController)),
+            ...(fetchMiddlewares<RequestHandler>(MetricsController.prototype.getTeachingObjectives)),
+
+            async function MetricsController_getTeachingObjectives(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMetricsController_getTeachingObjectives, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<MetricsController>(MetricsController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getTeachingObjectives',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMetricsController_getEngagement: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                fromDate: {"in":"query","name":"fromDate","dataType":"string"},
+                toDate: {"in":"query","name":"toDate","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+                classId: {"in":"query","name":"classId","dataType":"double"},
+                month: {"in":"query","name":"month","dataType":"double"},
+                year: {"in":"query","name":"year","dataType":"double"},
+        };
+        app.get('/metrics/engagement',
+            ...(fetchMiddlewares<RequestHandler>(MetricsController)),
+            ...(fetchMiddlewares<RequestHandler>(MetricsController.prototype.getEngagement)),
+
+            async function MetricsController_getEngagement(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMetricsController_getEngagement, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<MetricsController>(MetricsController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getEngagement',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMetricsController_getFinance: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                fromDate: {"in":"query","name":"fromDate","dataType":"string"},
+                toDate: {"in":"query","name":"toDate","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+                classId: {"in":"query","name":"classId","dataType":"double"},
+                month: {"in":"query","name":"month","dataType":"double"},
+                year: {"in":"query","name":"year","dataType":"double"},
+        };
+        app.get('/metrics/finance',
+            ...(fetchMiddlewares<RequestHandler>(MetricsController)),
+            ...(fetchMiddlewares<RequestHandler>(MetricsController.prototype.getFinance)),
+
+            async function MetricsController_getFinance(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMetricsController_getFinance, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<MetricsController>(MetricsController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getFinance',
                 controller,
                 response,
                 next,

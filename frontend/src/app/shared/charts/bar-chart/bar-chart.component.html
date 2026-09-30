@@ -20,6 +20,11 @@
       <div class="grid-line"><span class="grid-line-label">0</span><span class="grid-line-track"></span></div>
     </div>
 
+    <!--
+      Plot row only. The axis labels live in their own row below (see .axis-row)
+      so a long domain name such as "Listening" can wrap onto two lines instead
+      of being clipped, and so the gridlines span exactly the bar column.
+    -->
     <div class="bar-row">
       @for (item of data(); track item.domain) {
         <div class="bar-group">
@@ -27,9 +32,14 @@
             <div class="bar-column baseline" [style.height.%]="item.baseline"></div>
             <div class="bar-column current" [style.height.%]="item.current"></div>
           </div>
-          <div class="bar-label">{{ item.domain }}</div>
         </div>
       }
     </div>
+  </div>
+
+  <div class="axis-row">
+    @for (item of data(); track item.domain) {
+      <div class="axis-label">{{ item.domain }}</div>
+    }
   </div>
 </div>

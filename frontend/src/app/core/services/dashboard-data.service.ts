@@ -206,12 +206,17 @@ export class DashboardDataService {
     upcoming: 3
   });
 
+  /**
+   * One entry per module column. The leading `true`s of the previous model
+   * become `covered`; the module that was hard-coded amber (index 6, the
+   * current teaching month) is `in-progress`; the rest are `not-started`.
+   */
   readonly teachingMatrix = signal<TeachingMatrixRow[]>([
-    { className: '6A', modules: [true, true, true, true, true, true, false, false, false, false], coveragePercent: 64 },
-    { className: '7A', modules: [true, true, true, true, true, true, true, false, false, false], coveragePercent: 72 },
-    { className: '8A', modules: [true, true, true, true, true, true, false, false, false, false], coveragePercent: 68 },
-    { className: '9A', modules: [true, true, true, true, true, true, true, true, false, false], coveragePercent: 76 },
-    { className: '10A', modules: [true, true, true, true, true, false, false, false, false, false], coveragePercent: 59 }
+    { className: '6A', modules: ['covered', 'covered', 'covered', 'covered', 'covered', 'covered', 'in-progress', 'not-started', 'not-started', 'not-started'], coveragePercent: 64 },
+    { className: '7A', modules: ['covered', 'covered', 'covered', 'covered', 'covered', 'covered', 'covered', 'not-started', 'not-started', 'not-started'], coveragePercent: 72 },
+    { className: '8A', modules: ['covered', 'covered', 'covered', 'covered', 'covered', 'covered', 'in-progress', 'not-started', 'not-started', 'not-started'], coveragePercent: 68 },
+    { className: '9A', modules: ['covered', 'covered', 'covered', 'covered', 'covered', 'covered', 'covered', 'covered', 'not-started', 'not-started'], coveragePercent: 76 },
+    { className: '10A', modules: ['covered', 'covered', 'covered', 'covered', 'covered', 'in-progress', 'not-started', 'not-started', 'not-started', 'not-started'], coveragePercent: 59 }
   ]);
 
   readonly financeData = signal<FinanceSummaryData>({

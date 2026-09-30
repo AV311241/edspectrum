@@ -1,52 +1,122 @@
 @if (isSparkline()) {
   <div class="w-full h-8 flex items-end">
-    <svg class="w-full h-full overflow-visible" viewBox="0 0 100 30" preserveAspectRatio="none">
-      <path
-        [attr.d]="sparklineD()"
-        fill="none"
-        stroke="#c02672"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
+    <svg
+      class="w-full h-full overflow-visible"
+      viewBox="0 0 100 30"
+      preserveAspectRatio="none"
+      role="img"
+      [attr.aria-label]="ariaLabel()"
+    >
+      @if (hasData()) {
+        <path
+          [attr.d]="sparklineD()"
+          fill="none"
+          stroke="#c02672"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          vector-effect="non-scaling-stroke"
+        />
+      }
     </svg>
   </div>
 } @else {
-  <div class="w-full flex flex-col h-full">
-    <div class="relative flex-1 min-h-[120px] pt-4 pb-6">
-      <div class="absolute inset-0 flex flex-col justify-between pointer-events-none border-b border-gray-200">
-        <div class="text-[9px] text-slate-400 font-medium">40</div>
-        <div class="text-[9px] text-slate-400 font-medium">30</div>
-        <div class="text-[9px] text-slate-400 font-medium">20</div>
-        <div class="text-[9px] text-slate-400 font-medium">10</div>
-        <div class="text-[9px] text-slate-400 font-medium">0</div>
+  <div class="w-full flex flex-col">
+    <!--
+      One shared scale for both layers: the gridline layer and the SVG plot are
+      both inset by the y-axis label gutter, and both map a value to a distance
+      from the top of the plot area. The rules therefore stay locked to the line.
+    -->
+    <div class="relative h-[132px] pl-10">
+      <!-- Y-axis: one labelled gridline per tick, positioned by value. -->
+      <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+        @for (tick of ticks(); track tick.value) {
+          <div
+            class="absolute left-0 right-0 flex items-center -translate-y-1/2"
+            [style.top.%]="positionPercent(tick.value)"
+          >
+            <span class="w-10 shrink-0 pr-2 text-right text-[10px] font-semibold tabular-nums text-slate-600">
+              {{ tick.label }}
+            </span>
+            <span class="flex-1 border-t border-dashed border-slate-200"></span>
+          </div>
+        }
       </div>
 
-      <div class="relative w-full h-full pl-6">
-        <svg class="w-full h-full overflow-visible" viewBox="0 0 300 100" preserveAspectRatio="none">
-          <path
-            d="M 10 75 Q 60 50 110 40 T 210 25 T 290 30"
-            fill="none"
-            stroke="#c02672"
-            stroke-width="2.5"
-            stroke-linecap="round"
-          />
-          <circle cx="10" cy="75" r="3.5" fill="#c02672" />
-          <circle cx="66" cy="55" r="3.5" fill="#c02672" />
-          <circle cx="122" cy="45" r="3.5" fill="#c02672" />
-          <circle cx="178" cy="30" r="3.5" fill="#c02672" />
-          <circle cx="234" cy="25" r="3.5" fill="#c02672" />
-          <circle cx="290" cy="32" r="3.5" fill="#c02672" />
-        </svg>
+      <!-- Plot area, inset by the same gutter so it lines up with the rules. -->
+      <div class="absolute inset-y-0 left-10 right-0">
+        @if (hasData()) {
+          <svg
+            class="w-full h-full overflow-visible"
+            [attr.viewBox]="viewBox"
+            preserveAspectRatio="none"
+            role="img"
+            [attr.aria-label]="ariaLabel()"
+          >
+            <title>{{ ariaLabel() }}</title>
+            @if (areaPath()) {
+              <path [attr.d]="areaPath()" fill="#c02672" fill-opacity="0.08" />
+            }
+            <path
+              [attr.d]="linePath()"
+              fill="none"
+              stroke="#c02672"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              vector-effect="non-scaling-stroke"
+            />
+            @for (p of plotPoints(); track p.point.label) {
+              <circle
+                [attr.cx]="p.x"
+                [attr.cy]="p.y"
+                r="3.5"
+                fill="#c02672"
+                stroke="#ffffff"
+                stroke-width="1.5"
+                vector-effect="non-scaling-stroke"
+              >
+                <title>{{ p.point.label }}: {{ formatValue(p.point.value) }}</title>
+              </circle>
+            }
+          </svg>
+
+          <!--
+            Value labels live in HTML rather than SVG <text>: the plot stretches
+            with `preserveAspectRatio="none"`, which would distort SVG text
+            horizontally.
+          -->
+          @if (showValueLabels()) {
+            <div class="absolute inset-0 pointer-events-none">
+              @for (p of plotPoints(); track p.point.label; let i = $index) {
+                <span
+                  class="absolute -translate-x-1/2 -translate-y-full pb-1 text-[9px] font-semibold tabular-nums text-brand-ink whitespace-nowrap"
+                  [style.left.%]="labelLeftPercent(p.x, i)"
+                  [style.top.%]="positionPercent(p.point.value)"
+                >
+                  {{ formatValue(p.point.value) }}
+                </span>
+              }
+            </div>
+          }
+        } @else {
+          <p class="flex h-full items-center justify-center text-[11px] font-medium text-slate-500">
+            No data for this period
+          </p>
+        }
       </div>
     </div>
-    <div class="flex justify-between pl-6 text-[10px] font-medium text-slate-500 mt-1">
-      <span>Apr</span>
-      <span>May</span>
-      <span>Jun</span>
-      <span>Jul</span>
-      <span>Aug</span>
-      <span>Sep</span>
+
+    <!-- X-axis: month labels get their own row so a long name is never clipped. -->
+    <div class="mt-2 flex border-t border-slate-100 pl-10 pt-1.5">
+      @for (point of series(); track point.label) {
+        <span
+          class="flex-1 min-w-0 text-center text-[10px] font-semibold text-slate-600 break-words"
+        >
+          {{ point.label }}
+        </span>
+      }
     </div>
   </div>
 }
+

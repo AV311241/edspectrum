@@ -20,7 +20,8 @@
   margin-bottom: 0.5rem;
   font-size: 11px;
   font-weight: 500;
-  color: #64748b;
+  /* 7.5:1 on white. */
+  color: #475569;
   flex-wrap: wrap;
 }
 
@@ -52,12 +53,14 @@
   flex: 1;
   min-height: 180px;
   width: 100%;
-  padding: 1.5rem 0.5rem 1.25rem 0.5rem;
+  /* Gutter reserved for the y-axis labels; both the gridlines and the bars
+     start at the same offset so the rules line up with the bar column. */
+  padding: 0 0.5rem 0 2.25rem;
 }
 
 .grid-lines {
   position: absolute;
-  inset: 0 0 1.5rem 0;
+  inset: 0 0 0 2.25rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -69,19 +72,21 @@
   align-items: center;
   width: 100%;
   font-size: 10px;
-  color: #94a3b8;
+  /* 4.76:1 on white — the previous #94a3b8 was 2.6:1 and failed WCAG AA. */
+  color: #64748b;
 }
 
 .grid-line-label {
-  width: 28px;
+  position: absolute;
+  left: -2.25rem;
+  width: 1.75rem;
   text-align: right;
-  padding-right: 8px;
   font-weight: 500;
 }
 
 .grid-line-track {
   flex: 1;
-  border-bottom: 1px dashed rgba(148, 163, 184, 0.7);
+  border-bottom: 1px dashed rgba(100, 116, 139, 0.45);
 }
 
 .bar-row {
@@ -93,7 +98,6 @@
   width: 100%;
   height: 100%;
   gap: 0.5rem;
-  padding-left: 2rem;
 }
 
 .bar-group {
@@ -131,44 +135,44 @@
   background: #c02672;
 }
 
-.bar-value {
-  display: block;
-  margin-bottom: 0.35rem;
-  font-size: 10px;
-  font-weight: 600;
-  color: #64748b;
-  text-align: center;
-}
-
-.bar-value.current {
-  color: #c02672;
-}
-
-.bar-label {
+/*
+ * Axis labels sit in their own row, sharing the bar column widths, and wrap to
+ * a second line instead of being ellipsised. `min-height` reserves two lines so
+ * short names ("Vocab") stay baseline-aligned with long ones ("Listening").
+ */
+.axis-row {
+  display: flex;
+  width: 100%;
+  gap: 0.5rem;
   margin-top: 0.5rem;
+  padding: 0 0.5rem 0 2.25rem;
+}
+
+.axis-label {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 2.5em;
   font-size: 11px;
   font-weight: 500;
-  color: #64748b;
+  /* 7.5:1 on white, comfortably above the 4.5:1 AA threshold. */
+  color: #475569;
+  line-height: 1.25;
   text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 @media (max-width: 640px) {
   .chart-area {
     min-height: 160px;
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
   }
 
-  .bar-row {
-    padding-left: 1.5rem;
+  .bar-row,
+  .axis-row {
     gap: 0.25rem;
   }
 
-  .bar-label {
+  .axis-label {
     font-size: 10px;
   }
 }

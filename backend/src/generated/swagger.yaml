@@ -1566,6 +1566,1591 @@ components:
           nullable: true
       type: object
       additionalProperties: false
+    MetricsFilterEchoDTO:
+      description: "Every response embeds the resolved filter window so a client can
+        prove which\r
+
+        period the figures describe - essential when a dashboard caches
+        sections\r
+
+        independently and the user changes a filter mid-session."
+      properties:
+        academicYear:
+          type: string
+          nullable: true
+        fromDate:
+          type: string
+        toDate:
+          type: string
+        schoolId:
+          type: number
+          format: double
+          nullable: true
+        classId:
+          type: number
+          format: double
+          nullable: true
+        month:
+          type: number
+          format: double
+          nullable: true
+        year:
+          type: number
+          format: double
+          nullable: true
+        generatedAt:
+          type: string
+      required:
+        - academicYear
+        - fromDate
+        - toDate
+        - schoolId
+        - classId
+        - month
+        - year
+        - generatedAt
+      type: object
+      additionalProperties: false
+    KpiTrendDirection:
+      type: string
+      enum:
+        - UP
+        - DOWN
+        - FLAT
+    KpiDeltaDTO:
+      properties:
+        value:
+          type: number
+          format: double
+          description: Absolute movement against the comparison period, in the metric's
+            own unit.
+        percent:
+          type: number
+          format: double
+          nullable: true
+          description: Percentage movement, where the comparison base is non-zero. `null`
+            when undefined.
+        comparisonLabel:
+          type: string
+          description: Signed comparison label, e.g. "vs last month" / "vs last year".
+        direction:
+          $ref: "#/components/schemas/KpiTrendDirection"
+      required:
+        - value
+        - percent
+        - comparisonLabel
+        - direction
+      type: object
+      additionalProperties: false
+    KpiMetricDTO:
+      properties:
+        id:
+          type: string
+          description: Stable machine id, e.g. `students-enrolled`.
+        title:
+          type: string
+        value:
+          type: number
+          format: double
+          description: "Numeric value. Kept numeric (not a pre-formatted string) so the
+            card can apply\r
+
+            its own locale/precision rules; the Angular `KpiMetric.value` union
+            already\r
+
+            accepts a number, and `formatTrend` / `unit` cover the
+            presentation."
+        unit:
+          type: string
+        subtext:
+          type: string
+        delta:
+          $ref: "#/components/schemas/KpiDeltaDTO"
+        isPositive:
+          type: boolean
+        icon:
+          type: string
+        trend:
+          type: string
+          description: Backwards-compatible pre-formatted trend string, e.g. "+8% vs last
+            year".
+      required:
+        - id
+        - title
+        - value
+        - unit
+        - subtext
+        - delta
+        - isPositive
+        - icon
+        - trend
+      type: object
+      additionalProperties: false
+    OverallProgressSummaryDTO:
+      properties:
+        baseline:
+          type: number
+          format: double
+        current:
+          type: number
+          format: double
+        increase:
+          type: number
+          format: double
+          description: "`current - baseline` in percentage points - the dashboard's
+            \"+12%\" tile."
+        baselineStudents:
+          type: number
+          format: double
+        currentStudents:
+          type: number
+          format: double
+      required:
+        - baseline
+        - current
+        - increase
+        - baselineStudents
+        - currentStudents
+      type: object
+      additionalProperties: false
+    DomainProgressDTO:
+      description: One domain's baseline vs current attainment, as a percentage.
+      properties:
+        domain:
+          type: string
+          description: Human domain name, e.g. "Speaking".
+        baseline:
+          type: number
+          format: double
+          description: Mean stage converted to a 0-100 scale (S1=20 … S5=100).
+        current:
+          type: number
+          format: double
+        gain:
+          type: number
+          format: double
+          description: "`current - baseline`, in percentage points."
+        baselineStudents:
+          type: number
+          format: double
+          description: Number of students with a usable baseline row; 0 means the domain
+            is unreported.
+        currentStudents:
+          type: number
+          format: double
+      required:
+        - domain
+        - baseline
+        - current
+        - gain
+        - baselineStudents
+        - currentStudents
+      type: object
+      additionalProperties: false
+    MetricsStageCode:
+      type: string
+      enum:
+        - S1
+        - S2
+        - S3
+        - S4
+        - S5
+    StageDistributionItemDTO:
+      properties:
+        stage:
+          type: string
+        stageCode:
+          $ref: "#/components/schemas/MetricsStageCode"
+        studentCount:
+          type: number
+          format: double
+        percentage:
+          type: number
+          format: double
+      required:
+        - stage
+        - stageCode
+        - studentCount
+        - percentage
+      type: object
+      additionalProperties: false
+    StageMovementItemDTO:
+      description: "Stage *movement* - the same distribution at baseline versus
+        current, plus the\r
+
+        per-stage movement, so the UI can render a slope or a delta bar."
+      properties:
+        stage:
+          type: string
+        stageCode:
+          $ref: "#/components/schemas/MetricsStageCode"
+        baselinePercentage:
+          type: number
+          format: double
+          description: Distribution at the student's baseline assessment.
+        currentPercentage:
+          type: number
+          format: double
+          description: Distribution at the student's most recent assessment.
+        deltaPoints:
+          type: number
+          format: double
+          description: "`current - baseline`, in percentage points. Positive = cohort
+            moved up."
+      required:
+        - stage
+        - stageCode
+        - baselinePercentage
+        - currentPercentage
+        - deltaPoints
+      type: object
+      additionalProperties: false
+    SasCategory:
+      description: "SAS (Student Achievement Status) bands.\r
+
+        \r
+
+        IMPORTANT - read before changing:\r
+
+        SAS is a *student-level attainment status* computed from the student's
+        own mean\r
+
+        stage across the domains that were actually assessed. It is a
+        measurement.\r
+
+        \r
+
+        It is deliberately NOT the same thing as the Support / Anchor / Stretch
+        *Bands*\r
+
+        held in `class_domain_summaries`, which `Docs/Class-summary.md` (section
+        11)\r
+
+        records as expert-entered planning targets owned by the Head of
+        Department, and\r
+
+        which that document explicitly forbids auto-assigning. Nothing in this
+        module\r
+
+        reads, writes or overwrites those columns."
+      enum:
+        - Support
+        - Core
+        - Stretch
+      type: string
+    SasDistributionItemDTO:
+      properties:
+        category:
+          $ref: "#/components/schemas/SasCategory"
+        percentage:
+          type: number
+          format: double
+        studentCount:
+          type: number
+          format: double
+        color:
+          type: string
+          description: Akshara palette colour for the donut segment.
+      required:
+        - category
+        - percentage
+        - studentCount
+        - color
+      type: object
+      additionalProperties: false
+    LearningProgressDTO:
+      description: "Aspect 2 - `GET /metrics/learning-outcomes`.\r
+
+        \r
+
+        `domainProgress` covers every one of the seven baseline domains\r
+
+        (Vocabulary, Grammar, Phrase_Sentence, Listening, Speaking, Reading,
+        Writing).\r
+
+        The four \"core skill\" domains the chart card renders - Listening,
+        Speaking,\r
+
+        Reading, Writing - are additionally pre-isolated in `learningProgress`
+        so the\r
+
+        card does not have to filter client-side."
+      properties:
+        overallProgress:
+          $ref: "#/components/schemas/OverallProgressSummaryDTO"
+        learningProgress:
+          items:
+            $ref: "#/components/schemas/DomainProgressDTO"
+          type: array
+          description: The four core-skill domains, in display order.
+        domainProgress:
+          items:
+            $ref: "#/components/schemas/DomainProgressDTO"
+          type: array
+          description: All seven baseline domains, in canonical order.
+        stageDistribution:
+          items:
+            $ref: "#/components/schemas/StageDistributionItemDTO"
+          type: array
+          description: Stage distribution of students at their *current* stage.
+        stageMovement:
+          items:
+            $ref: "#/components/schemas/StageMovementItemDTO"
+          type: array
+          description: Baseline vs current stage distribution, with movement.
+        sasDistribution:
+          items:
+            $ref: "#/components/schemas/SasDistributionItemDTO"
+          type: array
+          description: "SAS (Student Achievement Status) split: Support vs Core vs Stretch."
+        studentsAssessed:
+          type: number
+          format: double
+          description: Students with at least one usable stage in either period.
+      required:
+        - overallProgress
+        - learningProgress
+        - domainProgress
+        - stageDistribution
+        - stageMovement
+        - sasDistribution
+        - studentsAssessed
+      type: object
+      additionalProperties: false
+    MetricsStatusBand:
+      description: "Monitoring & Evaluation (M&E) banding shown per school in the
+        performance matrix.\r
+
+        \r
+
+        `CRITICAL` is the canonical value requested by the product spec. It maps
+        to the\r
+
+        display string `'Needs Attention'`, which is what the Angular dashboard
+        already\r
+
+        declares in `SchoolPerformanceItem.meStatus`. Emitting both lets the
+        backend\r
+
+        speak the spec's vocabulary while remaining drop-in compatible with
+        the\r
+
+        existing frontend union, without editing any frontend file."
+      enum:
+        - ON_TRACK
+        - WATCH
+        - CRITICAL
+      type: string
+    SchoolPerformanceDTO:
+      description: "Aspect 3 - one row of the school performance matrix.\r
+
+        \r
+
+        Field names deliberately mirror the Angular `SchoolPerformanceItem`\r
+
+        (`id`, `school`, `students`, `attendance`, `learningGain`,
+        `objectives`,\r
+
+        `meStatus`) so the existing table component can consume this response
+        with no\r
+
+        adapter. The richer, unambiguous names sit alongside them."
+      properties:
+        id:
+          type: string
+        school:
+          type: string
+        students:
+          type: number
+          format: double
+        attendance:
+          type: number
+          format: double
+        learningGain:
+          type: number
+          format: double
+        objectives:
+          type: number
+          format: double
+        meStatus:
+          type: string
+          description: "`'On Track' | 'Watch' | 'Critical'` - the product spec's
+            vocabulary.\r
+
+            \r
+
+            NOTE: the Angular `SchoolPerformanceItem.meStatus` currently
+            declares\r
+
+            `'Needs Attention'` as its third member. `meStatusCategory` below
+            carries the\r
+
+            exact same band under the label the frontend already expects, so the
+            component\r
+
+            keeps type-checking without any frontend edit. When the frontend is
+            next\r
+
+            updated, `'Critical'` can replace `'Needs Attention'` outright."
+        meStatusCategory:
+          type: string
+          description: "Frontend-compatible label: `'On Track' | 'Watch' | 'Needs
+            Attention'`."
+        schoolId:
+          type: number
+          format: double
+        schoolCode:
+          type: string
+        studentCount:
+          type: number
+          format: double
+        attendancePercent:
+          type: number
+          format: double
+        learningGainPoints:
+          type: number
+          format: double
+          description: Percentage points gained between baseline and current attainment.
+        objectivesCoveredPercent:
+          type: number
+          format: double
+        meStatusBand:
+          $ref: "#/components/schemas/MetricsStatusBand"
+        riskScore:
+          type: number
+          format: double
+          description: Composite Risk Level Score, 0-100 where higher is healthier.
+        dataCompletenessPercent:
+          type: number
+          format: double
+          description: Assessment data completeness for this school, as a percentage.
+        classCount:
+          type: number
+          format: double
+          description: Number of class sections in scope for this school.
+      required:
+        - id
+        - school
+        - students
+        - attendance
+        - learningGain
+        - objectives
+        - meStatus
+        - meStatusCategory
+        - schoolId
+        - schoolCode
+        - studentCount
+        - attendancePercent
+        - learningGainPoints
+        - objectivesCoveredPercent
+        - meStatusBand
+        - riskScore
+        - dataCompletenessPercent
+        - classCount
+      type: object
+      additionalProperties: false
+    NeedsAttentionCategory:
+      description: Alert categories emitted by the dynamic "Needs Attention" generator.
+      enum:
+        - Attendance
+        - Speaking Practice
+        - Learning Gain
+        - Objectives Coverage
+        - Parental Engagement
+        - Data Gap
+      type: string
+    AlertSeverity:
+      enum:
+        - CRITICAL
+        - WARNING
+        - INFO
+      type: string
+    NeedsAttentionDTO:
+      description: "Aspect 4 - one dynamically generated alert.\r
+
+        \r
+
+        These are never persisted. Every call re-derives them from the same
+        figures that\r
+
+        feed the KPI tiles, which is what guarantees the alert list can never
+        contradict\r
+
+        the numbers shown beside it.\r
+
+        \r
+
+        `title` / `subtitle` additionally reproduce the Angular
+        `NeedsAttentionItem`\r
+
+        shape so the existing list component renders without an adapter."
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+          description: Frontend-compatible headline, e.g. "Attendance (Shirdi Sai Baba
+            School)".
+        subtitle:
+          type: string
+          description: Frontend-compatible supporting line, e.g. "Irregular in some
+            classes".
+        category:
+          $ref: "#/components/schemas/NeedsAttentionCategory"
+          description: e.g. "Speaking Practice", "Attendance", "Parental Engagement".
+        severity:
+          $ref: "#/components/schemas/AlertSeverity"
+        schoolId:
+          type: number
+          format: double
+          nullable: true
+        schoolName:
+          type: string
+        classSectionId:
+          type: number
+          format: double
+          nullable: true
+        className:
+          type: string
+          nullable: true
+        issueDescription:
+          type: string
+          description: Human-readable explanation of what is wrong.
+        actionNeeded:
+          type: string
+          description: What a human should actually do about it.
+        observedValue:
+          type: number
+          format: double
+          description: The measured figure that triggered the alert.
+        thresholdValue:
+          type: number
+          format: double
+          description: The threshold it was compared against.
+        unit:
+          type: string
+        gapPoints:
+          type: number
+          format: double
+          nullable: true
+          description: Percentage points below the programme average, where that is what
+            triggered it.
+      required:
+        - id
+        - title
+        - subtitle
+        - category
+        - severity
+        - schoolId
+        - schoolName
+        - classSectionId
+        - className
+        - issueDescription
+        - actionNeeded
+        - observedValue
+        - thresholdValue
+        - unit
+        - gapPoints
+      type: object
+      additionalProperties: false
+    ObjectiveProgressDTO:
+      description: Aspect 5, tiles 1-4 - the objective overview counts.
+      properties:
+        planned:
+          type: number
+          format: double
+        completed:
+          type: number
+          format: double
+        inProgress:
+          type: number
+          format: double
+        upcoming:
+          type: number
+          format: double
+        completionPercent:
+          type: number
+          format: double
+          description: '`completed / total * 100` - the "Objectives Covered" KPI.'
+        total:
+          type: number
+          format: double
+        momDeltaPoints:
+          type: number
+          format: double
+          description: Month-over-month change in `completionPercent`, in percentage points.
+        momDirection:
+          type: string
+      required:
+        - planned
+        - completed
+        - inProgress
+        - upcoming
+        - completionPercent
+        - total
+        - momDeltaPoints
+        - momDirection
+      type: object
+      additionalProperties: false
+    TeachingModuleColumnDTO:
+      description: One column header of the coverage matrix (M01..M10).
+      properties:
+        moduleId:
+          type: number
+          format: double
+        code:
+          type: string
+        name:
+          type: string
+        sequenceNumber:
+          type: number
+          format: double
+      required:
+        - moduleId
+        - code
+        - name
+        - sequenceNumber
+      type: object
+      additionalProperties: false
+    MetricsModuleStatus:
+      type: string
+      enum:
+        - covered
+        - in-progress
+        - not-started
+    TeachingMatrixRowDTO:
+      description: "One row of the \"Objective Coverage by Class & Module\" matrix.\r
+
+        \r
+
+        `modules` is positionally aligned with
+        `TeachingObjectivesDTO.moduleColumns`,\r
+
+        and the string values are exactly the Angular `TeachingModuleStatus`
+        union, so\r
+
+        the matrix component's three-state dot rendering works unmodified."
+      properties:
+        classSectionId:
+          type: number
+          format: double
+        schoolId:
+          type: number
+          format: double
+        schoolName:
+          type: string
+        className:
+          type: string
+        modules:
+          items:
+            $ref: "#/components/schemas/MetricsModuleStatus"
+          type: array
+          description: One status per module column, left to right.
+        coveragePercent:
+          type: number
+          format: double
+          description: "`covered / moduleCount * 100`."
+        coveredCount:
+          type: number
+          format: double
+        inProgressCount:
+          type: number
+          format: double
+        notStartedCount:
+          type: number
+          format: double
+        enrolledStudents:
+          type: number
+          format: double
+      required:
+        - classSectionId
+        - schoolId
+        - schoolName
+        - className
+        - modules
+        - coveragePercent
+        - coveredCount
+        - inProgressCount
+        - notStartedCount
+        - enrolledStudents
+      type: object
+      additionalProperties: false
+    TeachingObjectivesDTO:
+      description: Aspect 5 payload - `GET /metrics/teaching-objectives`.
+      properties:
+        objectiveProgress:
+          $ref: "#/components/schemas/ObjectiveProgressDTO"
+        moduleColumns:
+          items:
+            $ref: "#/components/schemas/TeachingModuleColumnDTO"
+          type: array
+          description: Matrix column headers, ordered by `sequenceNumber`.
+        teachingMatrix:
+          items:
+            $ref: "#/components/schemas/TeachingMatrixRowDTO"
+          type: array
+          description: Matrix rows, one per in-scope class section.
+        overallCoveragePercent:
+          type: number
+          format: double
+          description: Programme-wide coverage across every cell, 0-100.
+      required:
+        - objectiveProgress
+        - moduleColumns
+        - teachingMatrix
+        - overallCoveragePercent
+      type: object
+      additionalProperties: false
+    ClassParticipationRowDTO:
+      properties:
+        classSectionId:
+          type: number
+          format: double
+        className:
+          type: string
+        schoolName:
+          type: string
+        participatingStudents:
+          type: number
+          format: double
+        enrolledStudents:
+          type: number
+          format: double
+        participationRatePercent:
+          type: number
+          format: double
+      required:
+        - classSectionId
+        - className
+        - schoolName
+        - participatingStudents
+        - enrolledStudents
+        - participationRatePercent
+      type: object
+      additionalProperties: false
+    ClassParticipationDTO:
+      description: "Aspect 6, card 1 - class participation rate.\r
+
+        \r
+
+        Denominator is the in-scope enrolled roll; numerator is distinct
+        students with\r
+
+        at least one COMPLETED `CLASS_PARTICIPATION` activity in the period."
+      properties:
+        participatingStudents:
+          type: number
+          format: double
+        enrolledStudents:
+          type: number
+          format: double
+        participationRatePercent:
+          type: number
+          format: double
+        delta:
+          $ref: "#/components/schemas/KpiDeltaDTO"
+        byClass:
+          items:
+            $ref: "#/components/schemas/ClassParticipationRowDTO"
+          type: array
+          description: Participation rate per class section, powers the equity score.
+      required:
+        - participatingStudents
+        - enrolledStudents
+        - participationRatePercent
+        - delta
+        - byClass
+      type: object
+      additionalProperties: false
+    ActivityTypeBreakdownDTO:
+      properties:
+        activityType:
+          type: string
+        activeStudents:
+          type: number
+          format: double
+        percentOfActive:
+          type: number
+          format: double
+          description: Share of the *active* cohort, 0-100.
+      required:
+        - activityType
+        - activeStudents
+        - percentOfActive
+      type: object
+      additionalProperties: false
+    ActiveStudentsDTO:
+      description: Aspect 6, card 2 - AI/IVRS + practice active students.
+      properties:
+        activeStudents:
+          type: number
+          format: double
+        enrolledStudents:
+          type: number
+          format: double
+        activeRatePercent:
+          type: number
+          format: double
+        delta:
+          $ref: "#/components/schemas/KpiDeltaDTO"
+        byActivityType:
+          items:
+            $ref: "#/components/schemas/ActivityTypeBreakdownDTO"
+          type: array
+          description: Split of the active cohort by activity type, so the UI can label
+            the sources.
+        sparkline:
+          items:
+            type: number
+            format: double
+          type: array
+          description: Daily distinct-active counts across the period, for the sparkline.
+      required:
+        - activeStudents
+        - enrolledStudents
+        - activeRatePercent
+        - delta
+        - byActivityType
+        - sparkline
+      type: object
+      additionalProperties: false
+    ParentChannelBreakdownDTO:
+      properties:
+        channel:
+          type: string
+        count:
+          type: number
+          format: double
+        percent:
+          type: number
+          format: double
+      required:
+        - channel
+        - count
+        - percent
+      type: object
+      additionalProperties: false
+    ParentEngagementDTO:
+      description: Aspect 6, card 3 - parents reached.
+      properties:
+        parentsReached:
+          type: number
+          format: double
+        previousMonthParentsReached:
+          type: number
+          format: double
+        momPercentChange:
+          type: number
+          format: double
+          description: Month-over-month change, as a percentage of the previous month.
+        delta:
+          $ref: "#/components/schemas/KpiDeltaDTO"
+        byChannel:
+          items:
+            $ref: "#/components/schemas/ParentChannelBreakdownDTO"
+          type: array
+        sparkline:
+          items:
+            type: number
+            format: double
+          type: array
+      required:
+        - parentsReached
+        - previousMonthParentsReached
+        - momPercentChange
+        - delta
+        - byChannel
+        - sparkline
+      type: object
+      additionalProperties: false
+    HomeVisitsDTO:
+      description: Aspect 6, card 4 - home visits.
+      properties:
+        completedVisits:
+          type: number
+          format: double
+        previousMonthCompletedVisits:
+          type: number
+          format: double
+        studentsReached:
+          type: number
+          format: double
+          description: Students reached in the period, summed across completed visits.
+        previousMonthStudentsReached:
+          type: number
+          format: double
+        studentsReachedDelta:
+          type: number
+          format: double
+          description: "`studentsReached` movement against the previous month."
+        delta:
+          $ref: "#/components/schemas/KpiDeltaDTO"
+        sparkline:
+          items:
+            type: number
+            format: double
+          type: array
+      required:
+        - completedVisits
+        - previousMonthCompletedVisits
+        - studentsReached
+        - previousMonthStudentsReached
+        - studentsReachedDelta
+        - delta
+        - sparkline
+      type: object
+      additionalProperties: false
+    EngagementMetricsDTO:
+      description: "Aspect 6 payload - `GET /metrics/engagement`.\r
+
+        \r
+
+        Also carries the seven-point sparkline arrays the Angular\r
+
+        `EngagementMetricItem.sparkline` component expects, so the cards can be
+        driven\r
+
+        directly from the API."
+      properties:
+        classParticipation:
+          $ref: "#/components/schemas/ClassParticipationDTO"
+        activeStudents:
+          $ref: "#/components/schemas/ActiveStudentsDTO"
+        parentEngagement:
+          $ref: "#/components/schemas/ParentEngagementDTO"
+        homeVisits:
+          $ref: "#/components/schemas/HomeVisitsDTO"
+        overallEngagementScore:
+          type: number
+          format: double
+          description: Composite of the four cards, 0-100.
+      required:
+        - classParticipation
+        - activeStudents
+        - parentEngagement
+        - homeVisits
+        - overallEngagementScore
+      type: object
+      additionalProperties: false
+    BudgetTrackingDTO:
+      description: Aspect 7, card 1 - budget vs actuals.
+      properties:
+        totalAnnualBudget:
+          type: number
+          format: double
+        spentTillDate:
+          type: number
+          format: double
+        balanceRemaining:
+          type: number
+          format: double
+        currency:
+          type: string
+        utilisationPercent:
+          type: number
+          format: double
+          description: "`spentTillDate / totalAnnualBudget * 100`."
+        expectedUtilisationPercent:
+          type: number
+          format: double
+          description: "Straight-line expectation for the elapsed fraction of the academic
+            year.\r
+
+            Lets the UI say \"ahead of / behind pace\" rather than just showing
+            a raw\r
+
+            percentage, which is otherwise impossible to interpret in April."
+        burnRateDeltaPercent:
+          type: number
+          format: double
+          description: "`utilisationPercent - expectedUtilisationPercent`; positive =
+            ahead of pace."
+        academicYear:
+          type: string
+          nullable: true
+        hasBudget:
+          type: boolean
+          description: False when no budget row exists, so the UI can render an empty state.
+      required:
+        - totalAnnualBudget
+        - spentTillDate
+        - balanceRemaining
+        - currency
+        - utilisationPercent
+        - expectedUtilisationPercent
+        - burnRateDeltaPercent
+        - academicYear
+        - hasBudget
+      type: object
+      additionalProperties: false
+    CategorySpendDTO:
+      description: Aspect 7, card 2 - spend split across the six categories.
+      properties:
+        name:
+          type: string
+          description: e.g. "Human Resources".
+        category:
+          type: string
+        amount:
+          type: number
+          format: double
+        percentage:
+          type: number
+          format: double
+          description: Share of total spend, 0-100. Sums to 100 when any spend exists.
+        allocatedAmount:
+          type: number
+          format: double
+          nullable: true
+          description: The sanctioned allocation for this category, when a budget is on
+            record.
+        varianceAmount:
+          type: number
+          format: double
+          nullable: true
+          description: "`amount - allocatedAmount`; negative = underspent."
+      required:
+        - name
+        - category
+        - amount
+        - percentage
+        - allocatedAmount
+        - varianceAmount
+      type: object
+      additionalProperties: false
+    MonthlySpendPointDTO:
+      properties:
+        month:
+          type: string
+          description: Short month label, e.g. "Apr".
+        monthNumber:
+          type: number
+          format: double
+          description: 1-12, for charting against a real date axis.
+        year:
+          type: number
+          format: double
+        amount:
+          type: number
+          format: double
+        deltaFromPrevious:
+          type: number
+          format: double
+          description: Month-over-month change in absolute currency.
+      required:
+        - month
+        - monthNumber
+        - year
+        - amount
+        - deltaFromPrevious
+      type: object
+      additionalProperties: false
+    ResourceFinanceDTO:
+      description: Aspect 7 payload - `GET /metrics/finance`.
+      properties:
+        budget:
+          $ref: "#/components/schemas/BudgetTrackingDTO"
+        categorySpend:
+          items:
+            $ref: "#/components/schemas/CategorySpendDTO"
+          type: array
+        monthlySpendTrend:
+          items:
+            $ref: "#/components/schemas/MonthlySpendPointDTO"
+          type: array
+        totalSpendInAcademicYear:
+          type: number
+          format: double
+        monthsWithSpend:
+          type: number
+          format: double
+          description: Months that have at least one ledger row, so gaps are visible as
+            gaps.
+      required:
+        - budget
+        - categorySpend
+        - monthlySpendTrend
+        - totalSpendInAcademicYear
+        - monthsWithSpend
+      type: object
+      additionalProperties: false
+    EquityOutlierDTO:
+      properties:
+        classId:
+          type: number
+          format: double
+        className:
+          type: string
+        schoolName:
+          type: string
+        classProgressPercent:
+          type: number
+          format: double
+          description: The class's mean learning progress %, for comparison against the
+            programme mean.
+        gapPoints:
+          type: number
+          format: double
+          description: Signed gap in percentage points versus the programme mean.
+      required:
+        - classId
+        - className
+        - schoolName
+        - classProgressPercent
+        - gapPoints
+      type: object
+      additionalProperties: false
+    DerivedInsightsDTO:
+      description: "Three additional calculated metrics that are not part of the seven
+        core\r
+
+        dashboard aspects but are the natural by-product of them."
+      properties:
+        overallRiskScore:
+          type: number
+          format: double
+          description: "Derived metric #1 - composite Risk Level Score for the whole
+            scope, 0-100\r
+
+            where higher is healthier. Weighted blend of attendance, objective
+            coverage,\r
+
+            learning gain and assessment data completeness."
+        overallRiskBand:
+          type: string
+        classEquityScore:
+          type: number
+          format: double
+          description: "Derived metric #2 - Class Equity Score, 0-100 where higher is more
+            equitable.\r
+
+            Computed as 100 minus the Gini coefficient of the per-class learning
+            spread, so\r
+
+            one outlier class measurably drags the programme down."
+        equityOutliers:
+          items:
+            $ref: "#/components/schemas/EquityOutlierDTO"
+          type: array
+          description: The classes furthest from the programme mean, for the "equity"
+            drill-down.
+        learningGainMomDeltaPoints:
+          type: number
+          format: double
+          description: "Derived metric #3 - month-over-month movement of the headline
+            learning gain,\r
+
+            in percentage points, plus an explicit direction so the UI does not
+            have to\r
+
+            infer it from the sign of a string."
+        learningGainMomDirection:
+          type: string
+        dataCompletenessPercent:
+          type: number
+          format: double
+          description: Proportion of in-scope students with at least one assessment, as a
+            data-quality signal.
+      required:
+        - overallRiskScore
+        - overallRiskBand
+        - classEquityScore
+        - equityOutliers
+        - learningGainMomDeltaPoints
+        - learningGainMomDirection
+        - dataCompletenessPercent
+      type: object
+      additionalProperties: false
+    DashboardSummaryResponseDTO:
+      description: "Unified payload for `GET /metrics/dashboard`.\r
+
+        \r
+
+        Deliberately an *interface composition* rather than a type intersection
+        so\r
+
+        that tsoa can resolve every referenced model and emit a correct OpenAPI
+        schema\r
+
+        (tsoa cannot introspect mapped/conditional types)."
+      properties:
+        filter:
+          $ref: "#/components/schemas/MetricsFilterEchoDTO"
+          description: The filter window the figures below were computed over.
+        kpiMetrics:
+          items:
+            $ref: "#/components/schemas/KpiMetricDTO"
+          type: array
+          description: Aspect 1 - the five KPI cards.
+        learningOutcomes:
+          $ref: "#/components/schemas/LearningProgressDTO"
+          description: Aspect 2 - learning progress and outcomes.
+        schoolPerformance:
+          items:
+            $ref: "#/components/schemas/SchoolPerformanceDTO"
+          type: array
+          description: Aspect 3 - the school performance matrix.
+        needsAttention:
+          items:
+            $ref: "#/components/schemas/NeedsAttentionDTO"
+          type: array
+          description: Aspect 4 - dynamically generated alerts.
+        teachingObjectives:
+          $ref: "#/components/schemas/TeachingObjectivesDTO"
+          description: Aspect 5 - teaching objectives and the class x module coverage
+            matrix.
+        engagement:
+          $ref: "#/components/schemas/EngagementMetricsDTO"
+          description: Aspect 6 - stakeholder engagement.
+        resources:
+          $ref: "#/components/schemas/ResourceFinanceDTO"
+          description: Aspect 7 - budget, category split and monthly spend trend.
+        derivedInsights:
+          $ref: "#/components/schemas/DerivedInsightsDTO"
+          description: Aspects 1-3, recomputed across the whole scope rather than per
+            school.
+      required:
+        - filter
+        - kpiMetrics
+        - learningOutcomes
+        - schoolPerformance
+        - needsAttention
+        - teachingObjectives
+        - engagement
+        - resources
+        - derivedInsights
+      type: object
+      additionalProperties: false
+    StudentsEnrolledDTO:
+      description: "The five headline cards, itemised.\r
+
+        \r
+
+        Each interface below also re-exposes `id`, `value`, `unit`, `subtext`
+        and\r
+
+        `delta` in the same shape the Angular `KpiMetric` card expects, so a
+        single\r
+
+        serialised object can drive either the typed card or the raw KPI
+        ribbon."
+      properties:
+        id:
+          type: string
+        value:
+          type: number
+          format: double
+        unit:
+          type: string
+        subtext:
+          type: string
+        totalStudents:
+          type: number
+          format: double
+        activeStudents:
+          type: number
+          format: double
+        inactiveStudents:
+          type: number
+          format: double
+        transferredStudents:
+          type: number
+          format: double
+        delta:
+          $ref: "#/components/schemas/KpiDeltaDTO"
+          description: Growth against the same period one academic year earlier.
+        schoolsCount:
+          type: number
+          format: double
+        classesCount:
+          type: number
+          format: double
+      required:
+        - id
+        - value
+        - unit
+        - subtext
+        - totalStudents
+        - activeStudents
+        - inactiveStudents
+        - transferredStudents
+        - delta
+        - schoolsCount
+        - classesCount
+      type: object
+      additionalProperties: false
+    AttendanceRateDTO:
+      properties:
+        id:
+          type: string
+        value:
+          type: number
+          format: double
+        unit:
+          type: string
+        subtext:
+          type: string
+        attendancePercent:
+          type: number
+          format: double
+        weightedPresentDays:
+          type: number
+          format: double
+          description: Weighted present-days over working days across the whole scope.
+        workingDays:
+          type: number
+          format: double
+        cancelledSessions:
+          type: number
+          format: double
+        unmarkedRecords:
+          type: number
+          format: double
+        delta:
+          $ref: "#/components/schemas/KpiDeltaDTO"
+          description: Month-over-month movement in percentage points.
+      required:
+        - id
+        - value
+        - unit
+        - subtext
+        - attendancePercent
+        - weightedPresentDays
+        - workingDays
+        - cancelledSessions
+        - unmarkedRecords
+        - delta
+      type: object
+      additionalProperties: false
+    LearningGainDTO:
+      properties:
+        id:
+          type: string
+        value:
+          type: number
+          format: double
+        unit:
+          type: string
+        subtext:
+          type: string
+        gainPoints:
+          type: number
+          format: double
+          description: Mean attainment gain in percentage points across assessed students.
+        baselinePercent:
+          type: number
+          format: double
+        currentPercent:
+          type: number
+          format: double
+        studentsWithBothAssessments:
+          type: number
+          format: double
+        strongestDomain:
+          type: string
+          nullable: true
+          description: Strongest and weakest domains by gain, for the "what moved" callout.
+        weakestDomain:
+          type: string
+          nullable: true
+        delta:
+          $ref: "#/components/schemas/KpiDeltaDTO"
+      required:
+        - id
+        - value
+        - unit
+        - subtext
+        - gainPoints
+        - baselinePercent
+        - currentPercent
+        - studentsWithBothAssessments
+        - strongestDomain
+        - weakestDomain
+        - delta
+      type: object
+      additionalProperties: false
+    ObjectivesCoveredDTO:
+      properties:
+        id:
+          type: string
+        value:
+          type: number
+          format: double
+        unit:
+          type: string
+        subtext:
+          type: string
+        completionPercent:
+          type: number
+          format: double
+          description: Per-objective completion, as shown on the KPI card.
+        coveragePercent:
+          type: number
+          format: double
+          description: Per-cell class x module coverage, as shown on the matrix summary.
+        totals:
+          $ref: "#/components/schemas/ObjectiveProgressDTO"
+        delta:
+          $ref: "#/components/schemas/KpiDeltaDTO"
+      required:
+        - id
+        - value
+        - unit
+        - subtext
+        - completionPercent
+        - coveragePercent
+        - totals
+        - delta
+      type: object
+      additionalProperties: false
+    ActiveStudentsKpiDTO:
+      properties:
+        id:
+          type: string
+        value:
+          type: number
+          format: double
+        unit:
+          type: string
+        subtext:
+          type: string
+        activeRatePercent:
+          type: number
+          format: double
+        activeStudents:
+          type: number
+          format: double
+        enrolledStudents:
+          type: number
+          format: double
+        delta:
+          $ref: "#/components/schemas/KpiDeltaDTO"
+        detail:
+          $ref: "#/components/schemas/ActiveStudentsDTO"
+      required:
+        - id
+        - value
+        - unit
+        - subtext
+        - activeRatePercent
+        - activeStudents
+        - enrolledStudents
+        - delta
+        - detail
+      type: object
+      additionalProperties: false
+    KpiSummaryResponseDTO:
+      description: Aspect 1 payload - `GET /metrics/kpis`.
+      properties:
+        filter:
+          $ref: "#/components/schemas/MetricsFilterEchoDTO"
+        studentsEnrolled:
+          $ref: "#/components/schemas/StudentsEnrolledDTO"
+        attendanceRate:
+          $ref: "#/components/schemas/AttendanceRateDTO"
+        averageLearningGain:
+          $ref: "#/components/schemas/LearningGainDTO"
+        objectivesCovered:
+          $ref: "#/components/schemas/ObjectivesCoveredDTO"
+        activeStudents:
+          $ref: "#/components/schemas/ActiveStudentsKpiDTO"
+        kpiMetrics:
+          items:
+            $ref: "#/components/schemas/KpiMetricDTO"
+          type: array
+          description: The same five figures flattened for the KPI ribbon component.
+      required:
+        - filter
+        - studentsEnrolled
+        - attendanceRate
+        - averageLearningGain
+        - objectivesCovered
+        - activeStudents
+        - kpiMetrics
+      type: object
+      additionalProperties: false
+    SchoolProgrammeAverageDTO:
+      properties:
+        attendancePercent:
+          type: number
+          format: double
+        learningGainPoints:
+          type: number
+          format: double
+        objectivesCoveredPercent:
+          type: number
+          format: double
+        riskScore:
+          type: number
+          format: double
+      required:
+        - attendancePercent
+        - learningGainPoints
+        - objectivesCoveredPercent
+        - riskScore
+      type: object
+      additionalProperties: false
+    SchoolPerformanceResponseDTO:
+      description: Aspect 3 payload - `GET /metrics/school-performance`.
+      properties:
+        schools:
+          items:
+            $ref: "#/components/schemas/SchoolPerformanceDTO"
+          type: array
+        totalSchools:
+          type: number
+          format: double
+        programmeAverage:
+          $ref: "#/components/schemas/SchoolProgrammeAverageDTO"
+          description: Programme-wide averages, useful for sorting the table against the
+            mean.
+      required:
+        - schools
+        - totalSchools
+        - programmeAverage
+      type: object
+      additionalProperties: false
+    AlertSeverityCountsDTO:
+      properties:
+        critical:
+          type: number
+          format: double
+        warning:
+          type: number
+          format: double
+        info:
+          type: number
+          format: double
+      required:
+        - critical
+        - warning
+        - info
+      type: object
+      additionalProperties: false
+    NeedsAttentionResponseDTO:
+      description: Aspect 4 payload - `GET /metrics/needs-attention`.
+      properties:
+        alerts:
+          items:
+            $ref: "#/components/schemas/NeedsAttentionDTO"
+          type: array
+        totalAlerts:
+          type: number
+          format: double
+        bySeverity:
+          $ref: "#/components/schemas/AlertSeverityCountsDTO"
+          description: Alert counts by severity, for the summary chips above the list.
+        truncatedCount:
+          type: number
+          format: double
+          description: Number of alerts suppressed by the `METRICS_MAX_ALERTS` cap.
+      required:
+        - alerts
+        - totalAlerts
+        - bySeverity
+        - truncatedCount
+      type: object
+      additionalProperties: false
   securitySchemes: {}
 info:
   title: lumino1-backend
@@ -2814,5 +4399,475 @@ paths:
           required: true
           schema:
             type: string
+  /metrics/dashboard:
+    get:
+      operationId: GetDashboard
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummaryResponseDTO"
+        "400":
+          description: Bad Request - Invalid filter parameters
+      description: "Get the complete dashboard in one request.\r
+
+        \r
+
+        Covers all seven core aspects plus the three derived metrics. Preferred
+        for the\r
+
+        initial page load, because it guarantees every section of the screen is
+        derived\r
+
+        from a single resolved filter window. The granular endpoints expose the
+        same\r
+
+        data for clients that refresh one section at a time."
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: fromDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: toDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: classId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: month
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: year
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/kpis:
+    get:
+      operationId: GetKpis
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KpiSummaryResponseDTO"
+        "400":
+          description: Bad Request - Invalid filter parameters
+      description: Get the five headline KPI cards (Aspect 1).
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: fromDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: toDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: classId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: month
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: year
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/learning-outcomes:
+    get:
+      operationId: GetLearningOutcomes
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningProgressDTO"
+        "400":
+          description: Bad Request - Invalid filter parameters
+      description: "Get learning progress and outcomes (Aspect 2).\r
+
+        \r
+
+        Returns overall progress, per-domain baseline vs current, the S1-S5
+        stage\r
+
+        distribution, stage movement between baseline and current, and the SAS
+        split."
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: fromDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: toDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: classId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: month
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: year
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/school-performance:
+    get:
+      operationId: GetSchoolPerformance
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchoolPerformanceResponseDTO"
+        "400":
+          description: Bad Request - Invalid filter parameters
+      description: Get the school performance matrix (Aspect 3).
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: fromDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: toDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: classId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: month
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: year
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/needs-attention:
+    get:
+      operationId: GetNeedsAttention
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NeedsAttentionResponseDTO"
+        "400":
+          description: Bad Request - Invalid filter parameters
+      description: Get the dynamically generated "Needs Attention" alerts (Aspect 4).
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: fromDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: toDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: classId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: month
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: year
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/teaching-objectives:
+    get:
+      operationId: GetTeachingObjectives
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeachingObjectivesDTO"
+        "400":
+          description: Bad Request - Invalid filter parameters
+      description: Get teaching objectives and the class x module coverage matrix
+        (Aspect 5).
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: fromDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: toDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: classId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: month
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: year
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/engagement:
+    get:
+      operationId: GetEngagement
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EngagementMetricsDTO"
+        "400":
+          description: Bad Request - Invalid filter parameters
+      description: Get stakeholder engagement metrics (Aspect 6).
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: fromDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: toDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: classId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: month
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: year
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/finance:
+    get:
+      operationId: GetFinance
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceFinanceDTO"
+        "400":
+          description: Bad Request - Invalid filter parameters
+      description: Get resources and finance tracking (Aspect 7).
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: fromDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: toDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: classId
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: month
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: year
+          required: false
+          schema:
+            format: double
+            type: number
 servers:
   - url: /

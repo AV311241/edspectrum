@@ -7,63 +7,89 @@
     />
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-    <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center gap-2.5">
+  <!--
+    Tiles use the compact rupee form (`₹45L`) with the exact amount on the
+    tooltip/accessible label: `₹45,00,000` was wider than the tile and rendered
+    as "₹ 45…". Padding is p-3.5 so the value never sits against the border.
+  -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+    <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center gap-2.5">
       <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
         <app-ui-icon name="wallet" [size]="14" />
       </div>
       <div class="min-w-0">
-        <div class="text-sm font-extrabold text-brand-ink leading-tight truncate">
-          ₹ {{ dashboardService.financeData().annualBudget.toLocaleString('en-IN') }}
+        <div
+          class="text-base font-extrabold text-brand-ink leading-tight tabular-nums"
+          [attr.title]="formatInr(dashboardService.financeData().annualBudget)"
+        >
+          {{ formatCompactInr(dashboardService.financeData().annualBudget) }}
         </div>
-        <div class="text-[10px] font-medium text-slate-500 truncate">Budget (Annual)</div>
+        <div class="text-[11px] font-semibold text-slate-600 leading-snug">Budget (Annual)</div>
       </div>
     </div>
 
-    <div class="p-2.5 rounded-xl bg-brand-pink-soft border border-pink-100 flex items-center gap-2.5">
+    <div class="p-3.5 rounded-xl bg-brand-pink-soft border border-pink-100 flex items-center gap-2.5">
       <div class="w-7 h-7 rounded-lg bg-brand-pink text-white flex items-center justify-center shrink-0">
         <app-ui-icon name="wallet" [size]="14" />
       </div>
       <div class="min-w-0">
-        <div class="text-sm font-extrabold text-brand-ink leading-tight truncate">
-          ₹ {{ dashboardService.financeData().spentTillAug.toLocaleString('en-IN') }}
+        <div
+          class="text-base font-extrabold text-brand-ink leading-tight tabular-nums"
+          [attr.title]="formatInr(dashboardService.financeData().spentTillAug)"
+        >
+          {{ formatCompactInr(dashboardService.financeData().spentTillAug) }}
         </div>
-        <div class="text-[10px] font-medium text-slate-500 truncate">Spent (Till Aug)</div>
+        <div class="text-[11px] font-semibold text-slate-600 leading-snug">Spent (Till Aug)</div>
       </div>
     </div>
 
-    <div class="p-2.5 rounded-xl bg-blue-50 border border-blue-100 flex items-center gap-2.5">
+    <div class="p-3.5 rounded-xl bg-blue-50 border border-blue-100 flex items-center gap-2.5">
       <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
         <app-ui-icon name="wallet" [size]="14" />
       </div>
       <div class="min-w-0">
-        <div class="text-sm font-extrabold text-brand-ink leading-tight truncate">
-          ₹ {{ dashboardService.financeData().balance.toLocaleString('en-IN') }}
+        <div
+          class="text-base font-extrabold text-brand-ink leading-tight tabular-nums"
+          [attr.title]="formatInr(dashboardService.financeData().balance)"
+        >
+          {{ formatCompactInr(dashboardService.financeData().balance) }}
         </div>
-        <div class="text-[10px] font-medium text-slate-500 truncate">Balance</div>
+        <div class="text-[11px] font-semibold text-slate-600 leading-snug">Balance</div>
       </div>
     </div>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div>
-      <h3 class="text-xs font-semibold text-slate-700 mb-2">Spend by Category</h3>
-      <div class="space-y-1.5">
+      <h3 class="text-xs font-semibold text-slate-700 mb-2.5">Spend by Category</h3>
+      <div class="space-y-2">
         @for (cat of dashboardService.financeData().categories; track cat.name) {
-          <div class="flex items-center gap-2 text-xs">
-            <span class="w-32 text-[11px] font-medium text-slate-600 truncate shrink-0">{{ cat.name }}</span>
-            <div class="flex-1 bg-brand-bg h-2 rounded-full overflow-hidden">
+          <div class="flex items-center gap-2.5 text-xs">
+            <!-- Two lines are allowed so "Technology (AI/IVRS)" stays readable. -->
+            <span class="w-28 shrink-0 text-[11px] font-medium text-slate-600 leading-tight break-words">
+              {{ cat.name }}
+            </span>
+            <div class="flex-1 min-w-0 bg-brand-bg h-2 rounded-full overflow-hidden">
               <div class="h-full bg-brand-pink rounded-full" [style.width.%]="cat.percentage"></div>
             </div>
-            <span class="w-8 text-right text-[11px] font-semibold text-brand-ink shrink-0">{{ cat.percentage }}%</span>
+            <span class="w-9 text-right text-[11px] font-semibold text-brand-ink tabular-nums shrink-0">{{ cat.percentage }}%</span>
           </div>
         }
       </div>
     </div>
 
     <div>
-      <h3 class="text-xs font-semibold text-slate-700 mb-2">Monthly Spend Trend</h3>
-      <app-line-chart [isSparkline]="false" />
+      <h3 class="text-xs font-semibold text-slate-700 mb-2.5">Monthly Spend Trend</h3>
+      <!--
+        Y-axis ticks, gridlines and per-point values are derived from
+        `monthlyTrend` rather than hard-coded, so the labels always match the
+        series and re-render when the month filter changes.
+      -->
+      <app-line-chart
+        [isSparkline]="false"
+        [series]="monthlySpend()"
+        ariaLabel="Monthly spend trend"
+      />
     </div>
   </div>
 </app-ui-card>
