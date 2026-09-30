@@ -39,7 +39,7 @@
 
   <div class="axis-row">
     @for (item of data(); track item.domain) {
-      <div class="axis-label">{{ item.domain }}</div>
+      <div class="axis-label" [class.axis-label-long]="item.domain.length > 9">{{ item.domain }}</div>
     }
   </div>
 </div>

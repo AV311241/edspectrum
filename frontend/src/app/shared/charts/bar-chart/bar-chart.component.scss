@@ -5,6 +5,7 @@
 }
 
 .chart-root {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -55,12 +56,12 @@
   width: 100%;
   /* Gutter reserved for the y-axis labels; both the gridlines and the bars
      start at the same offset so the rules line up with the bar column. */
-  padding: 0 0.5rem 0 2.25rem;
+  padding: 0 0.5rem 0 1.75rem;
 }
 
 .grid-lines {
   position: absolute;
-  inset: 0 0 0 2.25rem;
+  inset: 0 0 0 1.75rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -78,8 +79,8 @@
 
 .grid-line-label {
   position: absolute;
-  left: -2.25rem;
-  width: 1.75rem;
+  left: -1.75rem;
+  width: 1.5rem;
   text-align: right;
   font-weight: 500;
 }
@@ -145,7 +146,7 @@
   width: 100%;
   gap: 0.5rem;
   margin-top: 0.5rem;
-  padding: 0 0.5rem 0 2.25rem;
+  padding: 0 0.5rem 0 1.75rem;
 }
 
 .axis-label {
@@ -158,8 +159,24 @@
   color: #475569;
   line-height: 1.25;
   text-align: center;
-  overflow-wrap: break-word;
-  hyphens: auto;
+  overflow-wrap: normal;
+  white-space: nowrap;
+  hyphens: none;
+}
+
+@container (max-width: 360px) {
+  .bar-row,
+  .axis-row {
+    gap: 0.25rem;
+  }
+
+  .axis-label {
+    font-size: 9px;
+  }
+
+  .axis-label-long {
+    font-size: 8px;
+  }
 }
 
 @media (max-width: 640px) {

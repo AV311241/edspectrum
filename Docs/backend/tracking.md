@@ -80,7 +80,31 @@ All metrics endpoints are `GET` and accept the same filters: `academicYear`, `fr
 | `GET` | `/metrics/engagement` | Aspect 6 - participation, AI/IVRS active rate, parents reached, home visits |
 | `GET` | `/metrics/finance` | Aspect 7 - budget vs spend, category split, monthly spend trend (Apr-Mar) |
 
-## 7. Standardized JSON Response Formats
+## 7. Parent Interaction Register Endpoints Summary
+
+> [!NOTE]
+> The Parent Interaction product specification names `/api/parent-interactions/...`,
+> so `src/routes/parentInteraction.routes.ts` registers an alias that forwards to the
+> same `ParentInteractionController` singleton. **Both spellings below are live and
+> execute identical code.** See [`parent_interaction_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/parent_interaction_api.md).
+
+| Method | Canonical (root) | Alias | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/parent-interactions/upload` | `/api/parent-interactions/upload` | **Bulk upload** the register from the Excel sheet. Partial success: one bad row never aborts the batch |
+| `GET` | `/parent-interactions` | `/api/parent-interactions` | List register entries, newest interaction first (paginated + filters) |
+| `GET` | `/parent-interactions/:id` | `/api/parent-interactions/:id` | Get a single register entry by ID |
+
+> [!WARNING]
+> The two paths differ in **response envelope**, by design. TSOA routes return the
+> **bare DTO** (this is true of every pre-existing endpoint in the app). The `/api`
+> alias wraps its payload in the project's standard
+> `{ success, statusCode, message, data }` envelope, matching how `/api/v1/metrics/*`
+> behaves. Clients must read the correct one for the path they call.
+
+`GET` filters: `page`, `limit`, `studentId`, `className`, `parentName`, `relation`, `mode`, `status`, `fromDate`, `toDate`, `search`.
+`relation`, `mode` and `status` accept the **same free text** used at upload time (e.g. `mode=Phone call`) and are normalised server-side, so filtering and grouping are exact-match.
+
+## 8. Standardized JSON Response Formats
 
 ### Success Response (`200 OK`, `201 Created`)
 ```json

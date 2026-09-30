@@ -495,6 +495,245 @@ components:
         - academicYear
       type: object
       additionalProperties: false
+    ParentInteractionResponseDTO:
+      description: A persisted register entry, as returned by the API.
+      properties:
+        id:
+          type: number
+          format: double
+        studentId:
+          type: string
+        studentName:
+          type: string
+        class:
+          type: string
+        parentName:
+          type: string
+        relation:
+          type: string
+          nullable: true
+        date:
+          type: string
+          description: "`YYYY-MM-DD`."
+        mode:
+          type: string
+          nullable: true
+        visitNo:
+          type: number
+          format: double
+          nullable: true
+        purpose:
+          type: string
+          nullable: true
+        parentShared:
+          type: string
+          nullable: true
+        keyNotes:
+          type: string
+          nullable: true
+        observation:
+          type: string
+          nullable: true
+        commitment:
+          type: string
+          nullable: true
+        nextDate:
+          type: string
+          nullable: true
+          description: "`YYYY-MM-DD`, or null."
+        nextInteraction:
+          type: string
+          nullable: true
+        objective:
+          type: string
+          nullable: true
+        status:
+          type: string
+          nullable: true
+        photoUrl:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - studentId
+        - studentName
+        - class
+        - parentName
+        - relation
+        - date
+        - mode
+        - visitNo
+        - purpose
+        - parentShared
+        - keyNotes
+        - observation
+        - commitment
+        - nextDate
+        - nextInteraction
+        - objective
+        - status
+        - photoUrl
+        - createdAt
+        - updatedAt
+      type: object
+      additionalProperties: false
+    BatchUploadResultDTO_ParentInteractionResponseDTO_:
+      properties:
+        totalRows:
+          type: number
+          format: double
+        created:
+          type: number
+          format: double
+        skipped:
+          type: number
+          format: double
+        failed:
+          type: number
+          format: double
+        records:
+          items:
+            $ref: "#/components/schemas/ParentInteractionResponseDTO"
+          type: array
+        errors:
+          items:
+            $ref: "#/components/schemas/RowErrorDTO"
+          type: array
+      required:
+        - totalRows
+        - created
+        - skipped
+        - failed
+        - records
+        - errors
+      type: object
+      additionalProperties: false
+    ParentInteractionUploadResultDTO:
+      $ref: "#/components/schemas/BatchUploadResultDTO_ParentInteractionResponseDTO_"
+      description: Result of the bulk upload, matching the shared
+        `BatchUploadResultDTO` shape.
+    ParentInteractionUploadRequestBody:
+      description: "Route-level body shape for `POST /parent-interactions/upload`.\r
+
+        \r
+
+        A plain interface rather than the Zod-inferred type because tsoa
+        cannot\r
+
+        introspect `z.infer`; `parentInteractionUploadSchema` remains the
+        authoritative\r
+
+        runtime gate. Mirrors the `AttendanceUploadRequestBody` precedent."
+      properties:
+        records:
+          items:
+            properties:
+              photoUrl:
+                type: string
+                nullable: true
+              status:
+                type: string
+                nullable: true
+              objective:
+                type: string
+                nullable: true
+              nextInteraction:
+                type: string
+                nullable: true
+              nextDate:
+                anyOf:
+                  - type: string
+                  - type: number
+                    format: double
+                  - type: string
+                    format: date-time
+                nullable: true
+              commitment:
+                type: string
+                nullable: true
+              observation:
+                type: string
+                nullable: true
+              keyNotes:
+                type: string
+                nullable: true
+              parentShared:
+                type: string
+                nullable: true
+              purpose:
+                type: string
+                nullable: true
+              visitNo:
+                anyOf:
+                  - type: string
+                  - type: number
+                    format: double
+                nullable: true
+              mode:
+                type: string
+                nullable: true
+              date:
+                anyOf:
+                  - type: string
+                  - type: number
+                    format: double
+                  - type: string
+                    format: date-time
+              relation:
+                type: string
+                nullable: true
+              parentName:
+                type: string
+              class:
+                type: string
+              studentName:
+                type: string
+              studentId:
+                type: string
+            required:
+              - date
+              - parentName
+              - class
+              - studentName
+              - studentId
+            type: object
+          type: array
+      required:
+        - records
+      type: object
+      additionalProperties: false
+    PaginatedParentInteractionResponseDTO:
+      description: Page envelope, matching `PaginatedStudentResponseDTO` in
+        `student.dto.ts`.
+      properties:
+        records:
+          items:
+            $ref: "#/components/schemas/ParentInteractionResponseDTO"
+          type: array
+        total:
+          type: number
+          format: double
+        page:
+          type: number
+          format: double
+        limit:
+          type: number
+          format: double
+        totalPages:
+          type: number
+          format: double
+      required:
+        - records
+        - total
+        - page
+        - limit
+        - totalPages
+      type: object
+      additionalProperties: false
     _36_Enums.ClassStatus:
       type: string
       enum:
@@ -3596,6 +3835,157 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateSchoolClassInput"
+  /parent-interactions/upload:
+    post:
+      operationId: UploadParentInteractions
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParentInteractionUploadResultDTO"
+        "400":
+          description: Bad Request - Validation Error
+      description: "Bulk upload the Parent Interaction register from an Excel sheet.\r
+
+        \r
+
+        Accepts `{ records: [...] }` and returns the shared
+        `BatchUploadResultDTO`.\r
+
+        Rows are validated and normalised independently, so a single unparseable
+        row\r
+
+        is reported in `errors` without aborting the rest of the batch.\r
+
+        \r
+
+        Date cells accept an ISO `YYYY-MM-DD` string, a raw Excel serial number
+        or a\r
+
+        JSON date; `visitNo` accepts `2`, `\"2\"` or `\"2nd\"`."
+      tags:
+        - Parent Interactions
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ParentInteractionUploadRequestBody"
+  /parent-interactions:
+    get:
+      operationId: ListParentInteractions
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedParentInteractionResponseDTO"
+        "400":
+          description: Bad Request - Invalid filter
+      description: "List parent interaction register entries, newest interaction
+        first.\r
+
+        \r
+
+        Supports pagination plus optional filters on student, class, parent
+        name,\r
+
+        relation, mode, status and an inclusive `fromDate` / `toDate` range.\r
+
+        `relation`, `mode` and `status` accept the same free text used at
+        upload\r
+
+        time and are normalised to the canonical vocabulary server-side."
+      tags:
+        - Parent Interactions
+      security: []
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            format: double
+            type: number
+        - in: query
+          name: studentId
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: className
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: parentName
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: relation
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: mode
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: fromDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: toDate
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: search
+          required: false
+          schema:
+            type: string
+  /parent-interactions/{id}:
+    get:
+      operationId: GetParentInteractionById
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParentInteractionResponseDTO"
+        "400":
+          description: Bad Request - Invalid id
+        "404":
+          description: Parent interaction not found
+      description: Get a single parent interaction register entry by ID.
+      tags:
+        - Parent Interactions
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
   /classes:
     post:
       operationId: CreateClass

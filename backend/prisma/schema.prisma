@@ -1001,3 +1001,57 @@ model HomeVisit {
   @@index([status], map: "idx_home_visits_status")
   @@map("home_visits")
 }
+
+// VERIFICATION NEEDED: Verify schema definition against existing DB models.
+// A single parent-teacher interaction register entry, uploaded in bulk from the
+// "Parent Interaction" Excel sheet. Deliberately DENORMALISED: `studentName` and
+// `class` are stored as text snapshots of what the field worker wrote, because
+// the register is a historical document - a later rename of a student or a class
+// must not rewrite what was actually discussed with that parent on that date.
+//
+// `studentId` is therefore the human-facing student CODE (`Student.studentIdCode`),
+// matching the `studentId` column of the Students Master sheet, and is NOT the
+// `students.id` primary key. A nullable `studentRefId` FK is intentionally NOT
+// added: an unmatched code must still be recorded rather than rejected, because
+// losing a parent-teacher conversation is worse than a dangling code.
+//
+// `visitNo` is the running number of interactions with that parent (1st, 2nd,
+// 3rd ...), entered by the user; it is not a database sequence.
+model ParentInteraction {
+  id             Int       @id @default(autoincrement())
+  studentId      String    @map("student_id") @db.VarChar(100)
+  studentName    String    @map("student_name") @db.VarChar(200)
+  class          String    @db.VarChar(100)
+  parentName     String    @map("parent_name") @db.VarChar(150)
+  /// Relationship of the parent to the student. Normalised server-side to the
+  /// upper-snake vocabulary in `constants/parentInteraction.constants.ts`.
+  relation       String?   @db.VarChar(50)
+  /// The date the interaction actually happened. `@db.Date`, so the register
+  /// cannot be skewed by a time-of-day on a paper form.
+  date           DateTime  @db.Date
+  /// Contact mode, e.g. PHONE_CALL / IN_PERSON / HOME_VISIT.
+  mode           String?   @db.VarChar(50)
+  visitNo        Int?      @map("visit_no")
+  purpose        String?   @db.Text
+  /// What was shared with the parent (progress, syllabus, assessment report).
+  parentShared   String?   @map("parent_shared") @db.Text
+  keyNotes       String?   @map("key_notes") @db.Text
+  observation    String?   @db.Text
+  /// What the parent committed to.
+  commitment     String?   @db.Text
+  nextDate       DateTime? @map("next_date") @db.Date
+  nextInteraction String?  @map("next_interaction") @db.VarChar(255)
+  objective      String?   @db.Text
+  status         String?   @default("PLANNED") @db.VarChar(50)
+  photoUrl       String?   @map("photo_url") @db.VarChar(500)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([studentId], map: "idx_parent_interactions_student_id")
+  @@index([class], map: "idx_parent_interactions_class")
+  @@index([date], map: "idx_parent_interactions_date")
+  @@index([nextDate], map: "idx_parent_interactions_next_date")
+  @@index([status], map: "idx_parent_interactions_status")
+  @@index([mode], map: "idx_parent_interactions_mode")
+  @@map("parent_interactions")
+}

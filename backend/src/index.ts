@@ -10,6 +10,7 @@ import { globalErrorHandler } from './middlewares/errorHandler.middleware';
 import { AppError } from './utils/appError.utils';
 import { HttpStatusCode } from './constants/httpStatus.constants';
 import routes from './routes';
+import parentInteractionRoutes from './routes/parentInteraction.routes';
 
 import path from 'path';
 
@@ -59,6 +60,11 @@ export function createApp(): Express {
 
   // API Legacy / Manual Router Fallback
   app.use('/api/v1', routes);
+
+  // `/api/parent-interactions/*` alias (see routes/parentInteraction.routes.ts).
+  // Mounted AFTER the `/api/v1` router and BEFORE the TSOA catch-all so the
+  // alias wins for its own paths while everything else falls through unchanged.
+  app.use('/api', parentInteractionRoutes);
 
   // 404 Route Catch-All
   app.use((_req: Request, _res: Response, next: NextFunction) => {

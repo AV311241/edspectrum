@@ -14,6 +14,13 @@ To optimize context window usage and prevent context bloat during AI pair progra
 4. **[Attendance Module](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/attendance_api.md)**: Attendance statuses & weights, the canonical bulk-upload Zod schema, batch-upsert write semantics, and risk formulas.
 5. **[Bulk Data Upload (Excel)](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/data_upload_api.md)**: The centralized Excel-to-database pipeline - Classes / Students / Attendance contracts, the 5-step wizard, and the `/batch` endpoints.
 6. **[Metrics Module (Akshara Dashboard)](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/metrics_api.md)**: The read-only dashboard module - KPI ribbons, learning progress & SAS distribution, school performance matrix, dynamic alerts, objective coverage matrix, engagement, finance, and the 3 derived metrics.
+7. **[Parent Interaction Register](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/parent_interaction_api.md)**: The `parent_interactions` register - schema and denormalisation rationale, the `mode`/`status`/`relation` vocabularies, Excel-serial and `visitNo` coercion, and the bulk-upload payload.
+
+> [!IMPORTANT]
+> **Route prefix**: TSOA routes are served from the **application root** (`/attendance/...`, `/classes/...`), not under `/api/v1`. The `/api/v1` mount only carries `/health` plus empty legacy router stubs. **Exceptions**: the metrics module is additionally aliased under `/api/v1/metrics/...`, and the Parent Interaction register under `/api/parent-interactions/...`, because those product specs name those prefixes — see [`metrics_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/metrics_api.md) and [`parent_interaction_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/parent_interaction_api.md).
+
+> [!IMPORTANT]
+> **Adding a controller?** `inversify-binding-decorators` builds the IoC provider module from the `@provide` metadata present when `container.load()` runs. Every controller must be side-effect imported in [`src/ioc.ts`](file:///c:/Users/av311/Desktop/NGO-app/backend/src/ioc.ts) **above** that call, or its routes fail at request time with `No matching bindings found for serviceIdentifier: <X>Controller`. Keep that list in sync with `controllerPathGlobs` in `tsoa.json`.
 
 5. **[Metrics Module](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/metrics_api.md)**: The Akshara dashboard module — the 5 top KPIs, learning progress & SAS distribution, the school performance matrix, the dynamic Needs-Attention alert generator, objective coverage, engagement, finance, and the 3 derived metrics (Risk Score, Equity Score, MoM delta).
 

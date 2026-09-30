@@ -30,6 +30,7 @@ When detailed context is required for specific tasks, refer strictly to the foll
 | [`Docs/backend/attendance_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/attendance_api.md) | Daily attendance marking, batch upserts, session cancellations, daily register grids, monthly analytics, risk level formulas, the canonical bulk-upload Zod schema, and the `ON_LEAVE` status. | Inspecting or modifying Attendance tracking, calculation rules, status weights, or risk algorithms. |
 | [`Docs/backend/data_upload_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/data_upload_api.md) | The centralized Excel bulk-upload pipeline: Classes / Students / Attendance Excel contracts, the 5-step wizard, per-entity upload services, and the batch endpoints. | Working on the Data Upload page, spreadsheet templates, or the `/batch` upload endpoints. |
 | [`Docs/backend/metrics_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/metrics_api.md) | The read-only Akshara dashboard module: 5 top KPIs, learning progress & SAS distribution, school performance matrix, dynamic Needs-Attention alerts, objective coverage matrix, engagement, finance, plus 3 derived metrics. | Working on the dashboard, any KPI/chart/alert figure, or the metrics-owned tables. |
+| [`Docs/backend/parent_interaction_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/parent_interaction_api.md) | The Parent Interaction register: `parent_interactions` schema, the denormalisation decision, the `mode`/`status`/`relation` vocabularies, Excel-serial and `visitNo` coercion, and the bulk-upload payload. | Working on the Parent Interaction register, its Excel sheet, or the `/parent-interactions/upload` endpoint. |
 
 ---
 
@@ -49,6 +50,11 @@ When detailed context is required for specific tasks, refer strictly to the foll
   - **Stage normalisation**: `Review` / `AB` and unassessed students are excluded (not counted as `S1`); only `SUBMITTED` / `REVIEWED` / `REVIEWED_OVERRIDE` / `LOCKED` assessments are read; `S1..S5` map to `20..100`.
   - **Growth vs points**: counts use percentage growth (`growthDelta`), rates use percentage **points** (`pointDelta`). `growthDelta` returns `percent: null` on a zero base.
   - **New enums**: `ObjectiveModuleStatus`, `ObjectivePlanStatus`, `BudgetCategory`, `FinanceEntryType`, `EngagementActivityType`, `HomeVisitStatus`, `ParentEngagementChannel`. **New tables**: `program_budgets`, `budget_allocations`, `finance_records`, `teaching_modules`, `program_objectives`, `objective_coverages`, `student_engagement_activities`, `parent_engagements`, `home_visits` (migration `20260927120000_metrics_module`, additive only). Every new model carries a `// VERIFICATION NEEDED` header.
+- **Parent Interaction Register** (see [`parent_interaction_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/parent_interaction_api.md)): a **write-capable** register module (the metrics module is read-only). New table `parent_interactions` (migration `20260930090000_parent_interactions`, additive only).
+  - **Deliberately denormalised.** `student_name` and `class` are text snapshots, and `student_id` is the human-facing student **CODE** (`Student.studentIdCode`), *not* `students.id`. There is **no FK on `student_id`**: an unmatched code is still recorded rather than rejected, because losing a real parent-teacher conversation is worse than a dangling code.
+  - **Vocabularies are `String` columns, not Prisma enums** (canonical list: `PARENT_INTERACTION_MODES`, `PARENT_INTERACTION_STATUSES`, `PARENT_RELATIONS` in [`parentInteraction.constants.ts`](file:///c:/Users/av311/Desktop/NGO-app/backend/src/constants/parentInteraction.constants.ts)). An enum would make the DB reject any unlisted value, forcing a migration per new contact mode. The service normalises instead, and the **same** helpers normalise the `GET` filters, so `mode=Phone call` matches rows stored as `PHONE_CALL`. Unrecognised values fold to `OTHER`.
+  - **Input coercion**: date cells accept a `Date`, ISO `YYYY-MM-DD`, or a raw **Excel serial** (epoch `1899-12-30`, range-checked to 1990-2090); `visitNo` accepts `2`, `"2"` or `"2nd"`. A `nextDate` earlier than `date` is rejected as a row error.
+  - **Partial success**, like the attendance upload: one unparseable row becomes a `RowErrorDTO` and never aborts the batch.
 
 ---
 
@@ -62,3 +68,31 @@ TSOA routes are registered at the **application root** via `RegisterRoutes(app)`
 > read-only alias that forwards to the same `MetricsController` singleton. Both
 > `/metrics/dashboard` and `/api/v1/metrics/dashboard` work and execute identical
 > code. See [`metrics_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/metrics_api.md).
+>
+> **Second exception: the Parent Interaction register.** Its product specification
+> names `/api/parent-interactions/...`, so `src/routes/parentInteraction.routes.ts`
+> is mounted at `/api` in `src/index.ts` and forwards to the same
+> `ParentInteractionController` singleton. Both `/parent-interactions/upload` and
+> `/api/parent-interactions/upload` work. Unlike the metrics alias this router also
+> carries the **write** endpoint, but it forwards to the identical method the TSOA
+> route already exposes, so it adds no new capability.
+>
+> > [!WARNING]
+> > The two paths return **different envelopes**. TSOA routes return the **bare
+> > DTO** (true of every pre-existing endpoint in this app). The `/api` alias wraps
+> > its payload in `{ success, statusCode, message, data }`, matching
+> > `/api/v1/metrics/*`. Clients must read the correct one for the path they call.
+
+> [!IMPORTANT]
+> **IoC import order is load-bearing.** `inversify-binding-decorators` builds the
+> provider module from the `@provide` metadata present *at the moment*
+> `container.load()` executes. `src/index.ts` imports `./routes` (which imports
+> `ioc.ts`) **before** tsoa's generated `routes.ts` pulls the controllers in, so
+> without an explicit nudge the container is populated with **zero bindings** and
+> *every* DI-backed route fails with
+> `No matching bindings found for serviceIdentifier: <X>Controller`
+> (`/students`, `/metrics/dashboard`, etc. - Express-only routes such as
+> `/api/v1/health` are unaffected). `src/ioc.ts` therefore side-effect imports each
+> controller **above** the `load()` call. **Adding a new controller means adding it
+> to that import list in `ioc.ts`**, keeping it in sync with `controllerPathGlobs`
+> in `tsoa.json`.

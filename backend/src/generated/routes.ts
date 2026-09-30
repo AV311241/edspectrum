@@ -10,6 +10,8 @@ import { StudentController } from './../controllers/student.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { SchoolController } from './../controllers/school.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { ParentInteractionController } from './../controllers/parentInteraction.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ClassController } from './../controllers/class.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { BaselineAssessmentController } from './../controllers/baselineAssessment.controller';
@@ -302,6 +304,72 @@ const models: TsoaRoute.Models = {
         "properties": {
             "className": {"dataType":"string","required":true},
             "academicYear": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ParentInteractionResponseDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"double","required":true},
+            "studentId": {"dataType":"string","required":true},
+            "studentName": {"dataType":"string","required":true},
+            "class": {"dataType":"string","required":true},
+            "parentName": {"dataType":"string","required":true},
+            "relation": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "date": {"dataType":"string","required":true},
+            "mode": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "visitNo": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "purpose": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "parentShared": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "keyNotes": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "observation": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "commitment": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "nextDate": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "nextInteraction": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "objective": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "status": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "photoUrl": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "createdAt": {"dataType":"string","required":true},
+            "updatedAt": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BatchUploadResultDTO_ParentInteractionResponseDTO_": {
+        "dataType": "refObject",
+        "properties": {
+            "totalRows": {"dataType":"double","required":true},
+            "created": {"dataType":"double","required":true},
+            "skipped": {"dataType":"double","required":true},
+            "failed": {"dataType":"double","required":true},
+            "records": {"dataType":"array","array":{"dataType":"refObject","ref":"ParentInteractionResponseDTO"},"required":true},
+            "errors": {"dataType":"array","array":{"dataType":"refObject","ref":"RowErrorDTO"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ParentInteractionUploadResultDTO": {
+        "dataType": "refAlias",
+        "type": {"ref":"BatchUploadResultDTO_ParentInteractionResponseDTO_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ParentInteractionUploadRequestBody": {
+        "dataType": "refObject",
+        "properties": {
+            "records": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"photoUrl":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"status":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"objective":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"nextInteraction":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"nextDate":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"double"},{"dataType":"datetime"},{"dataType":"enum","enums":[null]}]},"commitment":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"observation":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"keyNotes":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"parentShared":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"purpose":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"visitNo":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"double"},{"dataType":"enum","enums":[null]}]},"mode":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"date":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"double"},{"dataType":"datetime"}],"required":true},"relation":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"parentName":{"dataType":"string","required":true},"class":{"dataType":"string","required":true},"studentName":{"dataType":"string","required":true},"studentId":{"dataType":"string","required":true}}},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PaginatedParentInteractionResponseDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "records": {"dataType":"array","array":{"dataType":"refObject","ref":"ParentInteractionResponseDTO"},"required":true},
+            "total": {"dataType":"double","required":true},
+            "page": {"dataType":"double","required":true},
+            "limit": {"dataType":"double","required":true},
+            "totalPages": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
     },
@@ -1962,6 +2030,121 @@ export function RegisterRoutes(app: Router) {
                 next,
                 validatedArgs,
                 successStatus: 201,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsParentInteractionController_uploadParentInteractions: Record<string, TsoaRoute.ParameterSchema> = {
+                requestBody: {"in":"body","name":"requestBody","required":true,"ref":"ParentInteractionUploadRequestBody"},
+        };
+        app.post('/parent-interactions/upload',
+            ...(fetchMiddlewares<RequestHandler>(ParentInteractionController)),
+            ...(fetchMiddlewares<RequestHandler>(ParentInteractionController.prototype.uploadParentInteractions)),
+
+            async function ParentInteractionController_uploadParentInteractions(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsParentInteractionController_uploadParentInteractions, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<ParentInteractionController>(ParentInteractionController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'uploadParentInteractions',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsParentInteractionController_listParentInteractions: Record<string, TsoaRoute.ParameterSchema> = {
+                page: {"in":"query","name":"page","dataType":"double"},
+                limit: {"in":"query","name":"limit","dataType":"double"},
+                studentId: {"in":"query","name":"studentId","dataType":"string"},
+                className: {"in":"query","name":"className","dataType":"string"},
+                parentName: {"in":"query","name":"parentName","dataType":"string"},
+                relation: {"in":"query","name":"relation","dataType":"string"},
+                mode: {"in":"query","name":"mode","dataType":"string"},
+                status: {"in":"query","name":"status","dataType":"string"},
+                fromDate: {"in":"query","name":"fromDate","dataType":"string"},
+                toDate: {"in":"query","name":"toDate","dataType":"string"},
+                search: {"in":"query","name":"search","dataType":"string"},
+        };
+        app.get('/parent-interactions',
+            ...(fetchMiddlewares<RequestHandler>(ParentInteractionController)),
+            ...(fetchMiddlewares<RequestHandler>(ParentInteractionController.prototype.listParentInteractions)),
+
+            async function ParentInteractionController_listParentInteractions(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsParentInteractionController_listParentInteractions, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<ParentInteractionController>(ParentInteractionController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'listParentInteractions',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsParentInteractionController_getParentInteractionById: Record<string, TsoaRoute.ParameterSchema> = {
+                id: {"in":"path","name":"id","required":true,"dataType":"string"},
+        };
+        app.get('/parent-interactions/:id',
+            ...(fetchMiddlewares<RequestHandler>(ParentInteractionController)),
+            ...(fetchMiddlewares<RequestHandler>(ParentInteractionController.prototype.getParentInteractionById)),
+
+            async function ParentInteractionController_getParentInteractionById(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsParentInteractionController_getParentInteractionById, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<ParentInteractionController>(ParentInteractionController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getParentInteractionById',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
               });
             } catch (err) {
                 return next(err);

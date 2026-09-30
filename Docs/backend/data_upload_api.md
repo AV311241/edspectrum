@@ -38,6 +38,7 @@ The **Data Upload** page (`/data-upload`) provides a single, centralised Excel-t
 | `POST` | `/students/batch` | Bulk-create students + enrol them into classes |
 | `POST` | `/attendance/batch-upload` | Bulk upsert attendance (row-based **and** Excel matrix) |
 | `POST` | `/baseline-assessments/import` | Bulk-create baseline assessments with all 35 rubric ratings |
+| `POST` | `/parent-interactions/upload` | Bulk-create Parent Interaction register entries (see [`parent_interaction_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/parent_interaction_api.md)) |
 
 Each returns `BatchUploadResultDTO`:
 

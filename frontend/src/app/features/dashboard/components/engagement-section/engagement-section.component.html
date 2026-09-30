@@ -12,7 +12,7 @@
     on narrow viewports. Labels wrap rather than truncate: a card reading
     "Class Par…" or "↑ 7% vs L…" hid the very numbers it was reporting.
   -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 flex-1">
+  <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 flex-1">
     @for (item of dashboardService.engagementMetrics(); track item.id) {
       <div class="p-3.5 rounded-xl bg-brand-bg border border-gray-100 flex flex-col justify-between gap-3 hover:bg-white hover:shadow-card transition-all">
         <div class="flex items-center justify-between">
@@ -25,7 +25,7 @@
           <div class="text-lg font-extrabold text-brand-ink leading-tight tabular-nums">
             {{ item.value }}
           </div>
-          <div class="text-[11px] font-semibold text-slate-600 leading-snug mt-1 break-words hyphens-auto">
+          <div class="text-[11px] font-semibold text-slate-600 leading-snug mt-1 break-normal">
             {{ item.title }}
           </div>
           @if (item.subtitle) {

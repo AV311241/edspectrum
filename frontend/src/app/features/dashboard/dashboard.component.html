@@ -2,29 +2,29 @@
   <app-kpi-ribbon />
 
   <div class="dashboard-grid dashboard-grid-top">
-    <div class="dashboard-panel dashboard-panel-wide">
+    <div class="dashboard-panel dashboard-panel-wide h-full flex flex-col">
       <app-learning-progress-chart />
     </div>
-    <div class="dashboard-panel">
+    <div class="dashboard-panel h-full flex flex-col">
       <app-stage-distribution-chart />
     </div>
-    <div class="dashboard-panel dashboard-panel-stack">
+    <div class="dashboard-panel dashboard-panel-stack h-full">
       <app-overall-progress-summary />
       <app-domain-progress-chart />
     </div>
   </div>
 
   <div class="dashboard-grid dashboard-grid-middle">
-    <div class="dashboard-panel dashboard-panel-xl">
+    <div class="dashboard-panel dashboard-panel-xl h-full flex flex-col">
       <app-school-performance-table />
     </div>
-    <div class="dashboard-panel dashboard-panel-side">
+    <div class="dashboard-panel dashboard-panel-side h-full flex flex-col">
       <app-needs-attention-list />
     </div>
   </div>
 
   <div class="dashboard-grid dashboard-grid-third">
-    <div class="dashboard-panel dashboard-panel-split">
+    <div class="dashboard-panel dashboard-panel-split h-full">
       <app-stage-movement />
       <app-sas-distribution-chart />
       <app-objective-progress-summary />
@@ -32,13 +32,13 @@
   </div>
 
   <div class="dashboard-grid dashboard-grid-bottom">
-    <div class="dashboard-panel">
+    <div class="dashboard-panel h-full flex flex-col">
       <app-engagement-section />
     </div>
-    <div class="dashboard-panel">
+    <div class="dashboard-panel h-full flex flex-col">
       <app-teaching-section />
     </div>
-    <div class="dashboard-panel">
+    <div class="dashboard-panel h-full flex flex-col">
       <app-resources-finance-section />
     </div>
   </div>
