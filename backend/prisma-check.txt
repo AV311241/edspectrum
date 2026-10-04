@@ -1,0 +1,5 @@
+typeof $use: undefined
+typeof $extends: function
+typeof $transaction: function
+student createManyAndReturn: function
+student createMany: function

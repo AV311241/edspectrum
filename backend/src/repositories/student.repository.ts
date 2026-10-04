@@ -12,7 +12,9 @@ export interface StudentFilterOptions {
 export interface StudentWithRelations extends Student {
   school?: { id: number; name: string; code: string };
   classSection?: { id: number; name: string; className: string; section: string } | null;
-  enrollments?: StudentClassEnrollment[];
+  enrollments?: (StudentClassEnrollment & {
+    classSection?: { id: number; name: string } | null;
+  })[];
 }
 
 export interface IStudentRepository {
@@ -33,6 +35,16 @@ export interface IStudentRepository {
     targetSchoolId: number
   ): Promise<{ previousEnrollment: StudentClassEnrollment; newEnrollment: StudentClassEnrollment }>;
   getEnrollmentHistory(studentId: number): Promise<StudentClassEnrollment[]>;
+  /** Bulk lookup of existing student codes for one school, in a single query. */
+  findExistingCodesForSchool(schoolId: number, codes: string[]): Promise<Set<string>>;
+  /** Bulk create and return the created rows (createMany + reload; MySQL has no RETURNING). */
+  createManyAndReturn(data: Prisma.StudentUncheckedCreateInput[]): Promise<Student[]>;
+  /** Bulk load students with their relations for a set of ids. */
+  findManyWithRelationsByIds(ids: number[]): Promise<StudentWithRelations[]>;
+  /** Bulk enrol students, marking any prior active enrolment as transferred. */
+  bulkEnroll(entries: { studentId: number; classSectionId: number; schoolId: number }[]): Promise<number>;
+  /** Bulk set the status of many students. */
+  bulkUpdateStatus(ids: number[], status: StudentStatus): Promise<number>;
 }
 
 @provide(StudentRepository)
@@ -298,5 +310,119 @@ export class StudentRepository implements IStudentRepository {
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  public async findExistingCodesForSchool(schoolId: number, codes: string[]): Promise<Set<string>> {
+    if (codes.length === 0) return new Set<string>();
+    const rows = await prisma.student.findMany({
+      where: { schoolId, studentIdCode: { in: codes } },
+      select: { studentIdCode: true },
+    });
+    return new Set(rows.map((r) => r.studentIdCode));
+  }
+
+  public async createManyAndReturn(data: Prisma.StudentUncheckedCreateInput[]): Promise<Student[]> {
+    if (data.length === 0) return [];
+    // MySQL has no RETURNING clause, so `createManyAndReturn` is unavailable on
+    // this connector. Insert in one statement, then reload the rows via the
+    // (schoolId, studentIdCode) unique key - still O(1) queries for the batch.
+    await prisma.student.createMany({ data });
+
+    const keys = data.map((d) => ({
+      schoolId: d.schoolId as number,
+      studentIdCode: d.studentIdCode as string,
+    }));
+    const rows = await prisma.student.findMany({
+      where: { OR: keys },
+    });
+    const byKey = new Map(rows.map((r) => [`${r.schoolId}|${r.studentIdCode}`, r]));
+    return keys
+      .map((k) => byKey.get(`${k.schoolId}|${k.studentIdCode}`))
+      .filter((r): r is Student => r !== undefined);
+  }
+
+  public async findManyWithRelationsByIds(ids: number[]): Promise<StudentWithRelations[]> {
+    if (ids.length === 0) return [];
+    return await prisma.student.findMany({
+      where: { id: { in: ids } },
+      include: {
+        school: { select: { id: true, name: true, code: true } },
+        classSection: { select: { id: true, name: true, className: true, section: true } },
+        enrollments: {
+          where: { isCurrent: true },
+          include: { classSection: { select: { id: true, name: true } } },
+        },
+      },
+    });
+  }
+
+  /**
+   * Bulk enrol in one transaction: first retire any current enrolments for the
+   * affected students, then upsert the new ones, then point each student row at
+   * its new class. Batching replaces the per-row `enrollInClassTx` fan-out.
+   */
+  public async bulkEnroll(
+    entries: { studentId: number; classSectionId: number; schoolId: number }[]
+  ): Promise<number> {
+    if (entries.length === 0) return 0;
+    const studentIds = [...new Set(entries.map((e) => e.studentId))];
+
+    return await prisma.$transaction(async (tx) => {
+      // 1. Retire any current enrolment so each student has at most one active class.
+      await tx.studentClassEnrollment.updateMany({
+        where: { studentId: { in: studentIds }, isCurrent: true },
+        data: {
+          isCurrent: false,
+          withdrawnDate: new Date(),
+          status: EnrollmentStatus.TRANSFERRED,
+        },
+      });
+
+      // 2. Upsert the target enrolment for every entry.
+      await Promise.all(
+        entries.map((e) =>
+          tx.studentClassEnrollment.upsert({
+            where: {
+              studentId_classSectionId: { studentId: e.studentId, classSectionId: e.classSectionId },
+            },
+            update: {
+              isCurrent: true,
+              withdrawnDate: null,
+              status: EnrollmentStatus.PRESENT,
+              schoolId: e.schoolId,
+            },
+            create: {
+              studentId: e.studentId,
+              classSectionId: e.classSectionId,
+              schoolId: e.schoolId,
+              isCurrent: true,
+              status: EnrollmentStatus.PRESENT,
+            },
+          })
+        )
+      );
+
+      // 3. Point each student at its new class. Status is intentionally NOT set
+      //    here so an upload that created INACTIVE students keeps that status.
+      await Promise.all(
+        entries.map((e) =>
+          tx.student.update({
+            where: { id: e.studentId },
+            data: { classId: e.classSectionId, schoolId: e.schoolId },
+          })
+        )
+      );
+
+      return entries.length;
+    });
+  }
+
+  public async bulkUpdateStatus(ids: number[], status: StudentStatus): Promise<number> {
+    if (ids.length === 0) return 0;
+    const result = await prisma.student.updateMany({
+      where: { id: { in: ids } },
+      data: { status },
+    });
+    return result.count;
   }
 }

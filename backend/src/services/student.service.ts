@@ -15,7 +15,7 @@ import { AppError } from '../utils/appError.utils';
 import { HttpStatusCode } from '../constants/httpStatus.constants';
 import { logger } from '../config/logger.config';
 import { sanitizePII } from '../utils/sanitizer.utils';
-import { ClassStatus, StudentStatus } from '@prisma/client';
+import { ClassStatus, StudentStatus, Student } from '@prisma/client';
 import {
   BatchStudentUploadInput,
   BatchStudentUploadResultDTO,
@@ -42,7 +42,7 @@ export class StudentService {
           status: activeEnrollment.status,
           isCurrent: activeEnrollment.isCurrent,
           createdAt: activeEnrollment.createdAt.toISOString(),
-          className: (activeEnrollment as any).classSection?.name ?? undefined,
+          className: activeEnrollment.classSection?.name ?? undefined,
         }
       : null;
 
@@ -424,7 +424,6 @@ export class StudentService {
 
     const createdById = input.createdById ?? 1;
     const errors: RowErrorDTO[] = [];
-    const records: StudentResponseDTO[] = [];
     let failed = 0;
     let skipped = 0;
 
@@ -458,101 +457,173 @@ export class StudentService {
       ])
     );
 
+    // --- Bulk-detect existing student codes: one query per distinct school ---
+    const codesBySchool = new Map<number, Set<string>>();
+    for (const row of input.students) {
+      const schoolId = schoolIdByCode.get(row.schoolCode.trim().toUpperCase());
+      if (schoolId === undefined) continue;
+      const set = codesBySchool.get(schoolId) ?? new Set<string>();
+      set.add(row.studentId.trim());
+      codesBySchool.set(schoolId, set);
+    }
+    const existingBySchool = new Map<number, Set<string>>();
+    await Promise.all(
+      [...codesBySchool.entries()].map(async ([schoolId, codes]) => {
+        existingBySchool.set(
+          schoolId,
+          await this.studentRepo.findExistingCodesForSchool(schoolId, [...codes])
+        );
+      })
+    );
+
+    // --- Staged rows that passed validation, keyed for the later bulk insert ---
+    interface StagedRow {
+      schoolId: number;
+      classSectionId: number;
+      studentIdCode: string;
+      firstName: string;
+      lastName: string;
+      isActive: boolean;
+    }
+    const staged: StagedRow[] = [];
+    /** (schoolId, code) pairs already staged in this batch - guards in-file duplicates. */
+    const seenInBatch = new Set<string>();
+
     for (let i = 0; i < input.students.length; i++) {
       const row = input.students[i];
       // +2 => 1-based header row + 1-based data row, so this matches Excel.
       const rowIndex = i + 2;
 
-      try {
-        const schoolId = schoolIdByCode.get(row.schoolCode.trim().toUpperCase());
-        if (!schoolId) {
-          failed++;
-          errors.push({
-            rowIndex,
-            columnName: 'schoolCode',
-            invalidValue: row.schoolCode,
-            errorMessage: `No school found with code "${row.schoolCode}". Upload the Classes sheet first.`,
-            severity: 'ERROR',
-          });
-          continue;
-        }
-
-        const key = classKey(schoolId, row.className.trim(), row.academicYear.trim());
-        const classMatch = classIdByKey.get(key);
-        if (!classMatch) {
-          failed++;
-          errors.push({
-            rowIndex,
-            columnName: 'className',
-            invalidValue: row.className,
-            errorMessage: `No class "${row.className}" found for school "${row.schoolCode}" in academic year ${row.academicYear}. Upload the Classes sheet first.`,
-            severity: 'ERROR',
-          });
-          continue;
-        }
-        if (classMatch.status !== ClassStatus.ACTIVE) {
-          failed++;
-          errors.push({
-            rowIndex,
-            columnName: 'className',
-            invalidValue: row.className,
-            errorMessage: `Class "${row.className}" is archived and cannot accept new students.`,
-            severity: 'ERROR',
-          });
-          continue;
-        }
-
-        const duplicate = await this.studentRepo.findBySchoolAndStudentIdCode(
-          schoolId,
-          row.studentId.trim()
-        );
-        if (duplicate) {
-          skipped++;
-          errors.push({
-            rowIndex,
-            columnName: 'studentId',
-            invalidValue: row.studentId,
-            errorMessage: `Student "${row.studentId}" already exists in school "${row.schoolCode}". Row skipped.`,
-            severity: 'WARNING',
-          });
-          continue;
-        }
-
-        const { firstName, lastName } = this.splitStudentName(row.studentName);
-        const isActive = row.isActive ?? true;
-
-        const createdStudent = await this.studentRepo.create({
-          schoolId,
-          studentIdCode: row.studentId.trim(),
-          firstName,
-          lastName,
-          dateOfBirth: null,
-          gender: null,
-          classId: classMatch.id,
-          createdById,
-        });
-
-        // Enrol the freshly created student into the resolved class section.
-        await this.studentRepo.enrollInClassTx(createdStudent.id, classMatch.id, schoolId);
-
-        if (!isActive) {
-          await this.studentRepo.update(createdStudent.id, { status: StudentStatus.INACTIVE });
-        }
-
-        const refreshed = await this.studentRepo.findById(createdStudent.id);
-        if (refreshed) records.push(this.mapToDTO(refreshed));
-      } catch (err) {
+      const schoolId = schoolIdByCode.get(row.schoolCode.trim().toUpperCase());
+      if (!schoolId) {
         failed++;
-        const message = err instanceof Error ? err.message : 'Unexpected error while creating student';
+        errors.push({
+          rowIndex,
+          columnName: 'schoolCode',
+          invalidValue: row.schoolCode,
+          errorMessage: `No school found with code "${row.schoolCode}". Upload the Classes sheet first.`,
+          severity: 'ERROR',
+        });
+        continue;
+      }
+
+      const key = classKey(schoolId, row.className.trim(), row.academicYear.trim());
+      const classMatch = classIdByKey.get(key);
+      if (!classMatch) {
+        failed++;
+        errors.push({
+          rowIndex,
+          columnName: 'className',
+          invalidValue: row.className,
+          errorMessage: `No class "${row.className}" found for school "${row.schoolCode}" in academic year ${row.academicYear}. Upload the Classes sheet first.`,
+          severity: 'ERROR',
+        });
+        continue;
+      }
+      if (classMatch.status !== ClassStatus.ACTIVE) {
+        failed++;
+        errors.push({
+          rowIndex,
+          columnName: 'className',
+          invalidValue: row.className,
+          errorMessage: `Class "${row.className}" is archived and cannot accept new students.`,
+          severity: 'ERROR',
+        });
+        continue;
+      }
+
+      if (existingBySchool.get(schoolId)?.has(row.studentId.trim())) {
+        skipped++;
         errors.push({
           rowIndex,
           columnName: 'studentId',
           invalidValue: row.studentId,
-          errorMessage: message,
-          severity: 'ERROR',
+          errorMessage: `Student "${row.studentId}" already exists in school "${row.schoolCode}". Row skipped.`,
+          severity: 'WARNING',
         });
+        continue;
+      }
+
+      // In-file duplicate: the DB pre-check cannot see rows staged moments ago,
+      // and a duplicate inside the batch would fail the whole createMany.
+      const dedupeKey = `${schoolId}|${row.studentId.trim()}`;
+      if (seenInBatch.has(dedupeKey)) {
+        skipped++;
+        errors.push({
+          rowIndex,
+          columnName: 'studentId',
+          invalidValue: row.studentId,
+          errorMessage: `Duplicate student ID "${row.studentId}" for school "${row.schoolCode}" appears again in this file. Row skipped.`,
+          severity: 'WARNING',
+        });
+        continue;
+      }
+      seenInBatch.add(dedupeKey);
+
+      const { firstName, lastName } = this.splitStudentName(row.studentName);
+      staged.push({
+        schoolId,
+        classSectionId: classMatch.id,
+        studentIdCode: row.studentId.trim(),
+        firstName,
+        lastName,
+        isActive: row.isActive ?? true,
+      });
+    }
+
+    // --- Bulk insert every valid student in a single statement ---
+    let createdStudents: Student[] = [];
+    if (staged.length > 0) {
+      try {
+        createdStudents = await this.studentRepo.createManyAndReturn(
+          staged.map((s) => ({
+            schoolId: s.schoolId,
+            studentIdCode: s.studentIdCode,
+            firstName: s.firstName,
+            lastName: s.lastName,
+            dateOfBirth: null,
+            gender: null,
+            classId: s.classSectionId,
+            createdById,
+            status: s.isActive ? StudentStatus.ACTIVE : StudentStatus.INACTIVE,
+          }))
+        );
+      } catch (err) {
+        // A single failing row (e.g. a duplicate that raced in) must not lose the batch.
+        const message = err instanceof Error ? err.message : 'Unexpected error while creating students';
+        for (const s of staged) {
+          failed++;
+          errors.push({
+            rowIndex: 0,
+            columnName: 'studentId',
+            invalidValue: s.studentIdCode,
+            errorMessage: message,
+            severity: 'ERROR',
+          });
+        }
+        createdStudents = [];
       }
     }
+
+    // --- Enrol every created student in one batched transaction ---
+    if (createdStudents.length > 0) {
+      const classByCode = new Map(
+        staged.map((s) => [`${s.schoolId}|${s.studentIdCode}`, s.classSectionId])
+      );
+      await this.studentRepo.bulkEnroll(
+        createdStudents.map((s) => ({
+          studentId: s.id,
+          classSectionId: classByCode.get(`${s.schoolId}|${s.studentIdCode}`) ?? s.classId ?? 0,
+          schoolId: s.schoolId,
+        }))
+      );
+    }
+
+    // --- Reload once with relations for the response payload ---
+    const refreshed = await this.studentRepo.findManyWithRelationsByIds(
+      createdStudents.map((s) => s.id)
+    );
+    const records: StudentResponseDTO[] = refreshed.map((s) => this.mapToDTO(s));
 
     const duration = Date.now() - startTime;
     logger.info('[StudentService.batchUploadStudents] Bulk student upload finished', {

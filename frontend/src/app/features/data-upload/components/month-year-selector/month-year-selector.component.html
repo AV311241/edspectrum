@@ -1,0 +1,39 @@
+<div class="space-y-3">
+  <div class="flex flex-wrap items-end gap-3">
+    <app-ui-select
+      label="Month"
+      selectId="attendance-month"
+      [value]="month() === null ? '' : month()!.toString()"
+      [options]="monthOptions"
+      [disabled]="disabled()"
+      (valueChange)="onMonthChange($event)"
+    />
+
+    <app-ui-select
+      label="Year"
+      selectId="attendance-year"
+      [value]="year() === null ? '' : year()!.toString()"
+      [options]="yearOptions"
+      [disabled]="disabled()"
+      (valueChange)="onYearChange($event)"
+    />
+
+    @if (dayCountLabel(); as label) {
+      <span
+        class="mb-2.5 px-2.5 py-1.5 rounded-lg bg-sky-50 text-sky-700 text-[11px] font-bold border border-sky-200"
+      >
+        {{ label }} in this register
+      </span>
+    }
+  </div>
+
+  <p class="text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-start gap-2">
+    <span class="shrink-0 mt-px" aria-hidden="true">⚠</span>
+    <span>
+      This sheet uses day columns (<span class="font-mono font-bold">1st</span>,
+      <span class="font-mono font-bold">2nd</span> … <span class="font-mono font-bold">31st</span>) and does not
+      record which month or year it belongs to. Pick both before uploading so every day column can be
+      turned into a real date.
+    </span>
+  </p>
+</div>

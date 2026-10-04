@@ -27,8 +27,15 @@ export interface ValidationResult<T> {
 
 export type UploadEntityType = 'CLASSES' | 'STUDENTS' | 'ATTENDANCE' | 'BASELINE_ASSESSMENTS';
 
-/** Row-based layout, or the pivoted Excel grid/matrix layout. */
-export type UploadSheetFormat = 'ROW' | 'MATRIX';
+/**
+ * Row-based layout, or one of the two pivoted Excel grid/matrix layouts.
+ *
+ * - `ROW`         — one record per row.
+ * - `MATRIX`      — real dates across the header row (`2026-01-05`).
+ * - `DAY_MATRIX`  — ordinal day columns (`1st`..`31st`); the month and year are
+ *                   not in the file and must be supplied by the user.
+ */
+export type UploadSheetFormat = 'ROW' | 'MATRIX' | 'DAY_MATRIX';
 
 /**
  * Attendance statuses accepted by the daily attendance register.
@@ -188,4 +195,16 @@ export interface MatrixContext {
   schoolCode: string;
   className: string;
   academicYear: string;
+}
+
+/**
+ * The calendar an ordinal-day sheet (`1st`..`31st`) does not carry itself.
+ *
+ * The upload page collects both fields before enabling the dropzone, because
+ * without them `1st` cannot be resolved to a real date.
+ */
+export interface DayMatrixContext {
+  /** 1-12, matching the backend's `month` query/analytics convention. */
+  month: number;
+  year: number;
 }

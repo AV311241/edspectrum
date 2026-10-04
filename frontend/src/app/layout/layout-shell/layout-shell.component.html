@@ -2,7 +2,13 @@
   <app-sidebar class="dashboard-sidebar" />
   <div class="dashboard-main">
     <main class="dashboard-main-inner">
-      @if (!router.url.startsWith('/schools')) {
+      <!--
+        The dashboard header owns the School/Class filters, which only make
+        sense on the analytics pages. `/schools` and `/admin` each provide their
+        own hierarchy controls, so the header is hidden there to avoid two
+        competing filters on one screen.
+      -->
+      @if (!router.url.startsWith('/schools') && !router.url.startsWith('/admin')) {
         <app-header />
       }
       <ng-content></ng-content>

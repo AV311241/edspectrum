@@ -56,5 +56,20 @@
         <app-ui-icon name="leaf" [size]="16" />
       </div>
     </div>
+
+    @if (auth.user(); as user) {
+      <div class="flex items-center gap-2 pl-3 border-l border-slate-200">
+        <span class="text-sm text-slate-600 hidden md:inline">
+          {{ user.firstName }} {{ user.lastName }}
+        </span>
+        <button
+          type="button"
+          (click)="auth.logout()"
+          class="text-sm rounded-md border border-slate-300 px-3 py-1.5 text-slate-600 hover:bg-slate-100"
+        >
+          Sign out
+        </button>
+      </div>
+    }
   </div>
 </header>

@@ -1,0 +1,332 @@
+<!--
+  /admin — Admin control tower.
+  Structure: page heading → global search → Step 1 School → Step 2 Class →
+  Step 3 Student table → modals.
+-->
+<section class="flex flex-col gap-6 pb-10">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="text-label-xs uppercase tracking-widest text-brand-pink">Administration</p>
+      <h1 class="mt-1 text-display-lg text-brand-ink">Admin control tower</h1>
+      <p class="mt-1 text-body-md text-brand-muted">
+        Create, review and remove schools, class sections and student records.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-2.5">
+      <app-ui-button variant="outline" size="md" (btnClick)="openSchoolModal()">
+        <app-ui-icon name="plus" [size]="14" className="mr-1.5" /> Add school
+      </app-ui-button>
+      <app-ui-button
+        variant="outline"
+        size="md"
+        [disabled]="!selectedSchool()"
+        (btnClick)="openClassModal()"
+      >
+        <app-ui-icon name="plus" [size]="14" className="mr-1.5" /> Add class
+      </app-ui-button>
+      <app-ui-button
+        variant="primary"
+        size="md"
+        [disabled]="!hasSchools()"
+        (btnClick)="openCreateStudent()"
+      >
+        <app-ui-icon name="plus" [size]="14" className="mr-1.5" /> Add student
+      </app-ui-button>
+    </div>
+  </header>
+
+  <!-- Global search: find any student by ID or name, across every school. -->
+  <app-ui-card>
+    <div class="flex flex-col gap-2">
+      <label
+        for="admin-global-search"
+        class="text-label-xs uppercase tracking-wide text-slate-500"
+      >
+        Quick search
+      </label>
+      <app-student-search (studentPicked)="openSearchedStudent($event)" />
+      <p class="text-micro text-slate-400">
+        Searches every school by student ID or name. Picking a result opens the full
+        profile, where it can be edited or deleted.
+      </p>
+    </div>
+  </app-ui-card>
+
+  @if (loadError()) {
+    <div
+      class="flex items-center gap-2.5 rounded-2xl border border-red-200/60 bg-red-50 px-4 py-3 text-body-md text-red-600"
+      role="alert"
+    >
+      <app-ui-icon name="alert-circle" [size]="18" />
+      {{ loadError() }}
+    </div>
+  }
+
+  @if (toast()) {
+    <div
+      class="flex items-center gap-2.5 rounded-2xl border border-pink-200/60 bg-brand-pink-soft px-4 py-3 text-body-md font-medium text-brand-pink"
+      role="status"
+      aria-live="polite"
+    >
+      <app-ui-icon name="check" [size]="18" />
+      {{ toast() }}
+    </div>
+  }
+  <!-- ===================== Step 1 — School ===================== -->
+  <app-ui-card>
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
+      <div class="flex items-center gap-3">
+        <span
+          class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-pink-soft text-brand-pink"
+        >
+          <app-ui-icon name="home" [size]="18" />
+        </span>
+        <div>
+          <p class="text-label-xs uppercase tracking-wide text-slate-400">Step 1</p>
+          <h2 class="text-card-title text-brand-ink">Select a school</h2>
+        </div>
+      </div>
+
+      <app-ui-button variant="ghost" size="sm" (btnClick)="openSchoolModal()">
+        <app-ui-icon name="plus" [size]="13" className="mr-1" /> Add new school
+      </app-ui-button>
+    </div>
+
+    @if (schoolsLoading()) {
+      <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading schools">
+        @for (placeholder of [1, 2, 3]; track placeholder) {
+          <div class="h-[86px] animate-pulse rounded-xl bg-gray-100"></div>
+        }
+      </div>
+    } @else if (!hasSchools()) {
+      <div class="mt-4 rounded-xl border border-dashed border-gray-200 px-4 py-10 text-center">
+        <span class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-brand-pink-soft text-brand-pink">
+          <app-ui-icon name="home" [size]="20" />
+        </span>
+        <p class="text-card-title text-brand-ink">No schools yet</p>
+        <p class="mx-auto mt-1 max-w-sm text-body-md text-brand-muted">
+          Create the first school to start adding class sections and students.
+        </p>
+        <div class="mt-4">
+          <app-ui-button variant="primary" size="md" (btnClick)="openSchoolModal()">
+            <app-ui-icon name="plus" [size]="14" className="mr-1.5" /> Add new school
+          </app-ui-button>
+        </div>
+      </div>
+    } @else {
+      <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        @for (school of schools(); track school.id) {
+          <button
+            type="button"
+            class="rounded-xl border p-4 text-left transition-all duration-150"
+            [class]="
+              school.id === selectedSchoolId()
+                ? 'border-brand-pink bg-brand-pink-soft shadow-card-hover'
+                : 'border-gray-100 bg-white hover:border-pink-200 hover:shadow-card'
+            "
+            [attr.aria-pressed]="school.id === selectedSchoolId()"
+            (click)="selectSchool(school.id)"
+          >
+            <div class="flex items-start justify-between gap-2">
+              <span class="text-card-title text-brand-ink">{{ school.name }}</span>
+              <app-ui-badge [variant]="school.status === 'ACTIVE' ? 'success' : 'neutral'">
+                {{ school.status }}
+              </app-ui-badge>
+            </div>
+            <p class="mt-1 text-table-md text-brand-muted">{{ school.code }}</p>
+          </button>
+        }
+      </div>
+    }
+  </app-ui-card>
+  <!-- ===================== Step 2 — Class ===================== -->
+  @if (selectedSchool()) {
+    <app-ui-card>
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
+        <div class="flex items-center gap-3">
+          <span
+            class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-pink-soft text-brand-pink"
+          >
+            <app-ui-icon name="academic-cap" [size]="18" />
+          </span>
+          <div>
+            <p class="text-label-xs uppercase tracking-wide text-slate-400">Step 2</p>
+            <h2 class="text-card-title text-brand-ink">
+              Select a class in {{ selectedSchool()?.name }}
+            </h2>
+          </div>
+        </div>
+
+        <app-ui-button variant="ghost" size="sm" (btnClick)="openClassModal()">
+          <app-ui-icon name="plus" [size]="13" className="mr-1" /> Add new class
+        </app-ui-button>
+      </div>
+
+      @if (classesLoading()) {
+        <div class="mt-4 grid gap-2.5 sm:grid-cols-3 lg:grid-cols-4" aria-label="Loading classes">
+          @for (placeholder of [1, 2, 3, 4]; track placeholder) {
+            <div class="h-[84px] animate-pulse rounded-xl bg-gray-100"></div>
+          }
+        </div>
+      } @else if (classCount() === 0) {
+        <div class="mt-4 rounded-xl border border-dashed border-gray-200 px-4 py-8 text-center">
+          <p class="text-card-title text-brand-ink">No class sections yet</p>
+          <p class="mt-1 text-body-md text-brand-muted">
+            Add a section such as 6A or 7B to this school.
+          </p>
+          <div class="mt-4">
+            <app-ui-button variant="primary" size="md" (btnClick)="openClassModal()">
+              <app-ui-icon name="plus" [size]="14" className="mr-1.5" /> Add new class
+            </app-ui-button>
+          </div>
+        </div>
+      } @else {
+        <div class="mt-4 grid gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+          @for (classSection of classes(); track classSection.id) {
+            <div
+              class="group relative rounded-xl border p-3.5 transition-all duration-150"
+              [class]="
+                classSection.id === selectedClassId()
+                  ? 'border-brand-pink bg-brand-pink-soft shadow-card-hover'
+                  : 'border-gray-100 bg-white hover:border-pink-200 hover:shadow-card'
+              "
+            >
+              <button
+                type="button"
+                class="w-full text-left"
+                [attr.aria-pressed]="classSection.id === selectedClassId()"
+                (click)="selectClass(classSection.id)"
+              >
+                <span class="block text-card-title text-brand-ink">{{ classSection.className }}</span>
+                <span class="mt-0.5 block text-micro uppercase tracking-wide text-slate-400">
+                  {{ classSection.academicYear ?? 'Year not set' }}
+                </span>
+                <span class="mt-2 block text-table-md font-semibold text-brand-pink">
+                  {{ classSection.enrolledCount ?? 0 }}
+                  {{ (classSection.enrolledCount ?? 0) === 1 ? 'student' : 'students' }}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="absolute right-2 top-2 rounded-lg p-1.5 text-slate-300 opacity-0 transition-all hover:bg-red-50 hover:text-red-500 focus:opacity-100 group-hover:opacity-100"
+                [attr.aria-label]="'Delete class ' + classSection.className"
+                title="Delete class"
+                (click)="requestDeleteClass(classSection)"
+              >
+                <app-ui-icon name="trash" [size]="14" />
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </app-ui-card>
+  }
+  <!-- ===================== Step 3 — Student table ===================== -->
+  @if (selectedSchool()) {
+    <app-ui-card>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span
+            class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-pink-soft text-brand-pink"
+          >
+            <app-ui-icon name="users" [size]="18" />
+          </span>
+          <div>
+            <p class="text-label-xs uppercase tracking-wide text-slate-400">Step 3</p>
+            <h2 class="text-card-title text-brand-ink">
+              Students
+              @if (selectedClass(); as section) {
+                <span class="font-normal text-brand-muted">· {{ section.className }}</span>
+              }
+            </h2>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <!-- "All classes" toggle: step 3 is useful at school level too. -->
+          @if (selectedClassId() !== null) {
+            <app-ui-button variant="ghost" size="sm" (btnClick)="selectClass(null)">
+              Show all classes
+            </app-ui-button>
+          }
+          <app-ui-button variant="primary" size="sm" (btnClick)="openCreateStudent()">
+            <app-ui-icon name="plus" [size]="13" className="mr-1" /> Add student
+          </app-ui-button>
+        </div>
+      </div>
+
+      @if (!rosterLoading()) {
+        <p class="mt-3 text-table-md text-brand-muted">
+          {{ studentCount() }} {{ studentCount() === 1 ? 'student' : 'students' }}
+          @if (selectedClassId() === null) {
+            across {{ classCount() }} {{ classCount() === 1 ? 'class' : 'classes' }}
+          }
+        </p>
+      }
+    </app-ui-card>
+
+    <app-student-table
+      [students]="visibleStudents()"
+      [loading]="rosterLoading()"
+      [previewingId]="previewingStudentId()"
+      (editRequested)="openEditStudent($event)"
+      (removeRequested)="requestDeleteStudent($event)"
+      (previewToggled)="togglePreview($event)"
+    />
+  }
+
+  <!-- ===================== Modals ===================== -->
+  @switch (modal()) {
+    @case ('school') {
+      <app-school-form-modal
+        [saving]="saving()"
+        [existingCodes]="existingSchoolCodes()"
+        (created)="createSchool($event)"
+        (cancelled)="closeModal()"
+      />
+    }
+    @case ('class') {
+      <app-class-form-modal
+        [saving]="saving()"
+        [existingClasses]="classes()"
+        [schoolName]="selectedSchool()?.name ?? ''"
+        (created)="createClass($event)"
+        (cancelled)="closeModal()"
+      />
+    }
+    @case ('student') {
+      <app-student-form-modal
+        [student]="editingStudent()"
+        [schools]="schools()"
+        [classes]="classes()"
+        [saving]="saving()"
+        (saved)="saveStudent($event)"
+        (cancelled)="closeModal()"
+      />
+    }
+    @case ('confirm-student') {
+      <app-confirm-dialog
+        title="Delete this student?"
+        message="This permanently removes the student record from the system."
+        [detail]="deletingStudent()?.fullName + ' · ' + deletingStudent()?.studentIdCode"
+        confirmLabel="Delete student"
+        [busy]="deleting()"
+        (confirmed)="confirmDeleteStudent()"
+        (cancelled)="closeModal()"
+      />
+    }
+    @case ('confirm-class') {
+      <app-confirm-dialog
+        title="Delete this class?"
+        message="A class can only be removed once it has no enrolled students."
+        [detail]="deletingClass()?.className + ' · ' + (deletingClass()?.academicYear ?? 'Year not set')"
+        confirmLabel="Delete class"
+        [busy]="deleting()"
+        (confirmed)="confirmDeleteClass()"
+        (cancelled)="closeModal()"
+      />
+    }
+  }
+</section>

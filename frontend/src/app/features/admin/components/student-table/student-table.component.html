@@ -1,0 +1,200 @@
+<!--
+  Roster table. Uses @for/@if control flow throughout, matching the rest of the
+  app, and renders skeleton rows while the page is loading so the layout does
+  not jump when data lands.
+-->
+<div class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[840px] border-collapse text-left">
+      <thead>
+        <tr class="border-b border-gray-100 bg-brand-bg/60">
+          <th class="px-4 py-3 text-label-sm uppercase tracking-wide text-slate-500">Student ID</th>
+          <th class="px-4 py-3 text-label-sm uppercase tracking-wide text-slate-500">Student Name</th>
+          <th class="px-4 py-3 text-label-sm uppercase tracking-wide text-slate-500">Class</th>
+          <th class="px-4 py-3 text-label-sm uppercase tracking-wide text-slate-500">Parent Name</th>
+          <th class="px-4 py-3 text-label-sm uppercase tracking-wide text-slate-500">Phone</th>
+          <th class="px-4 py-3 text-label-sm uppercase tracking-wide text-slate-500">M&amp;E Status</th>
+          <th class="px-4 py-3 text-right text-label-sm uppercase tracking-wide text-slate-500">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-gray-50">
+        @if (loading()) {
+          @for (row of [1, 2, 3, 4, 5]; track row) {
+            <tr>
+              <td colspan="7" class="px-4 py-3">
+                <div class="h-4 w-full animate-pulse rounded bg-gray-100"></div>
+              </td>
+            </tr>
+          }
+        } @else if (!hasRows()) {
+          <tr>
+            <td colspan="7" class="px-4 py-14 text-center">
+              <span class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-brand-pink-soft text-brand-pink">
+                <app-ui-icon name="users" [size]="20" />
+              </span>
+              <p class="text-card-title text-brand-ink">No students here yet</p>
+              <p class="mt-1 text-body-md text-brand-muted">
+                Add a student, or pick a different class from the selector above.
+              </p>
+            </td>
+          </tr>
+        } @else {
+          @for (student of students(); track student.record.id) {
+            <tr class="align-top transition-colors hover:bg-brand-pink-light/40">
+              <td class="px-4 py-3 text-table-md font-semibold text-brand-pink">
+                {{ student.studentIdCode }}
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2.5">
+                  <span
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-pink-soft text-[11px] font-bold text-brand-pink"
+                  >
+                    {{ student.record.firstName.charAt(0) }}{{ student.record.lastName.charAt(0) }}
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block truncate text-table-md font-semibold text-brand-ink">
+                      {{ student.fullName }}
+                    </span>
+                    <span class="block text-micro uppercase tracking-wide text-slate-400">
+                      {{ student.record.gender ?? '—' }}
+                    </span>
+                  </span>
+                </div>
+              </td>
+              <td class="px-4 py-3 text-table-md text-slate-600">{{ student.classLabel }}</td>
+              <td class="px-4 py-3 text-table-md text-slate-600">
+                <span class="block">{{ orDash(student.parentName) }}</span>
+                @if (student.parentRelation) {
+                  <span class="block text-micro uppercase tracking-wide text-slate-400">
+                    {{ student.parentRelation }}
+                  </span>
+                }
+              </td>
+              <td class="px-4 py-3 text-table-md text-slate-600">{{ orDash(student.phone) }}</td>
+              <td class="px-4 py-3">
+                <app-ui-badge [variant]="meVariant(student.mAndEStatus)">
+                  {{ meLabel(student.mAndEStatus) }}
+                </app-ui-badge>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex items-center justify-end gap-1">
+                  <button
+                    type="button"
+                    class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-gray-100 hover:text-brand-pink"
+                    title="View profile"
+                    [attr.aria-label]="'View profile for ' + student.fullName"
+                    (click)="togglePreview(student)"
+                  >
+                    <app-ui-icon name="eye" [size]="16" />
+                  </button>
+                  <button
+                    type="button"
+                    class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-gray-100 hover:text-brand-pink"
+                    title="Edit student"
+                    [attr.aria-label]="'Edit ' + student.fullName"
+                    (click)="editRequested.emit(student)"
+                  >
+                    <app-ui-icon name="pencil" [size]="16" />
+                  </button>
+                  <button
+                    type="button"
+                    class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                    title="Delete student"
+                    [attr.aria-label]="'Delete ' + student.fullName"
+                    (click)="removeRequested.emit(student)"
+                  >
+                    <app-ui-icon name="trash" [size]="16" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Profile preview: baseline details without leaving the roster. -->
+            @if (isPreviewing(student)) {
+              <tr class="bg-brand-bg/40">
+                <td colspan="7" class="px-4 py-4">
+                  <div class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p class="text-label-xs uppercase tracking-wide text-slate-400">Student profile</p>
+                        <p class="mt-0.5 text-card-title text-brand-ink">{{ student.fullName }}</p>
+                      </div>
+                      <div class="flex gap-2">
+                        <app-ui-badge [variant]="meVariant(student.mAndEStatus)">
+                          {{ meLabel(student.mAndEStatus) }}
+                        </app-ui-badge>
+                        <app-ui-badge variant="neutral">{{ student.record.status }}</app-ui-badge>
+                      </div>
+                    </div>
+
+                    <dl class="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
+                      <div>
+                        <dt class="text-label-xs uppercase tracking-wide text-slate-400">Student ID</dt>
+                        <dd class="text-table-md font-medium text-brand-ink">{{ student.studentIdCode }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-label-xs uppercase tracking-wide text-slate-400">School</dt>
+                        <dd class="text-table-md font-medium text-brand-ink">
+                          {{ student.record.schoolName ?? '—' }}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt class="text-label-xs uppercase tracking-wide text-slate-400">Class</dt>
+                        <dd class="text-table-md font-medium text-brand-ink">{{ student.classLabel }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-label-xs uppercase tracking-wide text-slate-400">Date of birth</dt>
+                        <dd class="text-table-md font-medium text-brand-ink">
+                          @if (student.record.dateOfBirth) {
+                            {{ student.record.dateOfBirth | date: 'dd MMM yyyy' }}
+                          } @else {
+                            —
+                          }
+                        </dd>
+                      </div>
+                      <div>
+                        <dt class="text-label-xs uppercase tracking-wide text-slate-400">Gender</dt>
+                        <dd class="text-table-md font-medium text-brand-ink">
+                          {{ student.record.gender ?? '—' }}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt class="text-label-xs uppercase tracking-wide text-slate-400">Parent</dt>
+                        <dd class="text-table-md font-medium text-brand-ink">
+                          {{ orDash(student.parentName) }}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt class="text-label-xs uppercase tracking-wide text-slate-400">Phone</dt>
+                        <dd class="text-table-md font-medium text-brand-ink">{{ orDash(student.phone) }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-label-xs uppercase tracking-wide text-slate-400">Enrolled on</dt>
+                        <dd class="text-table-md font-medium text-brand-ink">
+                          @if (student.record.currentEnrollment?.createdAt) {
+                            {{ student.record.currentEnrollment?.createdAt | date: 'dd MMM yyyy' }}
+                          } @else {
+                            Not enrolled
+                          }
+                        </dd>
+                      </div>
+                    </dl>
+
+                    <div class="mt-4 flex justify-end gap-2">
+                      <app-ui-button variant="outline" size="sm" (btnClick)="togglePreview(student)">
+                        Close
+                      </app-ui-button>
+                      <app-ui-button variant="primary" size="sm" (btnClick)="editRequested.emit(student)">
+                        Edit student
+                      </app-ui-button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,73 @@
+<!--
+  Global student search. The dropdown stays open while results load and closes
+  on pick/clear, so an administrator can jump straight from a name to the edit
+  modal without touching the School → Class filters.
+-->
+<div class="relative">
+  <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+    <app-ui-icon name="search" [size]="18" />
+  </span>
+
+  <input
+    type="search"
+    class="h-11 w-full rounded-xl border border-gray-200 bg-white pl-11 pr-10 text-sm text-slate-700 shadow-sm placeholder:text-slate-400 focus:border-brand-pink focus:outline-none focus:ring-2 focus:ring-brand-pink/20"
+    placeholder="Search any student by ID or name…"
+    aria-label="Search students by ID or name"
+    autocomplete="off"
+    [formControl]="query"
+    (input)="onQueryChanged()"
+  />
+
+  @if (searching()) {
+    <span
+      class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400"
+      aria-hidden="true"
+    >
+      <span class="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-brand-pink"></span>
+    </span>
+  }
+
+  @if (dropdownOpen()) {
+    <div
+      class="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card-hover"
+    >
+      @if (matches().length > 0) {
+        <ul class="max-h-80 divide-y divide-gray-50 overflow-y-auto" role="listbox">
+          @for (student of matches(); track student.record.id) {
+            <li>
+              <button
+                type="button"
+                role="option"
+                class="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-brand-pink-light"
+                (click)="pick(student)"
+              >
+                <span
+                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-pink-soft text-xs font-bold text-brand-pink"
+                >
+                  {{ student.record.firstName.charAt(0) }}{{ student.record.lastName.charAt(0) }}
+                </span>
+
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate text-sm font-semibold text-brand-ink">
+                    {{ student.fullName }}
+                  </span>
+                  <span class="block truncate text-xs text-brand-muted">
+                    {{ student.studentIdCode }} · {{ student.classLabel }}
+                  </span>
+                </span>
+
+                <app-ui-badge variant="primary">{{ student.record.status }}</app-ui-badge>
+              </button>
+            </li>
+          }
+        </ul>
+      } @else if (!searching()) {
+        <p class="px-4 py-6 text-center text-sm text-brand-muted">
+          No student matches that ID or name.
+        </p>
+      } @else {
+        <p class="px-4 py-6 text-center text-sm text-brand-muted">Searching…</p>
+      }
+    </div>
+  }
+</div>

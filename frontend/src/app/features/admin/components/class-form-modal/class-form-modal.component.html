@@ -1,0 +1,81 @@
+<!-- Add a class section to the selected school. -->
+<div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6">
+  <div
+    class="fixed inset-0 bg-slate-900/45 backdrop-blur-[2px]"
+    aria-hidden="true"
+    (click)="cancelled.emit()"
+  ></div>
+
+  <section
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="class-form-title"
+    class="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl"
+  >
+    <header class="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
+      <div>
+        <p class="text-label-xs uppercase tracking-wide text-slate-400">Class management</p>
+        <h2 id="class-form-title" class="mt-0.5 text-headline-lg text-brand-ink">Add new class</h2>
+        @if (schoolName()) {
+          <p class="mt-0.5 text-table-md text-brand-muted">{{ schoolName() }}</p>
+        }
+      </div>
+      <button
+        type="button"
+        class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-gray-100 hover:text-brand-ink"
+        aria-label="Close dialog"
+        (click)="cancelled.emit()"
+      >
+        <app-ui-icon name="close" [size]="18" />
+      </button>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4 px-6 py-5">
+      <label class="flex flex-col gap-1.5">
+        <span class="text-label-xs uppercase tracking-wide text-slate-500">
+          Class name <em class="not-italic text-brand-pink">*</em>
+        </span>
+        <input
+          type="text"
+          formControlName="className"
+          placeholder="6A"
+          autocomplete="off"
+          class="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm uppercase text-brand-ink shadow-sm placeholder:text-slate-400 focus:border-brand-pink focus:outline-none focus:ring-2 focus:ring-brand-pink/20"
+        />
+        @if (duplicateName) {
+          <span class="text-[11px] font-medium text-red-500">
+            This school already has a class called that.
+          </span>
+        } @else if (invalid('className')) {
+          <span class="text-[11px] font-medium text-red-500">Class name is required.</span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1.5">
+        <span class="text-label-xs uppercase tracking-wide text-slate-500">
+          Academic year <em class="not-italic text-brand-pink">*</em>
+        </span>
+        <input
+          type="text"
+          formControlName="academicYear"
+          placeholder="2026-2027"
+          class="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-brand-ink shadow-sm placeholder:text-slate-400 focus:border-brand-pink focus:outline-none focus:ring-2 focus:ring-brand-pink/20"
+        />
+        @if (invalid('academicYear')) {
+          <span class="text-[11px] font-medium text-red-500">
+            Use the YYYY-YYYY format, e.g. 2026-2027.
+          </span>
+        }
+      </label>
+
+      <footer class="mt-2 flex justify-end gap-2.5 border-t border-gray-100 pt-5">
+        <app-ui-button variant="outline" size="md" [disabled]="saving()" (btnClick)="cancelled.emit()">
+          Cancel
+        </app-ui-button>
+        <app-ui-button variant="primary" size="md" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Creating…' : 'Create class' }}
+        </app-ui-button>
+      </footer>
+    </form>
+  </section>
+</div>

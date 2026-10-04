@@ -349,3 +349,160 @@ describe('AttendanceUploadService — Excel matrix format', () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+
+describe('AttendanceUploadService — wide day-matrix format (1st..31st)', () => {
+  /** A tester carrying the calendar that the sheet itself does not contain. */
+  function dayMatrixTester(ctx: { month: number; year: number } | null): TestableAttendanceService {
+    const tester = new TestableAttendanceService(null as never);
+    tester.setMatrixContext({ schoolCode: 'SCH-001', className: '6A', academicYear: '2026-2027' });
+    tester.setDayMatrixContext(ctx);
+    return tester;
+  }
+
+  const header = ['Student_ID', 'Student_Name', '1st', '2nd', '3rd', 'Total class - 8', 'Average'];
+
+  it('ignores an ordinal sheet entirely until a month + year are chosen', () => {
+    const tester = dayMatrixTester(null);
+    const built = tester.buildFromRows([header, ['EDSF 035', 'Abhinav', 'P', 'P', 'P', '3', '100']]);
+
+    // `1st` is not a real date, so without a calendar the sheet is never pivoted
+    // into ordinal days and no 2026-09-01-style date can be derived from it.
+    expect(built.format).not.toBe('DAY_MATRIX');
+    expect(built.rows.some((r) => (r.cells['sessionDate'] ?? '').endsWith('-09-01'))).toBe(false);
+  });
+
+  it('builds real dates by combining the ordinal with the selected month/year', () => {
+    const tester = dayMatrixTester({ month: 9, year: 2026 });
+    const built = tester.buildFromRows([header, ['EDSF 035', 'Abhinav', 'P', 'P', 'A', '3', '40']]);
+
+    expect(built.format).toBe('DAY_MATRIX');
+    expect(built.rows).toHaveLength(3);
+    expect(built.rows.map((r) => r.cells['sessionDate'])).toEqual([
+      '2026-09-01',
+      '2026-09-02',
+      '2026-09-03',
+    ]);
+    expect(built.rows[0].cells).toMatchObject({
+      schoolCode: 'SCH-001',
+      className: '6A',
+      academicYear: '2026-2027',
+      studentId: 'EDSF 035',
+      status: 'P',
+    });
+  });
+
+  it('respects a different month, proving the dates come from the selector', () => {
+    const tester = dayMatrixTester({ month: 2, year: 2028 });
+    const built = tester.buildFromRows([['Student_ID', '1st', '29th'], ['EDSF 035', 'P', 'A']]);
+
+    expect(built.rows.map((r) => r.cells['sessionDate'])).toEqual(['2028-02-01', '2028-02-29']);
+  });
+
+  it('never invents a date the selected month does not have', () => {
+    // February 2026 has no 30th or 31st, so those columns are dropped.
+    const tester = dayMatrixTester({ month: 2, year: 2026 });
+    const built = tester.buildFromRows([['Student_ID', '1st', '30th', '31st'], ['EDSF 035', 'P', 'P', 'P']]);
+
+    expect(built.rows).toHaveLength(1);
+    expect(built.rows[0].cells['sessionDate']).toBe('2026-02-01');
+    expect(tester.lastDayMatrixLayout?.skippedColumns.map((c) => c.header)).toEqual(['30th', '31st']);
+  });
+
+  it('carries special text into remarks so the rule engine accepts it', () => {
+    const tester = dayMatrixTester({ month: 9, year: 2026 });
+    const built = tester.buildFromRows([
+      header,
+      ['EDSF 035', 'Abhinav', 'P', 'teacher on leave', 'School holiday - tadari', '', ''],
+    ]);
+
+    expect(built.rows[1].cells).toMatchObject({ status: 'ON_LEAVE', remarks: 'teacher on leave' });
+    expect(built.rows[2].cells).toMatchObject({ status: 'CANCELLED', remarks: 'School holiday - tadari' });
+  });
+
+  it('collapses a class-wide holiday column into a single student-less record', () => {
+    const tester = dayMatrixTester({ month: 9, year: 2026 });
+    const built = tester.buildFromRows([
+      header,
+      ['EDSF 035', 'Abhinav', 'P', 'School holiday - tadari', 'P', '', ''],
+      ['EDSF 042', 'Adarsh', 'P', 'School holiday - tadari', 'P', '', ''],
+    ]);
+
+    const holidays = built.rows.filter((r) => r.cells['sessionDate'] === '2026-09-02');
+    expect(holidays).toHaveLength(1);
+    expect(holidays[0].cells).toMatchObject({ status: 'CANCELLED', studentId: '' });
+  });
+
+  it('surfaces an unclassifiable mark as a row error rather than dropping it', () => {
+    const tester = dayMatrixTester({ month: 9, year: 2026 });
+    const built = tester.buildFromRows([header, ['EDSF 035', 'Abhinav', 'P', 'mystery', 'P', '', '']]);
+
+    const result = tester.validateGrid({ columns: ATTENDANCE_UPLOAD_COLUMNS, rows: built.rows });
+    expect(result.isValid).toBe(false);
+    expect(result.errors.some((e) => e.columnName === 'status')).toBe(true);
+    // The two good marks still come through, honouring the partial-success model.
+    expect(result.validRows).toHaveLength(2);
+  });
+
+  it('produces a payload shaped exactly like the backend contract', () => {
+    const tester = dayMatrixTester({ month: 9, year: 2026 });
+    const built = tester.buildFromRows([header, ['EDSF 035', 'Abhinav', 'P', 'p', 'a', '', '']]);
+    const result = tester.validateGrid({ columns: ATTENDANCE_UPLOAD_COLUMNS, rows: built.rows });
+
+    expect(result.isValid).toBe(true);
+    expect(result.validRows).toEqual([
+      {
+        schoolCode: 'SCH-001',
+        className: '6A',
+        academicYear: '2026-2027',
+        sessionDate: '2026-09-01',
+        studentId: 'EDSF 035',
+        status: 'P',
+        remarks: null,
+      },
+      {
+        schoolCode: 'SCH-001',
+        className: '6A',
+        academicYear: '2026-2027',
+        sessionDate: '2026-09-02',
+        studentId: 'EDSF 035',
+        status: 'P',
+        remarks: null,
+      },
+      {
+        schoolCode: 'SCH-001',
+        className: '6A',
+        academicYear: '2026-2027',
+        sessionDate: '2026-09-03',
+        studentId: 'EDSF 035',
+        status: 'A',
+        remarks: null,
+      },
+    ]);
+  });
+
+  it('leaves the existing row-based and date-matrix formats untouched', () => {
+    const tester = dayMatrixTester({ month: 9, year: 2026 });
+
+    const dateMatrix = tester.buildFromRows([
+      ['Student ID', '2026-01-05', '2026-01-06'],
+      ['EDSF-349', 'P', 'A'],
+    ]);
+    expect(dateMatrix.format).toBe('MATRIX');
+
+    const rowBased = tester.buildFromRows([
+      ['schoolCode', 'className', 'academicYear', 'sessionDate', 'studentId', 'status', 'remarks'],
+      ['SCH-001', '6A', '2026-2027', '2026-01-05', 'EDSF-349', 'P', ''],
+    ]);
+    expect(rowBased.format).toBe('ROW');
+  });
+
+  it('rejects a context outside the supported range instead of building junk dates', () => {
+    const tester = dayMatrixTester({ month: 13, year: 2026 });
+    // The invalid pair is dropped outright, so no ordinal is ever resolved.
+    expect(tester.hasDayMatrixContext()).toBe(false);
+    const built = tester.buildFromRows([header, ['EDSF 035', 'Abhinav', 'P', '', '', '', '']]);
+    expect(built.format).not.toBe('DAY_MATRIX');
+    expect(built.rows).toHaveLength(0);
+  });
+});

@@ -11,6 +11,8 @@ import { NeedsAttentionResponseDTO } from '../dtos/needsAttention.dto';
 import { EngagementMetricsDTO } from '../dtos/engagementMetrics.dto';
 import { ResourceFinanceDTO } from '../dtos/resourceFinance.dto';
 import { TeachingObjectivesDTO } from '../dtos/teachingObjectives.dto';
+import { cached } from '../../utils/cache.utils';
+import { CACHE_PREFIX } from '../../constants/cache.constants';
 
 /** The filter parameters every metrics endpoint accepts. */
 interface MetricsEndpointQuery {
@@ -22,6 +24,9 @@ interface MetricsEndpointQuery {
   month?: number;
   year?: number;
 }
+
+/** Cache key prefix for the whole metrics module, so it can be invalidated at once. */
+export const METRICS_CACHE_PREFIX = CACHE_PREFIX.METRICS;
 
 /**
  * MetricsController - read-only dashboard endpoints for the
@@ -65,6 +70,30 @@ export class MetricsController extends Controller {
   }
 
   /**
+   * Build a deterministic cache key from the aspect name and the resolved filter.
+   *
+   * Keys are built from the Zod-parsed object so two equivalent requests that
+   * differ only in query-string ordering or number formatting collapse to one key.
+   * Undefined keys are dropped so `{a: undefined}` and `{}` share a key.
+   */
+  private cacheKey(aspect: string, filter: MetricsFilterQuery): string {
+    const normalised = Object.entries(filter)
+      .filter(([, value]) => value !== undefined)
+      .sort(([a], [b]) => a.localeCompare(b));
+    return `${METRICS_CACHE_PREFIX}${aspect}:${JSON.stringify(normalised)}`;
+  }
+
+  /** Validate, then run the aspect behind the cache-aside helper. */
+  private async serve<T>(
+    aspect: string,
+    query: MetricsEndpointQuery,
+    producer: (filter: MetricsFilterQuery) => Promise<T>
+  ): Promise<T> {
+    const filter = this.parseFilter(query);
+    return await cached(this.cacheKey(aspect, filter), () => producer(filter));
+  }
+
+  /**
    * Get the complete dashboard in one request.
    *
    * Covers all seven core aspects plus the three derived metrics. Preferred for the
@@ -91,9 +120,8 @@ export class MetricsController extends Controller {
     @Query() month?: number,
     @Query() year?: number
   ): Promise<DashboardSummaryResponseDTO> {
-    return await this.metricsService.getDashboardSummary(
-      this.parseFilter({ academicYear, fromDate, toDate, schoolId, classId, month, year })
-    );
+    return await this.serve('dashboard', { academicYear, fromDate, toDate, schoolId, classId, month, year },
+      (filter) => this.metricsService.getDashboardSummary(filter));
   }
 
   /** Get the five headline KPI cards (Aspect 1). */
@@ -108,9 +136,8 @@ export class MetricsController extends Controller {
     @Query() month?: number,
     @Query() year?: number
   ): Promise<KpiSummaryResponseDTO> {
-    return await this.metricsService.getKpiSummary(
-      this.parseFilter({ academicYear, fromDate, toDate, schoolId, classId, month, year })
-    );
+    return await this.serve('kpis', { academicYear, fromDate, toDate, schoolId, classId, month, year },
+      (filter) => this.metricsService.getKpiSummary(filter));
   }
 
   /**
@@ -130,9 +157,8 @@ export class MetricsController extends Controller {
     @Query() month?: number,
     @Query() year?: number
   ): Promise<LearningProgressDTO> {
-    return await this.metricsService.getLearningOutcomes(
-      this.parseFilter({ academicYear, fromDate, toDate, schoolId, classId, month, year })
-    );
+    return await this.serve('learning-outcomes', { academicYear, fromDate, toDate, schoolId, classId, month, year },
+      (filter) => this.metricsService.getLearningOutcomes(filter));
   }
 
   /** Get the school performance matrix (Aspect 3). */
@@ -147,9 +173,8 @@ export class MetricsController extends Controller {
     @Query() month?: number,
     @Query() year?: number
   ): Promise<SchoolPerformanceResponseDTO> {
-    return await this.metricsService.getSchoolPerformance(
-      this.parseFilter({ academicYear, fromDate, toDate, schoolId, classId, month, year })
-    );
+    return await this.serve('school-performance', { academicYear, fromDate, toDate, schoolId, classId, month, year },
+      (filter) => this.metricsService.getSchoolPerformance(filter));
   }
 
   /** Get the dynamically generated "Needs Attention" alerts (Aspect 4). */
@@ -164,9 +189,8 @@ export class MetricsController extends Controller {
     @Query() month?: number,
     @Query() year?: number
   ): Promise<NeedsAttentionResponseDTO> {
-    return await this.metricsService.getNeedsAttention(
-      this.parseFilter({ academicYear, fromDate, toDate, schoolId, classId, month, year })
-    );
+    return await this.serve('needs-attention', { academicYear, fromDate, toDate, schoolId, classId, month, year },
+      (filter) => this.metricsService.getNeedsAttention(filter));
   }
 
   /** Get teaching objectives and the class x module coverage matrix (Aspect 5). */
@@ -181,9 +205,8 @@ export class MetricsController extends Controller {
     @Query() month?: number,
     @Query() year?: number
   ): Promise<TeachingObjectivesDTO> {
-    return await this.metricsService.getTeachingObjectives(
-      this.parseFilter({ academicYear, fromDate, toDate, schoolId, classId, month, year })
-    );
+    return await this.serve('teaching-objectives', { academicYear, fromDate, toDate, schoolId, classId, month, year },
+      (filter) => this.metricsService.getTeachingObjectives(filter));
   }
 
   /** Get stakeholder engagement metrics (Aspect 6). */
@@ -198,9 +221,8 @@ export class MetricsController extends Controller {
     @Query() month?: number,
     @Query() year?: number
   ): Promise<EngagementMetricsDTO> {
-    return await this.metricsService.getEngagementMetrics(
-      this.parseFilter({ academicYear, fromDate, toDate, schoolId, classId, month, year })
-    );
+    return await this.serve('engagement', { academicYear, fromDate, toDate, schoolId, classId, month, year },
+      (filter) => this.metricsService.getEngagementMetrics(filter));
   }
 
   /** Get resources and finance tracking (Aspect 7). */
@@ -215,8 +237,7 @@ export class MetricsController extends Controller {
     @Query() month?: number,
     @Query() year?: number
   ): Promise<ResourceFinanceDTO> {
-    return await this.metricsService.getResourceFinance(
-      this.parseFilter({ academicYear, fromDate, toDate, schoolId, classId, month, year })
-    );
+    return await this.serve('finance', { academicYear, fromDate, toDate, schoolId, classId, month, year },
+      (filter) => this.metricsService.getResourceFinance(filter));
   }
 }

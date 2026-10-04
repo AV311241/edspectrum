@@ -27,6 +27,7 @@ export class SidebarComponent {
     { id: 'teaching', label: 'Teaching', icon: 'academic-cap', route: '/teaching' },
     { id: 'finance', label: 'Resources & Finance', icon: 'wallet', route: '/resources-finance' },
     { id: 'schools', label: 'Schools', icon: 'home', route: '/schools' },
+    { id: 'admin', label: 'Admin', icon: 'database', route: '/admin' },
     { id: 'reports', label: 'Reports', icon: 'calendar', route: '/reports' }
   ]);
 }

@@ -17,6 +17,7 @@ The **Data Upload** page (`/data-upload`) provides a single, centralised Excel-t
 | Shared base | `frontend/src/app/core/services/bulk-upload-base.service.ts` | Parse / validate / dispatch scaffolding (**abstract, not `@Injectable`**) |
 | Entity services | `core/services/{class,student,attendance}-upload.service.ts`, `core/services/baseline-assessment-upload.service.ts` | Isolated validation rules + endpoint dispatch per entity |
 | Excel utils | `core/utils/excel-upload.utils.ts` | SheetJS parsing, header detection, Excel-serial dates, boolean coercion, template writer |
+| Day-matrix parser | `core/utils/attendanceParser.ts` | Ordinal day (`1st`..`31st`) parsing, month/year date construction, column filtering, the wide-matrix pivot. Pure functions, unit tested. |
 | Models | `core/models/upload.models.ts` | `ValidationError`, `ValidationResult<T>`, `ColumnSpec`, `DataGrid` |
 | Backend DTOs | `backend/src/dtos/{class,student,attendance}-upload.dto.ts` | Zod request contracts |
 | Backend shared | `backend/src/dtos/upload-common.dto.ts` | `RowErrorDTO`, `BatchUploadResultDTO`, reusable field schemas |
@@ -111,6 +112,31 @@ Each returns `BatchUploadResultDTO`:
 
    Metadata is auto-detected from a `schoolCode: / className: / academicYear:` row near the top. If absent, the wizard exposes a **Matrix Context** panel where the class is supplied manually.
 
+3. **Day-matrix** - ordinal day columns (`1st`, `2nd` ... `31st`) with summary columns such as `Total class - 8` and `Average`. Pivoted identically to the matrix layout.
+
+   ```
+   Student_ID | Student_Name | 1st | 2nd | 3rd | ... | 30th | Total class - 8 | Average
+   EDSF 035   | Abhinav     | P   | A   |     | ... | P    | 12              | 40
+   EDSF 042   | Adarsh      | P   | P   | A   | ... |      | 11              | 38
+   ```
+
+   | Aspect | Behaviour |
+   | :--- | :--- |
+   | Missing calendar | The sheet carries **no month or year**, so the wizard renders **Month + Year** selectors and keeps the dropzone disabled until both are set. Ordinals cannot be resolved otherwise. |
+   | Column filtering | `parseOrdinalDay` accepts `1st`/`2`/`21st` (Excel often stores the ordinal as a plain number). Summary columns are skipped. |
+   | Date construction | `buildIsoDate` combines the ordinal with the selected month/year and returns `null` for a day the month does not have, so `31st` under February/April is **skipped**, never coerced. Leap years are honoured. |
+   | Ignored columns | Every skipped column is reported back with a reason and rendered in the preview, rather than dropped silently. |
+   | Blank cells | Skipped as "unmarked" - see the note below. |
+   | Class-wide days | A column whose entries are all free-text class-wide status (e.g. `School holiday - tadari`) **collapses to a single `studentId = null` record** for that date. |
+
+   **Remarks preservation**: free prose is kept verbatim in `remarks` - `teacher on leave` becomes `ON_LEAVE` with `remarks: "teacher on leave"`, and `School holiday - tadari` becomes `CANCELLED` with the original text.
+
+   > [!NOTE]
+   > **Why a whole holiday column collapses to one record.** `bulkUploadAttendance` buckets `CANCELLED` rows by `(class, date)` and writes a single class-wide row (`studentId = null`). Emitting one row per student would send N rows for one fact, of which N-1 are silently overwritten. Collapsing in the parser keeps the payload honest and the response's `cancellations` counter accurate.
+
+   > [!IMPORTANT]
+   > **Why blank cells are skipped rather than marked.** This codebase has no `NOT_MARKED` status - the vocabulary is fixed by `ATTENDANCE_STATUS_VALUES` and the Prisma enum. An unfilled register cell means the session was never marked, so writing a status would fabricate attendance nobody registered. If "unmarked" ever needs to be stored, add it to the enum, `ATTENDANCE_PRESENT_WEIGHT` and the Zod schema together (see the checklist in [`attendance_api.md`](file:///c:/Users/av311/Desktop/NGO-app/Docs/backend/attendance_api.md)).
+
 ### Baseline Assessments
 | Column | Required | Rule |
 | :--- | :--- | :--- |
@@ -148,8 +174,9 @@ Each returns `BatchUploadResultDTO`:
 | :--- | :--- |
 | 1 | Select entity type (Classes / Students / Attendance / Baseline Assessments cards) |
 | 2 | Download a sample `.xlsx` template (generated client-side, includes an Instructions sheet) |
+| 2b | **Attendance only**: choose Month + Year if the sheet uses ordinal day columns. The dropzone stays disabled until both are set. |
 | 3 | Drag & drop or browse for the file. Accepts `.xlsx`, `.xls`, `.csv`, max 10 MB |
-| 4 | Validation summary + error matrix + inline grid editor |
+| 4 | Validation summary + error matrix + inline grid editor. A day-matrix sheet additionally reports the day columns read, the unmarked (blank) cells, the class-wide days, and each ignored column with its reason. |
 | 5 | Save to database |
 
 **Row-exclusion model (approved design)**: rows with errors are blocked, but a user may *exclude* them and submit the clean subset. `Save` is enabled as soon as at least one clean, non-excluded row remains. This is why the button is not gated on "zero errors".
@@ -166,8 +193,9 @@ Inline cell editing re-runs the rule engine on every commit, so the summary and 
 | :--- | :--- |
 | `backend` `npm run build` (tsoa regen + `tsc`) | Pass |
 | `frontend` `ng build` | Pass (pre-existing bundle-budget warning from `xlsx`) |
-| Vitest suite | **38 passing** (9 classes / 9 students / 19 attendance) |
-| `app.spec.ts` "should render title" | **Fails - pre-existing**, unrelated to this feature (expects scaffold text `Hello, frontend`; `app.html` contains only the layout shell) |
+| Vitest suite | **76 passing** (9 classes / 9 students / 29 attendance / 29 day-matrix parser) |
+| `tsc -p tsconfig.app.json --noEmit` / `tsconfig.spec.json` | Pass |
+| `app.spec.ts` + `horizontal-bar-chart.component.spec.ts` | **Fails - pre-existing**, unrelated to this feature. Both call global `describe`/`beforeEach` without importing them from `vitest`. |
 
 > [!TIP]
 > **Latent bug that was found, fixed and guarded.** The matrix pivot produces multiple logical rows sharing one `rowIndex` (one per date column). An earlier implementation resolved raw cells with `rawRows.find(r => r.rowIndex === row.rowIndex)`, which handed every row after the first the *first* row's `sessionDate`. `annotate()` now uses the row **by identity**, and a regression test ("gives every pivoted row its OWN sessionDate") locks the behaviour in.

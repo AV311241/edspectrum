@@ -223,6 +223,32 @@
       </div>
     </div>
 
+    <!-- ═══ STEP 2b — Calendar for the wide day-matrix layout ═══ -->
+    @if (selectedEntity() === 'ATTENDANCE') {
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="w-5 h-5 rounded-full bg-[#93004e] text-white text-[10px] font-extrabold flex items-center justify-center">
+            2b
+          </span>
+          <h2 class="text-sm font-black text-slate-900">Attendance Register Month</h2>
+        </div>
+
+        <app-month-year-selector
+          [month]="selectedMonth()"
+          [year]="selectedYear()"
+          [disabled]="parsing()"
+          (selectionChange)="onCalendarChange($event)"
+        />
+
+        @if (!calendarChosen()) {
+          <p class="text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 flex items-center gap-1.5">
+            <app-ui-icon name="alert-circle" [size]="14" className="text-rose-500" />
+            Choose both a month and a year to unlock the upload area below.
+          </p>
+        }
+      </div>
+    }
+
     <!-- ═══ STEP 3 — Drag & drop ═══ -->
     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-3">
       <div class="flex items-center gap-2 mb-1">
@@ -230,7 +256,12 @@
         <h2 class="text-sm font-black text-slate-900">Upload Your Excel File</h2>
       </div>
       <app-upload-dropzone
-        [disabled]="parsing()"
+        [disabled]="parsing() || (selectedEntity() === 'ATTENDANCE' && !calendarChosen())"
+        [hint]="
+          selectedEntity() === 'ATTENDANCE' && !calendarChosen()
+            ? 'Select the month and year above to unlock the dropzone.'
+            : 'Drag & drop your Excel file here, or click to browse.'
+        "
         [selectedFileName]="fileName()"
         [selectedFileSize]="fileSize()"
         (fileAccepted)="onFileAccepted($event)"
@@ -265,6 +296,61 @@
             <span class="text-2xl font-black text-slate-600">{{ excludedCount() }}</span>
           </div>
         </div>
+
+        <!-- Day-matrix provenance: what was read, ignored and collapsed -->
+        @if (sheetFormat() === 'DAY_MATRIX') {
+          <div class="rounded-xl border border-sky-200 bg-sky-50/60 p-4 space-y-3">
+            <div class="flex items-center gap-2">
+              <app-ui-icon name="calendar" [size]="15" className="text-sky-600" />
+              <h3 class="text-xs font-extrabold uppercase tracking-wide text-sky-800">
+                Day-matrix sheet
+                @if (selectedMonth() !== null && selectedYear() !== null) {
+                  · {{ MONTH_NAMES[selectedMonth()! - 1] }} {{ selectedYear() }}
+                }
+              </h3>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-2 text-[11px]">
+              <div class="rounded-lg bg-white border border-sky-200 px-3 py-2">
+                <span class="block font-bold text-slate-500">Day columns read</span>
+                <span class="text-base font-black text-slate-900">
+                  {{ attendance.lastDayMatrixLayout?.dayColumns?.length ?? 0 }}
+                </span>
+              </div>
+              <div class="rounded-lg bg-white border border-sky-200 px-3 py-2">
+                <span class="block font-bold text-slate-500">Unmarked (blank) cells</span>
+                <span class="text-base font-black text-slate-900">{{ unmarkedCellCount() }}</span>
+              </div>
+              <div class="rounded-lg bg-white border border-sky-200 px-3 py-2">
+                <span class="block font-bold text-slate-500">Class-wide days</span>
+                <span class="text-base font-black text-slate-900">{{ classWideDates().length }}</span>
+              </div>
+            </div>
+
+            @if (classWideDates().length > 0) {
+              <p class="text-[11px] text-sky-900">
+                <span class="font-bold">Whole-day cancellations:</span>
+                {{ classWideDates().join(', ') }} — saved as one class-wide record each, not one per student.
+              </p>
+            }
+
+            @if (skippedColumns().length > 0) {
+              <div class="rounded-lg bg-white border border-amber-200 px-3 py-2">
+                <p class="text-[11px] font-bold text-amber-800 mb-1">
+                  {{ skippedColumns().length }} column(s) ignored:
+                </p>
+                <ul class="space-y-1">
+                  @for (col of skippedColumns(); track col.colIndex) {
+                    <li class="text-[11px] text-slate-600">
+                      <span class="font-mono font-bold text-slate-800">{{ col.header }}</span>
+                      <span class="text-slate-400"> — {{ col.reason }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+        }
 
         <!-- Parsed-sheet metadata -->
         <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold text-slate-500">

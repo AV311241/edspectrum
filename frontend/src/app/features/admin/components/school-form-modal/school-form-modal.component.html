@@ -1,0 +1,93 @@
+<!-- Create a school. The backend accepts `name` and `code`; `location` is
+     carried in the payload model and will persist once the column exists. -->
+<div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6">
+  <div
+    class="fixed inset-0 bg-slate-900/45 backdrop-blur-[2px]"
+    aria-hidden="true"
+    (click)="cancelled.emit()"
+  ></div>
+
+  <section
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="school-form-title"
+    class="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl"
+  >
+    <header class="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
+      <div>
+        <p class="text-label-xs uppercase tracking-wide text-slate-400">School directory</p>
+        <h2 id="school-form-title" class="mt-0.5 text-headline-lg text-brand-ink">Add new school</h2>
+      </div>
+      <button
+        type="button"
+        class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-gray-100 hover:text-brand-ink"
+        aria-label="Close dialog"
+        (click)="cancelled.emit()"
+      >
+        <app-ui-icon name="close" [size]="18" />
+      </button>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4 px-6 py-5">
+      <label class="flex flex-col gap-1.5">
+        <span class="text-label-xs uppercase tracking-wide text-slate-500">
+          School name <em class="not-italic text-brand-pink">*</em>
+        </span>
+        <input
+          type="text"
+          formControlName="name"
+          placeholder="Greenwood Public School"
+          class="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-brand-ink shadow-sm placeholder:text-slate-400 focus:border-brand-pink focus:outline-none focus:ring-2 focus:ring-brand-pink/20"
+        />
+        @if (invalid('name')) {
+          <span class="text-[11px] font-medium text-red-500">
+            School name is required (2–255 characters).
+          </span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1.5">
+        <span class="text-label-xs uppercase tracking-wide text-slate-500">
+          School code <em class="not-italic text-brand-pink">*</em>
+        </span>
+        <input
+          type="text"
+          formControlName="code"
+          placeholder="SCH-001"
+          autocomplete="off"
+          class="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm uppercase text-brand-ink shadow-sm placeholder:text-slate-400 focus:border-brand-pink focus:outline-none focus:ring-2 focus:ring-brand-pink/20"
+          (blur)="normaliseCode()"
+        />
+        @if (codeTaken) {
+          <span class="text-[11px] font-medium text-red-500">
+            That code is already used by another school.
+          </span>
+        } @else if (invalid('code')) {
+          <span class="text-[11px] font-medium text-red-500">School code is required.</span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-1.5">
+        <span class="text-label-xs uppercase tracking-wide text-slate-500">
+          Location
+          <span class="normal-case tracking-normal text-slate-400">(optional)</span>
+        </span>
+        <input
+          type="text"
+          formControlName="location"
+          placeholder="Pune, Maharashtra"
+          class="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-brand-ink shadow-sm placeholder:text-slate-400 focus:border-brand-pink focus:outline-none focus:ring-2 focus:ring-brand-pink/20"
+        />
+      </label>
+
+      <footer class="mt-2 flex justify-end gap-2.5 border-t border-gray-100 pt-5">
+        <app-ui-button variant="outline" size="md" [disabled]="saving()" (btnClick)="cancelled.emit()">
+          Cancel
+        </app-ui-button>
+        <app-ui-button variant="primary" size="md" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Creating…' : 'Create school' }}
+        </app-ui-button>
+      </footer>
+    </form>
+  </section>
+</div>

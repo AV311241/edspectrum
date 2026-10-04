@@ -16,9 +16,13 @@ import { ClassController } from './../controllers/class.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { BaselineAssessmentController } from './../controllers/baselineAssessment.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { AuthController } from './../controllers/auth.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AttendanceController } from './../controllers/attendance.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MetricsController } from './../metrics/controllers/metrics.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { DashboardKpiController } from './../metrics/controllers/dashboardKpi.controller';
 import { iocContainer } from './../ioc';
 import type { IocContainer, IocContainerFactory } from '@tsoa/runtime';
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
@@ -28,6 +32,16 @@ import type { Request as ExRequest, Response as ExResponse, RequestHandler, Rout
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
+    "_36_Enums.UserStatus": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["ACTIVE"]},{"dataType":"enum","enums":["INACTIVE"]}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "UserStatus": {
+        "dataType": "refAlias",
+        "type": {"ref":"_36_Enums.UserStatus","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "UserResponseDTO": {
         "dataType": "refObject",
         "properties": {
@@ -36,7 +50,8 @@ const models: TsoaRoute.Models = {
             "firstName": {"dataType":"string","required":true},
             "lastName": {"dataType":"string","required":true},
             "roleId": {"dataType":"double","required":true},
-            "status": {"dataType":"string","required":true},
+            "status": {"ref":"UserStatus","required":true},
+            "schoolId": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
             "createdAt": {"dataType":"datetime","required":true},
         },
         "additionalProperties": false,
@@ -48,7 +63,7 @@ const models: TsoaRoute.Models = {
             "email": {"dataType":"string","required":true},
             "firstName": {"dataType":"string","required":true},
             "lastName": {"dataType":"string","required":true},
-            "passwordHash": {"dataType":"string","required":true},
+            "password": {"dataType":"string","required":true},
             "roleId": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
@@ -632,6 +647,15 @@ const models: TsoaRoute.Models = {
             "oralFlag": {"dataType":"union","subSchemas":[{"ref":"OralFlag"},{"dataType":"enum","enums":[null]}]},
             "qcNotes": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
             "domainScores": {"dataType":"array","array":{"dataType":"refObject","ref":"DomainScoreInput"}},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "LoginDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "email": {"dataType":"string","required":true},
+            "password": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -1447,6 +1471,138 @@ const models: TsoaRoute.Models = {
             "totalAlerts": {"dataType":"double","required":true},
             "bySeverity": {"ref":"AlertSeverityCountsDTO","required":true},
             "truncatedCount": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "FinanceSnapshotDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "totalBudget": {"dataType":"double","required":true},
+            "totalSpent": {"dataType":"double","required":true},
+            "balance": {"dataType":"double","required":true},
+            "utilizationPercent": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "lastRefreshed": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CategorySpendSnapshotDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "category": {"dataType":"string","required":true},
+            "categoryLabel": {"dataType":"string","required":true},
+            "spent": {"dataType":"double","required":true},
+            "spendPercent": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ObjectiveStatusSnapshotDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "planned": {"dataType":"double","required":true},
+            "completed": {"dataType":"double","required":true},
+            "inProgress": {"dataType":"double","required":true},
+            "upcoming": {"dataType":"double","required":true},
+            "total": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CoverageCellDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "classSectionId": {"dataType":"double","required":true},
+            "className": {"dataType":"string","required":true},
+            "moduleCode": {"dataType":"string","required":true},
+            "moduleName": {"dataType":"string","required":true},
+            "sequenceNumber": {"dataType":"double","required":true},
+            "status": {"dataType":"string","required":true},
+            "completionPercent": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "EngagementRateSnapshotDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "metricCode": {"dataType":"string","required":true},
+            "engagedStudents": {"dataType":"double","required":true},
+            "activeStudents": {"dataType":"double","required":true},
+            "ratePercent": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "HomeVisitSnapshotDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "visitsCompleted": {"dataType":"double","required":true},
+            "visitsScheduled": {"dataType":"double","required":true},
+            "visitsCancelled": {"dataType":"double","required":true},
+            "studentsReached": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DimensionCountDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "dimKey": {"dataType":"string","required":true},
+            "dimLabel": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "count": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SnapshotFreshnessDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "lastRefreshed": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "lastBatchSlot": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "rowCount": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DashboardSnapshotDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "academicYear": {"dataType":"string","required":true},
+            "schoolId": {"dataType":"double","required":true},
+            "finance": {"ref":"FinanceSnapshotDTO","required":true},
+            "categorySpend": {"dataType":"array","array":{"dataType":"refObject","ref":"CategorySpendSnapshotDTO"},"required":true},
+            "objectives": {"ref":"ObjectiveStatusSnapshotDTO","required":true},
+            "coverage": {"dataType":"array","array":{"dataType":"refObject","ref":"CoverageCellDTO"},"required":true},
+            "engagement": {"dataType":"array","array":{"dataType":"refObject","ref":"EngagementRateSnapshotDTO"},"required":true},
+            "homeVisits": {"ref":"HomeVisitSnapshotDTO","required":true},
+            "parentEngagement": {"dataType":"array","array":{"dataType":"refObject","ref":"DimensionCountDTO"},"required":true},
+            "parentInteractions": {"dataType":"array","array":{"dataType":"refObject","ref":"DimensionCountDTO"},"required":true},
+            "freshness": {"ref":"SnapshotFreshnessDTO","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DashboardKpiRefreshResultDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "academicYear": {"dataType":"string","required":true},
+            "batchSlot": {"dataType":"double","required":true},
+            "computedAt": {"dataType":"string","required":true},
+            "upserted": {"dataType":"double","required":true},
+            "deleted": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DashboardSnapshotRefreshBody": {
+        "dataType": "refObject",
+        "properties": {
+            "academicYear": {"dataType":"string","required":true},
+            "academicYearStart": {"dataType":"string"},
+            "academicYearEnd": {"dataType":"string"},
+            "engagementWindowDays": {"dataType":"double"},
         },
         "additionalProperties": false,
     },
@@ -2686,6 +2842,41 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAuthController_login: Record<string, TsoaRoute.ParameterSchema> = {
+                requestBody: {"in":"body","name":"requestBody","required":true,"ref":"LoginDTO"},
+        };
+        app.post('/auth/login',
+            ...(fetchMiddlewares<RequestHandler>(AuthController)),
+            ...(fetchMiddlewares<RequestHandler>(AuthController.prototype.login)),
+
+            async function AuthController_login(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAuthController_login, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<AuthController>(AuthController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'login',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsAttendanceController_bulkUploadAttendance: Record<string, TsoaRoute.ParameterSchema> = {
                 requestBody: {"in":"body","name":"requestBody","required":true,"ref":"AttendanceUploadRequestBody"},
         };
@@ -3402,6 +3593,401 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'getFinance',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardKpiController_getSnapshot: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+        };
+        app.get('/metrics/kpi-snapshot',
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController.prototype.getSnapshot)),
+
+            async function DashboardKpiController_getSnapshot(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardKpiController_getSnapshot, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<DashboardKpiController>(DashboardKpiController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getSnapshot',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardKpiController_getFinance: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+        };
+        app.get('/metrics/kpi-snapshot/finance',
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController.prototype.getFinance)),
+
+            async function DashboardKpiController_getFinance(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardKpiController_getFinance, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<DashboardKpiController>(DashboardKpiController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getFinance',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardKpiController_getCategorySpend: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+        };
+        app.get('/metrics/kpi-snapshot/finance/categories',
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController.prototype.getCategorySpend)),
+
+            async function DashboardKpiController_getCategorySpend(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardKpiController_getCategorySpend, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<DashboardKpiController>(DashboardKpiController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getCategorySpend',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardKpiController_getObjectives: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+        };
+        app.get('/metrics/kpi-snapshot/objectives',
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController.prototype.getObjectives)),
+
+            async function DashboardKpiController_getObjectives(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardKpiController_getObjectives, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<DashboardKpiController>(DashboardKpiController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getObjectives',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardKpiController_getCoverage: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+        };
+        app.get('/metrics/kpi-snapshot/objectives/coverage',
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController.prototype.getCoverage)),
+
+            async function DashboardKpiController_getCoverage(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardKpiController_getCoverage, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<DashboardKpiController>(DashboardKpiController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getCoverage',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardKpiController_getEngagement: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+        };
+        app.get('/metrics/kpi-snapshot/engagement',
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController.prototype.getEngagement)),
+
+            async function DashboardKpiController_getEngagement(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardKpiController_getEngagement, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<DashboardKpiController>(DashboardKpiController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getEngagement',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardKpiController_getHomeVisits: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+        };
+        app.get('/metrics/kpi-snapshot/home-visits',
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController.prototype.getHomeVisits)),
+
+            async function DashboardKpiController_getHomeVisits(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardKpiController_getHomeVisits, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<DashboardKpiController>(DashboardKpiController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getHomeVisits',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardKpiController_getParentEngagement: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+        };
+        app.get('/metrics/kpi-snapshot/parent-engagement',
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController.prototype.getParentEngagement)),
+
+            async function DashboardKpiController_getParentEngagement(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardKpiController_getParentEngagement, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<DashboardKpiController>(DashboardKpiController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getParentEngagement',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardKpiController_getParentInteractions: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+        };
+        app.get('/metrics/kpi-snapshot/parent-interactions',
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController.prototype.getParentInteractions)),
+
+            async function DashboardKpiController_getParentInteractions(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardKpiController_getParentInteractions, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<DashboardKpiController>(DashboardKpiController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getParentInteractions',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardKpiController_getFreshness: Record<string, TsoaRoute.ParameterSchema> = {
+                academicYear: {"in":"query","name":"academicYear","dataType":"string"},
+                schoolId: {"in":"query","name":"schoolId","dataType":"double"},
+        };
+        app.get('/metrics/kpi-snapshot/freshness',
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController.prototype.getFreshness)),
+
+            async function DashboardKpiController_getFreshness(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardKpiController_getFreshness, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<DashboardKpiController>(DashboardKpiController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'getFreshness',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardKpiController_refresh: Record<string, TsoaRoute.ParameterSchema> = {
+                body: {"in":"body","name":"body","required":true,"ref":"DashboardSnapshotRefreshBody"},
+        };
+        app.post('/metrics/kpi-snapshot/refresh',
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardKpiController.prototype.refresh)),
+
+            async function DashboardKpiController_refresh(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardKpiController_refresh, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<DashboardKpiController>(DashboardKpiController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'refresh',
                 controller,
                 response,
                 next,

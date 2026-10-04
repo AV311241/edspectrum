@@ -406,8 +406,17 @@ app-root {
   grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
-.dashboard-grid-bottom > .dashboard-panel {
-  grid-column: span 4;
+.dashboard-grid-bottom > .dashboard-panel-engagement,
+.dashboard-grid-bottom > .dashboard-panel-resources {
+  grid-column: span 6;
+}
+
+.dashboard-grid-teaching {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.dashboard-grid-teaching > .dashboard-panel-teaching {
+  grid-column: span 12;
 }
 
 .dashboard-panel {
@@ -420,7 +429,8 @@ app-root {
   .dashboard-grid-top,
   .dashboard-grid-middle,
   .dashboard-grid-third,
-  .dashboard-grid-bottom {
+  .dashboard-grid-bottom,
+  .dashboard-grid-teaching {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -430,7 +440,16 @@ app-root {
   .dashboard-grid-middle > .dashboard-panel-xl,
   .dashboard-grid-middle > .dashboard-panel-side,
   .dashboard-grid-third > .dashboard-panel-split,
-  .dashboard-grid-bottom > .dashboard-panel {
+  .dashboard-grid-bottom > .dashboard-panel-engagement,
+  .dashboard-grid-bottom > .dashboard-panel-resources {
+    grid-column: span 1;
+  }
+
+  .dashboard-grid-teaching {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard-grid-teaching > .dashboard-panel-teaching {
     grid-column: span 1;
   }
 
@@ -519,7 +538,8 @@ app-root {
   .dashboard-grid-top,
   .dashboard-grid-middle,
   .dashboard-grid-third,
-  .dashboard-grid-bottom {
+  .dashboard-grid-bottom,
+  .dashboard-grid-teaching {
     grid-template-columns: 1fr;
   }
 

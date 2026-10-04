@@ -23,6 +23,7 @@ import { Controller } from 'tsoa';
 // Keep this list in sync with `controllerPathGlobs` in `tsoa.json`: a new
 // controller omitted here will not be bound and will fail at request time
 // exactly as described above.
+import './controllers/auth.controller';
 import './controllers/attendance.controller';
 import './controllers/baselineAssessment.controller';
 import './controllers/class.controller';
@@ -30,6 +31,7 @@ import './controllers/parentInteraction.controller';
 import './controllers/school.controller';
 import './controllers/student.controller';
 import './controllers/user.controller';
+import './metrics/controllers/dashboardKpi.controller';
 import './metrics/controllers/metrics.controller';
 
 /**

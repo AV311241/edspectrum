@@ -32,14 +32,17 @@
   </div>
 
   <div class="dashboard-grid dashboard-grid-bottom">
-    <div class="dashboard-panel h-full flex flex-col">
+    <div class="dashboard-panel dashboard-panel-engagement h-full flex flex-col">
       <app-engagement-section />
     </div>
-    <div class="dashboard-panel h-full flex flex-col">
-      <app-teaching-section />
-    </div>
-    <div class="dashboard-panel h-full flex flex-col">
+    <div class="dashboard-panel dashboard-panel-resources h-full flex flex-col">
       <app-resources-finance-section />
+    </div>
+  </div>
+
+  <div class="dashboard-grid dashboard-grid-teaching">
+    <div class="dashboard-panel dashboard-panel-teaching h-full flex flex-col">
+      <app-teaching-section />
     </div>
   </div>
 </div>

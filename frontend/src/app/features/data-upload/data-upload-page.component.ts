@@ -2,6 +2,10 @@ import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiIconComponent } from '../../shared/components/ui-icon/ui-icon.component';
 import { UploadDropzoneComponent } from './components/upload-dropzone/upload-dropzone.component';
+import {
+  MonthYearSelection,
+  MonthYearSelectorComponent,
+} from './components/month-year-selector/month-year-selector.component';
 import { ValidationErrorMatrixComponent } from './components/validation-error-matrix/validation-error-matrix.component';
 import { DataGridEditorComponent } from './components/data-grid-editor/data-grid-editor.component';
 import { BulkUploadService } from '../../core/services/bulk-upload-base.service';
@@ -20,6 +24,7 @@ import {
   ValidationResult,
 } from '../../core/models/upload.models';
 import { formatFileSize } from '../../core/utils/excel-upload.utils';
+import { MONTH_NAMES } from '../../core/utils/attendanceParser';
 
 export interface EntityOption {
   type: UploadEntityType;
@@ -83,6 +88,7 @@ const ENTITY_OPTIONS: EntityOption[] = [
     CommonModule,
     UiIconComponent,
     UploadDropzoneComponent,
+    MonthYearSelectorComponent,
     ValidationErrorMatrixComponent,
     DataGridEditorComponent,
   ],
@@ -92,6 +98,20 @@ export class DataUploadPageComponent {
   private readonly classService = inject(ClassUploadService);
   private readonly studentService = inject(StudentUploadService);
   private readonly attendanceService = inject(AttendanceUploadService);
+
+  /**
+   * Day-matrix parse results for the preview panel.
+   *
+   * Public because the template renders the layout/pivot statistics; the service
+   * itself stays injected privately so the page keeps owning all state.
+   */
+  get attendance(): AttendanceUploadService {
+    return this.attendanceService;
+  }
+
+  /** Month labels for the preview header; kept public for template access. */
+  readonly MONTH_NAMES = MONTH_NAMES;
+
   private readonly baselineService = inject(BaselineAssessmentUploadService);
 
   private readonly dropzone = viewChild(UploadDropzoneComponent);
@@ -121,6 +141,29 @@ export class DataUploadPageComponent {
   /** Fallback class context for a matrix sheet without a metadata row. */
   readonly matrixContext = signal<MatrixContext>({ schoolCode: '', className: '', academicYear: '' });
   readonly showMatrixContext = signal<boolean>(false);
+
+  /**
+   * Calendar for the ordinal day-matrix layout (`1st`..`31st`).
+   *
+   * Null means "not chosen yet". The dropzone stays disabled in that state,
+   * because an ordinal column cannot be resolved to a real date without it.
+   */
+  readonly selectedMonth = signal<number | null>(null);
+  readonly selectedYear = signal<number | null>(null);
+
+  /** Both calendar fields set — the precondition for accepting a day-matrix file. */
+  readonly calendarChosen = computed(
+    () => this.selectedMonth() !== null && this.selectedYear() !== null
+  );
+
+  /** Columns the parser deliberately ignored, surfaced in the preview. */
+  readonly skippedColumns = computed(() => this.attendanceService.lastDayMatrixLayout?.skippedColumns ?? []);
+
+  /** Dates that collapsed into a single class-wide cancellation. */
+  readonly classWideDates = computed(() => this.attendanceService.lastDayMatrixPivot?.classWideDates ?? []);
+
+  /** Day cells that were blank, i.e. left unmarked in the register. */
+  readonly unmarkedCellCount = computed(() => this.attendanceService.lastDayMatrixPivot?.blankCellCount ?? 0);
 
   /** Shared empty set for the read-only error matrix in the success view. */
   readonly emptyRowIndexSet: ReadonlySet<number> = new Set<number>();
@@ -220,6 +263,32 @@ export class DataUploadPageComponent {
       this.noticeMessage.set(`Sample ${this.activeService().label} template downloaded.`);
     } catch {
       this.errorMessage.set('Could not generate the template file.');
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Step 2 — calendar selection for the ordinal day-matrix layout
+  // -------------------------------------------------------------------------
+
+  /**
+   * Apply a Month/Year choice and forward it to the parser.
+   *
+   * The calendar is pushed into the service on every change rather than only at
+   * parse time, so `locateHeader` can decide whether an ordinal sheet is a
+   * day-matrix at all while the file is being read.
+   */
+  onCalendarChange(selection: MonthYearSelection): void {
+    this.selectedMonth.set(selection.month);
+    this.selectedYear.set(selection.year);
+    this.attendanceService.setDayMatrixContext(selection);
+
+    // A calendar change invalidates any previously parsed day-matrix rows, since
+    // every date in them was derived from the old month.
+    if (this.sheetFormat() === 'DAY_MATRIX') {
+      this.resetUpload();
+      this.noticeMessage.set(
+        `Calendar set to ${MONTH_NAMES[selection.month - 1]} ${selection.year}. Re-select the file to re-parse.`
+      );
     }
   }
 

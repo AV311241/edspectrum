@@ -1,5 +1,5 @@
 @if (isSparkline()) {
-  <div class="w-full h-8 flex items-end">
+  <div class="w-full h-5 flex items-end">
     <svg
       class="w-full h-full overflow-visible"
       viewBox="0 0 100 30"
@@ -7,6 +7,7 @@
       role="img"
       [attr.aria-label]="ariaLabel()"
     >
+      <title>{{ ariaLabel() }} values: {{ points().join(', ') }}</title>
       @if (hasData()) {
         <path
           [attr.d]="sparklineD()"

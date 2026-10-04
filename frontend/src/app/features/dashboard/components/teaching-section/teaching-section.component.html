@@ -90,7 +90,13 @@
                   ></span>
                 </td>
               }
-              <td class="py-2.5 px-1 text-right font-bold text-brand-ink tabular-nums">{{ row.coveragePercent }}%</td>
+              <td
+                class="py-2.5 px-1 text-right font-bold tabular-nums"
+                [class.text-emerald-700]="row.coveragePercent >= 70"
+                [class.text-brand-ink]="row.coveragePercent < 70"
+              >
+                {{ row.coveragePercent }}%
+              </td>
             </tr>
           }
         </tbody>

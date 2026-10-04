@@ -6,6 +6,13 @@ components:
   requestBodies: {}
   responses: {}
   schemas:
+    _36_Enums.UserStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - INACTIVE
+    UserStatus:
+      $ref: "#/components/schemas/_36_Enums.UserStatus"
     UserResponseDTO:
       properties:
         id:
@@ -21,7 +28,11 @@ components:
           type: number
           format: double
         status:
-          type: string
+          $ref: "#/components/schemas/UserStatus"
+        schoolId:
+          type: number
+          format: double
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -32,6 +43,7 @@ components:
         - lastName
         - roleId
         - status
+        - schoolId
         - createdAt
       type: object
       additionalProperties: false
@@ -43,7 +55,7 @@ components:
           type: string
         lastName:
           type: string
-        passwordHash:
+        password:
           type: string
         roleId:
           type: number
@@ -52,7 +64,7 @@ components:
         - email
         - firstName
         - lastName
-        - passwordHash
+        - password
         - roleId
       type: object
       additionalProperties: false
@@ -1275,6 +1287,17 @@ components:
           items:
             $ref: "#/components/schemas/DomainScoreInput"
           type: array
+      type: object
+      additionalProperties: false
+    LoginDTO:
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
       type: object
       additionalProperties: false
     _36_Enums.AttendanceStatus:
@@ -3390,6 +3413,295 @@ components:
         - truncatedCount
       type: object
       additionalProperties: false
+    FinanceSnapshotDTO:
+      description: Finance tiles from the snapshot.
+      properties:
+        totalBudget:
+          type: number
+          format: double
+        totalSpent:
+          type: number
+          format: double
+        balance:
+          type: number
+          format: double
+        utilizationPercent:
+          type: number
+          format: double
+          nullable: true
+          description: Share of the budget consumed, 0-100. `null` when budget is zero.
+        lastRefreshed:
+          type: string
+          nullable: true
+      required:
+        - totalBudget
+        - totalSpent
+        - balance
+        - utilizationPercent
+        - lastRefreshed
+      type: object
+      additionalProperties: false
+    CategorySpendSnapshotDTO:
+      description: One category-spend row from the snapshot, already percentage-computed.
+      properties:
+        category:
+          type: string
+        categoryLabel:
+          type: string
+        spent:
+          type: number
+          format: double
+        spendPercent:
+          type: number
+          format: double
+          nullable: true
+      required:
+        - category
+        - categoryLabel
+        - spent
+        - spendPercent
+      type: object
+      additionalProperties: false
+    ObjectiveStatusSnapshotDTO:
+      description: Objective overview tiles. Every field is zero-filled rather than absent.
+      properties:
+        planned:
+          type: number
+          format: double
+        completed:
+          type: number
+          format: double
+        inProgress:
+          type: number
+          format: double
+        upcoming:
+          type: number
+          format: double
+        total:
+          type: number
+          format: double
+      required:
+        - planned
+        - completed
+        - inProgress
+        - upcoming
+        - total
+      type: object
+      additionalProperties: false
+    CoverageCellDTO:
+      description: One cell of the class x module coverage matrix.
+      properties:
+        classSectionId:
+          type: number
+          format: double
+        className:
+          type: string
+        moduleCode:
+          type: string
+        moduleName:
+          type: string
+        sequenceNumber:
+          type: number
+          format: double
+        status:
+          type: string
+        completionPercent:
+          type: number
+          format: double
+      required:
+        - classSectionId
+        - className
+        - moduleCode
+        - moduleName
+        - sequenceNumber
+        - status
+        - completionPercent
+      type: object
+      additionalProperties: false
+    EngagementRateSnapshotDTO:
+      description: One engagement rate row.
+      properties:
+        metricCode:
+          type: string
+        engagedStudents:
+          type: number
+          format: double
+        activeStudents:
+          type: number
+          format: double
+        ratePercent:
+          type: number
+          format: double
+          nullable: true
+      required:
+        - metricCode
+        - engagedStudents
+        - activeStudents
+        - ratePercent
+      type: object
+      additionalProperties: false
+    HomeVisitSnapshotDTO:
+      description: Home visit tiles.
+      properties:
+        visitsCompleted:
+          type: number
+          format: double
+        visitsScheduled:
+          type: number
+          format: double
+        visitsCancelled:
+          type: number
+          format: double
+        studentsReached:
+          type: number
+          format: double
+      required:
+        - visitsCompleted
+        - visitsScheduled
+        - visitsCancelled
+        - studentsReached
+      type: object
+      additionalProperties: false
+    DimensionCountDTO:
+      description: A labelled count row, used by both parent breakdowns.
+      properties:
+        dimKey:
+          type: string
+        dimLabel:
+          type: string
+          nullable: true
+        count:
+          type: number
+          format: double
+      required:
+        - dimKey
+        - dimLabel
+        - count
+      type: object
+      additionalProperties: false
+    SnapshotFreshnessDTO:
+      description: Snapshot freshness.
+      properties:
+        lastRefreshed:
+          type: string
+          nullable: true
+        lastBatchSlot:
+          type: number
+          format: double
+          nullable: true
+        rowCount:
+          type: number
+          format: double
+          description: Number of KPI rows held for the academic year.
+      required:
+        - lastRefreshed
+        - lastBatchSlot
+        - rowCount
+      type: object
+      additionalProperties: false
+    DashboardSnapshotDTO:
+      description: Everything the dashboard needs for one academic year + school scope.
+      properties:
+        academicYear:
+          type: string
+        schoolId:
+          type: number
+          format: double
+          description: "`0` means the NGO-wide roll-up."
+        finance:
+          $ref: "#/components/schemas/FinanceSnapshotDTO"
+        categorySpend:
+          items:
+            $ref: "#/components/schemas/CategorySpendSnapshotDTO"
+          type: array
+        objectives:
+          $ref: "#/components/schemas/ObjectiveStatusSnapshotDTO"
+        coverage:
+          items:
+            $ref: "#/components/schemas/CoverageCellDTO"
+          type: array
+        engagement:
+          items:
+            $ref: "#/components/schemas/EngagementRateSnapshotDTO"
+          type: array
+        homeVisits:
+          $ref: "#/components/schemas/HomeVisitSnapshotDTO"
+        parentEngagement:
+          items:
+            $ref: "#/components/schemas/DimensionCountDTO"
+          type: array
+        parentInteractions:
+          items:
+            $ref: "#/components/schemas/DimensionCountDTO"
+          type: array
+        freshness:
+          $ref: "#/components/schemas/SnapshotFreshnessDTO"
+      required:
+        - academicYear
+        - schoolId
+        - finance
+        - categorySpend
+        - objectives
+        - coverage
+        - engagement
+        - homeVisits
+        - parentEngagement
+        - parentInteractions
+        - freshness
+      type: object
+      additionalProperties: false
+    DashboardKpiRefreshResultDTO:
+      description: "Result of one refresh run, returned by `POST
+        /metrics/kpi-snapshot/refresh`.\r
+
+        \r
+
+        `deleted` is the count of rows removed because the source no longer
+        produces\r
+
+        them (a deleted coverage cell, a channel with no engagement). A non-zero
+        value\r
+
+        on a routine run is normal, not an error."
+      properties:
+        academicYear:
+          type: string
+        batchSlot:
+          type: number
+          format: double
+          description: 1 = morning refresh, 2 = evening refresh.
+        computedAt:
+          type: string
+        upserted:
+          type: number
+          format: double
+        deleted:
+          type: number
+          format: double
+      required:
+        - academicYear
+        - batchSlot
+        - computedAt
+        - upserted
+        - deleted
+      type: object
+      additionalProperties: false
+    DashboardSnapshotRefreshBody:
+      description: Body of the manual refresh trigger.
+      properties:
+        academicYear:
+          type: string
+        academicYearStart:
+          type: string
+        academicYearEnd:
+          type: string
+        engagementWindowDays:
+          type: number
+          format: double
+      required:
+        - academicYear
+      type: object
+      additionalProperties: false
   securitySchemes: {}
 info:
   title: lumino1-backend
@@ -4429,6 +4741,37 @@ paths:
           required: true
           schema:
             type: string
+  /auth/login:
+    post:
+      operationId: Login
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                properties:
+                  token:
+                    type: string
+                  user:
+                    $ref: "#/components/schemas/UserResponseDTO"
+                required:
+                  - token
+                  - user
+                type: object
+        "401":
+          description: Invalid credentials
+      description: User login - returns JWT token
+      tags:
+        - Auth
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginDTO"
   /attendance/batch-upload:
     post:
       operationId: BulkUploadAttendance
@@ -5259,5 +5602,342 @@ paths:
           schema:
             format: double
             type: number
+  /metrics/kpi-snapshot:
+    get:
+      operationId: GetSnapshot
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSnapshotDTO"
+        "400":
+          description: Bad Request - Invalid query parameters
+      description: "Get every dashboard KPI for one academic year and school scope in
+        a single\r
+
+        request. The preferred endpoint for a snapshot-driven dashboard."
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/kpi-snapshot/finance:
+    get:
+      operationId: GetFinance
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinanceSnapshotDTO"
+        "400":
+          description: Bad Request - Invalid query parameters
+      description: "Finance tiles: budget, spent, balance, budget utilisation."
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/kpi-snapshot/finance/categories:
+    get:
+      operationId: GetCategorySpend
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/CategorySpendSnapshotDTO"
+                type: array
+        "400":
+          description: Bad Request - Invalid query parameters
+      description: Spend per budget category, highest first, with each share of total spend.
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/kpi-snapshot/objectives:
+    get:
+      operationId: GetObjectives
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObjectiveStatusSnapshotDTO"
+        "400":
+          description: Bad Request - Invalid query parameters
+      description: "Objective overview tiles: planned / completed / in-progress / upcoming."
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/kpi-snapshot/objectives/coverage:
+    get:
+      operationId: GetCoverage
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/CoverageCellDTO"
+                type: array
+        "400":
+          description: Bad Request - Invalid query parameters
+      description: "The class x module coverage matrix.\r
+
+        \r
+
+        Only cells recorded in `objective_coverages` are returned; an absent
+        cell\r
+
+        means NOT_STARTED rather than 0% covered, so the client renders the
+        gaps."
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/kpi-snapshot/engagement:
+    get:
+      operationId: GetEngagement
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/EngagementRateSnapshotDTO"
+                type: array
+        "400":
+          description: Bad Request - Invalid query parameters
+      description: "Student engagement rates: class participation and AI/IVRS + practice."
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/kpi-snapshot/home-visits:
+    get:
+      operationId: GetHomeVisits
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeVisitSnapshotDTO"
+        "400":
+          description: Bad Request - Invalid query parameters
+      description: "Home visit tiles: completed, scheduled, cancelled, students reached."
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/kpi-snapshot/parent-engagement:
+    get:
+      operationId: GetParentEngagement
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/DimensionCountDTO"
+                type: array
+        "400":
+          description: Bad Request - Invalid query parameters
+      description: Parent engagements by channel, highest first.
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/kpi-snapshot/parent-interactions:
+    get:
+      operationId: GetParentInteractions
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/DimensionCountDTO"
+                type: array
+        "400":
+          description: Bad Request - Invalid query parameters
+      description: "Parent interaction register counts by status. Always NGO-wide -
+        the source\r
+
+        table carries no school column, so a school scope cannot be honoured."
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/kpi-snapshot/freshness:
+    get:
+      operationId: GetFreshness
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SnapshotFreshnessDTO"
+        "400":
+          description: Bad Request - Invalid query parameters
+      description: When the snapshot was last refreshed, and how many rows it holds.
+      tags:
+        - Metrics
+      security: []
+      parameters:
+        - in: query
+          name: academicYear
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: schoolId
+          required: false
+          schema:
+            format: double
+            type: number
+  /metrics/kpi-snapshot/refresh:
+    post:
+      operationId: Refresh
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardKpiRefreshResultDTO"
+        "400":
+          description: Bad Request - Invalid body parameters
+      description: "Recompute the snapshot for one academic year.\r
+
+        \r
+
+        Intended for an operator or a scheduled job, not for interactive use.
+        The\r
+
+        refresh is a single statement plus a stale-row cleanup, both inside
+        one\r
+
+        transaction, so it is safe to call while the dashboard is being read."
+      tags:
+        - Metrics
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DashboardSnapshotRefreshBody"
 servers:
   - url: /

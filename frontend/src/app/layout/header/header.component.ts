@@ -8,6 +8,7 @@ import {
 } from '../../core/models/dashboard.model';
 import { UiSelectComponent, SelectOption } from '../../shared/components/ui-select/ui-select.component';
 import { UiIconComponent } from '../../shared/components/ui-icon/ui-icon.component';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -18,6 +19,7 @@ import { UiIconComponent } from '../../shared/components/ui-icon/ui-icon.compone
 export class HeaderComponent implements OnInit {
   readonly dashboardService = inject(DashboardDataService);
   readonly headerFilters = inject(HeaderFilterService);
+  readonly auth = inject(AuthService);
 
   readonly yearOptions: SelectOption[] = [
     { label: '2026 – 27', value: '2026 – 27' },

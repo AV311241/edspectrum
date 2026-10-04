@@ -24,8 +24,15 @@ export interface UserResponseDTO {
   firstName: string;
   lastName: string;
   roleId: number;
-  status: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  schoolId: number | null;
   createdAt: string;
+}
+
+/** Response body of `POST /auth/login`. */
+export interface AuthSessionResponse {
+  user: UserResponseDTO;
+  token: string;
 }
 
 export interface CreateUserDTO {

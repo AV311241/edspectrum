@@ -10,6 +10,7 @@ import {
   BatchUploadResponse,
   ColumnSpec,
   DataGrid,
+  DayMatrixContext,
   MatrixContext,
   UploadEntityType,
   UploadSheetFormat,
@@ -24,6 +25,15 @@ import {
   stringifyCell,
   toIsoDate,
 } from '../utils/excel-upload.utils';
+import {
+  DayMatrixLayout,
+  DayMatrixPivotResult,
+  detectDayMatrixLayout,
+  findDayMatrixHeaderRow,
+  isValidCalendarContext,
+  normalizeAttendanceStatus,
+  pivotDayMatrix,
+} from '../utils/attendanceParser';
 import { BulkUploadService, RowValidationOutcome } from './bulk-upload-base.service';
 
 export const ATTENDANCE_UPLOAD_COLUMNS: ColumnSpec[] = [
@@ -83,60 +93,14 @@ export const ATTENDANCE_UPLOAD_COLUMNS: ColumnSpec[] = [
 ];
 
 /**
- * Normalise the spellings school spreadsheets actually contain into the
- * canonical statuses. Anything not recognised here is rejected as an ERROR,
- * which keeps the contract strict while forgiving case, separator and padding
- * noise.
+ * Fold a raw status cell to its canonical form, or `null` if unrecognised.
  *
- * Mirrors `cleanseExcelStatus` in backend/src/schemas/attendance-upload.schema.ts
- * so the browser and the API agree on what a given cell means.
+ * Re-exported from `attendanceParser` so the wide day-matrix parser and this
+ * service can never disagree about what a cell means. Re-exported (rather than
+ * imported-and-redeclared) because the parser depends on this module's column
+ * model, which would make a direct import circular.
  */
-const STATUS_ALIASES: Record<string, AttendanceStatus> = {
-  p: 'P',
-  present: 'P',
-  pr: 'P',
-  a: 'A',
-  ab: 'A',
-  absent: 'A',
-  abs: 'A',
-  hd: 'HALF_DAY',
-  halfday: 'HALF_DAY',
-  activity: 'ACTIVITY',
-  act: 'ACTIVITY',
-  function: 'ACTIVITY',
-  outing: 'ACTIVITY',
-  dance: 'ACTIVITY',
-  sports: 'ACTIVITY',
-  onleave: 'ON_LEAVE',
-  leave: 'ON_LEAVE',
-  ol: 'ON_LEAVE',
-  cancelled: 'CANCELLED',
-  canceled: 'CANCELLED',
-  cancel: 'CANCELLED',
-  holiday: 'CANCELLED',
-  schoolholiday: 'CANCELLED',
-};
-
-/** Fold a raw status cell to its canonical form, or `null` if unrecognised. */
-export function normalizeAttendanceStatus(raw: unknown): AttendanceStatus | null {
-  const key = stringifyCell(raw).toLowerCase().replace(/[^a-z0-9]/g, '');
-  if (!key) return null;
-
-  const exact = STATUS_ALIASES[key];
-  if (exact) return exact;
-
-  // Substring fallbacks, ordered so the more specific token wins.
-  if (key.includes('half') && key.includes('day')) return 'HALF_DAY';
-  if (key.includes('leave')) return 'ON_LEAVE';
-  if (key.includes('cancel') || key.includes('holiday')) return 'CANCELLED';
-  if (['activit', 'function', 'outing', 'dance', 'sports'].some((h) => key.includes(h))) {
-    return 'ACTIVITY';
-  }
-  if (key.startsWith('present')) return 'P';
-  if (key.startsWith('absent')) return 'A';
-
-  return null;
-}
+export { normalizeAttendanceStatus };
 
 /**
  * Bulk upload for the **Daily Attendance** sheet.
@@ -198,19 +162,45 @@ export class AttendanceUploadService extends BulkUploadService<AttendanceUploadR
     this.fallbackContext = { ...context };
   }
 
+  /**
+   * The calendar a `1st`..`31st` sheet omits. Supplied by the upload page from
+   * the Month / Year selectors, which gate the dropzone until both are set.
+   */
+  private dayMatrixContext: DayMatrixContext | null = null;
+
+  /** @param context Pass `null` to clear, e.g. when the user switches entity. */
+  setDayMatrixContext(context: DayMatrixContext | null): void {
+    this.dayMatrixContext = context && isValidCalendarContext(context) ? { ...context } : null;
+  }
+
+  /** True once a usable month + year has been chosen for an ordinal-day sheet. */
+  hasDayMatrixContext(): boolean {
+    return this.dayMatrixContext !== null;
+  }
+
+  /** Layout of the last parsed ordinal-day sheet, for the preview table. */
+  lastDayMatrixLayout: DayMatrixLayout | null = null;
+  /** Pivot statistics for the last parsed ordinal-day sheet. */
+  lastDayMatrixPivot: DayMatrixPivotResult | null = null;
+
   // -------------------------------------------------------------------------
   // Format detection & matrix pivoting
   // -------------------------------------------------------------------------
 
   /**
    * Row-based header detection first (it is unambiguous because it declares
-   * `status`); fall back to matrix detection, where the header row is the one
-   * whose first cell names a student and whose remaining cells are dates.
+   * `status`); then the date-header matrix; then the ordinal day-matrix, which
+   * is only attempted once a month + year has been chosen because ordinals alone
+   * cannot be resolved to real dates.
    */
   protected override locateHeader(allRows: unknown[][]): number {
     const rowBased = super.locateHeader(allRows);
     if (rowBased !== -1) return rowBased;
-    return this.detectMatrixHeader(allRows);
+
+    const dateMatrix = this.detectMatrixHeader(allRows);
+    if (dateMatrix !== -1) return dateMatrix;
+
+    return this.dayMatrixContext ? findDayMatrixHeaderRow(allRows) : -1;
   }
 
   private detectMatrixHeader(allRows: unknown[][]): number {
@@ -328,6 +318,26 @@ export class AttendanceUploadService extends BulkUploadService<AttendanceUploadR
   ): { grid: DataGrid; missingColumns: string[]; format: UploadSheetFormat } {
     const header = allRows[headerRowIndex] ?? [];
     const firstHeaderCell = normalizeHeader(header[0]);
+
+    // Ordinal day columns win over the date-header matrix: `1st` never parses as
+    // a real date, so there is no ambiguity, but checking first keeps the intent
+    // explicit and stops a stray date parse from mis-claiming the header.
+    if (this.dayMatrixContext) {
+      const dayLayout = detectDayMatrixLayout(allRows, headerRowIndex, this.dayMatrixContext);
+      if (dayLayout) {
+        const sheetMeta = this.extractMatrixMetadata(allRows);
+        const pivot = pivotDayMatrix(allRows, dayLayout, {
+          ...this.dayMatrixContext,
+          schoolCode: sheetMeta.schoolCode || this.fallbackContext.schoolCode,
+          className: sheetMeta.className || this.fallbackContext.className,
+          academicYear: sheetMeta.academicYear || this.fallbackContext.academicYear,
+        });
+        this.lastDayMatrixLayout = dayLayout;
+        this.lastDayMatrixPivot = pivot;
+        return { grid: { columns: this.columns, rows: pivot.rows }, missingColumns: [], format: 'DAY_MATRIX' };
+      }
+    }
+
     const isMatrix =
       ['studentid', 'studentcode', 'id', 'student'].includes(firstHeaderCell) &&
       !normalizeHeader(header[1]).includes('class');
