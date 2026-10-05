@@ -27,6 +27,16 @@ components:
         roleId:
           type: number
           format: double
+        roleCode:
+          type: string
+          description: >-
+            Role code (e.g. 'ADMIN') resolved from the `roles` table. Lets
+            callers do
+
+            role-based checks without hardcoding numeric role ids, which are
+            only
+
+            stable because the seed creates the ADMIN role first.
         status:
           $ref: "#/components/schemas/UserStatus"
         schoolId:
@@ -42,6 +52,7 @@ components:
         - firstName
         - lastName
         - roleId
+        - roleCode
         - status
         - schoolId
         - createdAt
@@ -60,12 +71,59 @@ components:
         roleId:
           type: number
           format: double
+        schoolId:
+          type: number
+          format: double
+          nullable: true
+        status:
+          $ref: "#/components/schemas/UserStatus"
       required:
         - email
         - firstName
         - lastName
         - password
         - roleId
+      type: object
+      additionalProperties: false
+    UpdateUserDTO:
+      description: >-
+        Admin-driven edit of an existing user. Every field is optional - the
+
+        controller merges the provided keys onto the stored record - but at
+        least
+
+        one field must be present so a stray empty PUT is a 400, not a no-op
+        write.
+      properties:
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        password:
+          type: string
+        roleId:
+          type: number
+          format: double
+        schoolId:
+          type: number
+          format: double
+          nullable: true
+        status:
+          $ref: "#/components/schemas/UserStatus"
+      type: object
+      additionalProperties: false
+    DeleteResponseDTO:
+      description: Body returned by destructive admin endpoints (`DELETE /users/{id}`).
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
       type: object
       additionalProperties: false
     _36_Enums.Gender:
@@ -505,6 +563,26 @@ components:
       required:
         - className
         - academicYear
+      type: object
+      additionalProperties: false
+    RoleResponseDTO:
+      description: A row from the `roles` table - the pick-list for admin user creation.
+      properties:
+        id:
+          type: number
+          format: double
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+      required:
+        - id
+        - code
+        - name
+        - description
       type: object
       additionalProperties: false
     ParentInteractionResponseDTO:
@@ -3724,7 +3802,9 @@ paths:
                 items:
                   $ref: "#/components/schemas/UserResponseDTO"
                 type: array
-      description: Retrieve all registered users
+        "403":
+          description: Administrator access required
+      description: Retrieve all registered users (admin only)
       tags:
         - Users
       security: []
@@ -3738,7 +3818,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserResponseDTO"
-      description: Create a new user profile
+        "400":
+          description: Validation failed
+        "403":
+          description: Administrator access required
+        "409":
+          description: Email already in use
+      description: |-
+        Create a new user account. This is the ONLY way accounts are created -
+        there is deliberately no self-registration endpoint.
       tags:
         - Users
       security: []
@@ -3759,9 +3847,69 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserResponseDTO"
+        "403":
+          description: Administrator access required
         "404":
           description: User not found
-      description: Retrieve user details by numeric ID
+      description: Retrieve user details by numeric ID (admin only)
+      tags:
+        - Users
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+    put:
+      operationId: UpdateUser
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponseDTO"
+        "400":
+          description: Validation failed
+        "403":
+          description: Administrator access required / self-management blocked
+        "404":
+          description: User not found
+      description: Update a user's details and/or account status (admin only)
+      tags:
+        - Users
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserDTO"
+    delete:
+      operationId: DeleteUser
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResponseDTO"
+        "403":
+          description: Administrator access required / self-delete blocked
+        "404":
+          description: User not found
+        "409":
+          description: Last administrator or referenced record
+      description: Permanently delete a user account (admin only)
       tags:
         - Users
       security: []
@@ -4147,6 +4295,25 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateSchoolClassInput"
+  /roles:
+    get:
+      operationId: GetRoles
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/RoleResponseDTO"
+                type: array
+        "403":
+          description: Administrator access required
+      description: Retrieve all assignable roles (admin only)
+      tags:
+        - Roles
+      security: []
+      parameters: []
   /parent-interactions/upload:
     post:
       operationId: UploadParentInteractions

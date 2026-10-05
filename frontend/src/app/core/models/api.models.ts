@@ -24,6 +24,12 @@ export interface UserResponseDTO {
   firstName: string;
   lastName: string;
   roleId: number;
+  /**
+   * Stable role code from the backend (`'ADMIN'` for administrators).
+   * Optional only because sessions stored before this field existed won't
+   * have it - the admin guard falls back to the legacy numeric roleId.
+   */
+  roleCode?: string;
   status: 'ACTIVE' | 'INACTIVE';
   schoolId: number | null;
   createdAt: string;
@@ -35,12 +41,43 @@ export interface AuthSessionResponse {
   token: string;
 }
 
+/**
+ * Body of `POST /users` - admin-only account creation.
+ * The backend hashes `password`; there is no self-registration flow.
+ */
 export interface CreateUserDTO {
   email: string;
   firstName: string;
   lastName: string;
-  passwordHash: string;
+  password: string;
   roleId: number;
+  schoolId?: number | null;
+  status?: 'ACTIVE' | 'INACTIVE';
+}
+
+/** Body of `PUT /users/{id}` - every field optional (partial update). */
+export interface UpdateUserDTO {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  password?: string;
+  roleId?: number;
+  schoolId?: number | null;
+  status?: 'ACTIVE' | 'INACTIVE';
+}
+
+/** A row from `GET /roles` - the pick-list for user creation. */
+export interface RoleRecord {
+  id: number;
+  code: string;
+  name: string;
+  description: string | null;
+}
+
+/** Response body of `DELETE /users/{id}`. */
+export interface DeleteResponseDTO {
+  success: boolean;
+  message: string;
 }
 
 export interface DomainScoreRecord {

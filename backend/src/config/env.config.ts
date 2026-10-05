@@ -16,6 +16,13 @@ const envSchema = z.object({
   // Authentication
   JWT_SECRET: z.string().min(16).default('dev-only-insecure-secret-change-me'),
   JWT_EXPIRES_IN: z.string().default('24h'),
+  // Default administrator seeded on startup (see src/seed/admin.seed.ts).
+  // The password has a non-trivial default so a fresh dev database is usable
+  // out of the box, but production deployments should ALWAYS override it.
+  DEFAULT_ADMIN_EMAIL: z.string().email().default('admin@edspectrum.org'),
+  DEFAULT_ADMIN_PASSWORD: z.string().min(8).max(128).default('ChangeMe#Admin1'),
+  DEFAULT_ADMIN_FIRST_NAME: z.string().min(1).default('Platform'),
+  DEFAULT_ADMIN_LAST_NAME: z.string().min(1).default('Administrator'),
   // Database
   DB_HOST: z.string().default('localhost'),
   DB_PORT: z.string().transform((val) => parseInt(val, 10)).default('3306'),

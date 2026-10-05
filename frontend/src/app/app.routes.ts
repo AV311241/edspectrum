@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
+import { adminGuard } from './core/auth/admin.guard';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { BaselineAssessmentComponent } from './features/baseline-assessment/baseline-assessment.component';
 import { DataUploadPageComponent } from './features/data-upload/data-upload-page.component';
@@ -26,6 +27,16 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/admin/admin-dashboard.component').then(
         (module) => module.AdminDashboardComponent
+      ),
+  },
+  {
+    // Admin-only user management (create / edit / status / delete accounts).
+    // `adminGuard` redirects non-admins; the backend enforces the same rule.
+    path: 'users',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () =>
+      import('./features/users/users-page.component').then(
+        (module) => module.UsersPageComponent
       ),
   },
   { path: '**', redirectTo: '' }

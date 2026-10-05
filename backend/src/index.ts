@@ -8,11 +8,12 @@ import { logger, httpLogger } from './config/logger.config';
 import { DatabaseManager } from './config/db.config';
 import { globalErrorHandler } from './middlewares/errorHandler.middleware';
 import { AppError } from './utils/appError.utils';
-import { HttpStatusCode } from './constants/httpStatus.constants';
+import { HttpStatusCode, HttpResponseMessage } from './constants/httpStatus.constants';
 import routes from './routes';
 import parentInteractionRoutes from './routes/parentInteraction.routes';
 import { apiLimiter, authLimiter, skipHealthCheck } from './middlewares/rateLimiter.middleware';
-import { requestContextMiddleware, authenticate, AuthenticatedRequest } from './middlewares/auth.middleware';
+import { requestContextMiddleware, authenticate, requireAdmin, AuthenticatedRequest } from './middlewares/auth.middleware';
+import { seedDefaultAdmin } from './seed/admin.seed';
 
 import path from 'path';
 
@@ -74,6 +75,23 @@ export function createApp(): Express {
   app.get('/docs/swagger.json', (_req, res) => {
     res.sendFile(path.join(__dirname, 'generated', 'swagger.json'));
   });
+
+  // Root health alias. The handler itself lives on the `/api/v1` router (see
+  // routes/index.ts), but the auth-gate allowlist, the rate-limiter skip list
+  // and the smoke test all treat `/health` as a public path - so serve it at
+  // the root too instead of letting it fall through to the 404 catch-all.
+  app.get('/health', (_req, res) => {
+    res.status(HttpStatusCode.OK).json({
+      success: true,
+      statusCode: HttpStatusCode.OK,
+      message: HttpResponseMessage.SUCCESS,
+      data: {
+        status: 'UP',
+        timestamp: new Date().toISOString(),
+        service: 'lumino1-baseline-backend',
+      },
+    });
+  });
   app.get('/docs/swagger.yaml', (_req, res) => {
     res.setHeader('Content-Type', 'text/yaml');
     res.sendFile(path.join(__dirname, 'generated', 'swagger.yaml'));
@@ -115,6 +133,32 @@ export function createApp(): Express {
     authenticate(req as AuthenticatedRequest, res, next).catch(next);
   });
 
+  // ---------------------------------------------------------------------------
+  // Role-based authorization gate (admin only).
+  //
+  // User management (`/users`) and the role pick-list (`/roles`) are strictly
+  // administrator territory: regular accounts are created and managed BY an
+  // admin, there is no self-registration path. Mounted after the auth gate so
+  // `req.user` is always populated, and before the TSOA routes so both the
+  // root-mounted TSOA handlers and any legacy alias are covered.
+  // ---------------------------------------------------------------------------
+  const ADMIN_ONLY_PATHS = new Set([
+    '/users',
+    '/roles',
+    '/api/v1/users',
+    '/api/v1/roles',
+  ]);
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const p = req.path;
+    const isAdminResource =
+      ADMIN_ONLY_PATHS.has(p) ||
+      [...ADMIN_ONLY_PATHS].some((base) => p.startsWith(`${base}/`));
+    if (!isAdminResource) {
+      return next();
+    }
+    requireAdmin(req as AuthenticatedRequest, res, next).catch(next);
+  });
+
   // Register TSOA Auto-Generated Routes with Inversify Container bindings
   if (RegisterRoutes) {
     RegisterRoutes(app);
@@ -142,6 +186,9 @@ export function createApp(): Express {
 async function startServer(): Promise<void> {
   try {
     await DatabaseManager.connect();
+    // Idempotent default-admin seed: creates the ADMIN role and (only when no
+    // administrator exists yet) the default admin account. See admin.seed.ts.
+    await seedDefaultAdmin();
     const app = createApp();
     app.listen(envConfig.PORT, () => {
       logger.info(`Server running in ${envConfig.NODE_ENV} mode on port ${envConfig.PORT}`);

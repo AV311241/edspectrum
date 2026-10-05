@@ -187,32 +187,96 @@ export const authorize = (...allowedRoles: number[]) => {
   };
 };
 
+// ---------------------------------------------------------------------------
+// Admin-only authorization.
+//
+// Role ids are AUTO_INCREMENT values, so hardcoding `roleId === 1` silently
+// breaks on any database where the ADMIN role was not the first row inserted.
+// Instead the role is looked up by its stable `code`, memoized after the
+// first successful read (roles are reference data and never change id).
+// ---------------------------------------------------------------------------
+
+/** Canonical role code for the platform administrator role. */
+export const ADMIN_ROLE_CODE = 'ADMIN';
+
+let adminRoleIdCache: number | null = null;
+
+/**
+ * Resolve the id of the ADMIN role, caching it for the process lifetime.
+ * Returns `null` when the role does not exist yet (no admin can exist then
+ * either, so denying is correct); the cache is only populated on success so
+ * a role created after boot is picked up on a later request.
+ */
+export async function getAdminRoleId(): Promise<number | null> {
+  if (adminRoleIdCache !== null) return adminRoleIdCache;
+  const role = await prisma.role.findUnique({
+    where: { code: ADMIN_ROLE_CODE },
+    select: { id: true },
+  });
+  if (role) adminRoleIdCache = role.id;
+  return role?.id ?? null;
+}
+
+/**
+ * Role-based authorization middleware - rejects every caller that is not an
+ * ACTIVE administrator. Must be mounted AFTER `authenticate`, which is what
+ * populates `req.user`.
+ */
+export const requireAdmin = async (
+  req: AuthenticatedRequest,
+  _res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      return next(new AppError('Authentication required', HttpStatusCode.UNAUTHORIZED));
+    }
+
+    const adminRoleId = await getAdminRoleId();
+    if (adminRoleId === null || req.user.roleId !== adminRoleId) {
+      return next(new AppError('Administrator access required', HttpStatusCode.FORBIDDEN));
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
 /**
  * School-scoped authorization - users can only access data from their school (unless admin)
  */
-export const authorizeSchoolAccess = (req: AuthenticatedRequest, _res: Response, next: NextFunction): void => {
+export const authorizeSchoolAccess = async (
+  req: AuthenticatedRequest,
+  _res: Response,
+  next: NextFunction
+): Promise<void> => {
   if (!req.user) {
     return next(new AppError('Authentication required', HttpStatusCode.UNAUTHORIZED));
   }
 
-  // Admin role (assuming roleId 1 is admin) can access all schools
-  const ADMIN_ROLE_ID = 1;
-  if (req.user.roleId === ADMIN_ROLE_ID) {
-    return next();
+  try {
+    // Admins can access all schools; resolved by role code, not a hardcoded id.
+    const adminRoleId = await getAdminRoleId();
+    if (adminRoleId !== null && req.user.roleId === adminRoleId) {
+      return next();
+    }
+
+    // For school-scoped resources, check if user belongs to the school
+    const schoolId = req.params.schoolId
+      ? parseInt(req.params.schoolId, 10)
+      : req.query.schoolId
+        ? parseInt(req.query.schoolId as string, 10)
+        : req.body.schoolId
+          ? parseInt(req.body.schoolId, 10)
+          : null;
+
+    if (schoolId && req.user.schoolId !== schoolId) {
+      return next(new AppError('Access denied: resource belongs to a different school', HttpStatusCode.FORBIDDEN));
+    }
+
+    next();
+  } catch (error) {
+    next(error);
   }
-
-  // For school-scoped resources, check if user belongs to the school
-  const schoolId = req.params.schoolId
-    ? parseInt(req.params.schoolId, 10)
-    : req.query.schoolId
-      ? parseInt(req.query.schoolId as string, 10)
-      : req.body.schoolId
-        ? parseInt(req.body.schoolId, 10)
-        : null;
-
-  if (schoolId && req.user.schoolId !== schoolId) {
-    return next(new AppError('Access denied: resource belongs to a different school', HttpStatusCode.FORBIDDEN));
-  }
-
-  next();
 };

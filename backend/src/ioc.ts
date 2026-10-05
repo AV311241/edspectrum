@@ -28,6 +28,7 @@ import './controllers/attendance.controller';
 import './controllers/baselineAssessment.controller';
 import './controllers/class.controller';
 import './controllers/parentInteraction.controller';
+import './controllers/role.controller';
 import './controllers/school.controller';
 import './controllers/student.controller';
 import './controllers/user.controller';

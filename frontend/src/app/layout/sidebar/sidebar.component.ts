@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { UiIconComponent } from '../../shared/components/ui-icon/ui-icon.component';
+import { AuthService } from '../../core/services/auth.service';
+import { isAdminUser } from '../../core/auth/admin.guard';
 
 export interface NavItem {
   id: string;
@@ -16,9 +18,11 @@ export interface NavItem {
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {
+  private readonly auth = inject(AuthService);
+
   constructor(private router: Router) {}
 
-  readonly navItems = signal<NavItem[]>([
+  private readonly baseNavItems = signal<NavItem[]>([
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', route: '/' },
     { id: 'data-upload', label: 'Data Upload', icon: 'upload', route: '/data-upload' },
     { id: 'program', label: 'Program Overview', icon: 'book', route: '/program-overview' },
@@ -30,4 +34,16 @@ export class SidebarComponent {
     { id: 'admin', label: 'Admin', icon: 'database', route: '/admin' },
     { id: 'reports', label: 'Reports', icon: 'calendar', route: '/reports' }
   ]);
+
+  /** Admin-only entries (user management) are appended for administrators. */
+  private readonly adminNavItems = signal<NavItem[]>([
+    { id: 'users', label: 'Users', icon: 'users-group', route: '/users' }
+  ]);
+
+  /** Base navigation plus admin-only links when the session is an admin. */
+  readonly navItems = computed<NavItem[]>(() =>
+    isAdminUser(this.auth.user())
+      ? [...this.baseNavItems(), ...this.adminNavItems()]
+      : this.baseNavItems()
+  );
 }

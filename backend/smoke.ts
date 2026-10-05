@@ -8,6 +8,7 @@ import { createApp } from './src/index';
  *   - /docs/swagger.json must be public (200)
  *   - /students without a token must be 401
  *   - /students with a garbage token must be 401
+ *   - /users and /roles (admin-only) without a token must be 401
  */
 async function main(): Promise<void> {
   const app = createApp();
@@ -24,12 +25,16 @@ async function main(): Promise<void> {
         headers: { Authorization: 'Bearer not-a-real-token' },
       });
       const loginPage = await fetch(`${base}/auth/login`, { method: 'POST' });
+      const usersNoToken = await fetch(`${base}/users`);
+      const rolesNoToken = await fetch(`${base}/roles`);
 
       console.log('health             =', health.status, '(expect 200)');
       console.log('docs swagger.json  =', docs.status, '(expect 200)');
       console.log('students no token  =', protectedNoToken.status, '(expect 401)');
       console.log('students bad token =', protectedBadToken.status, '(expect 401)');
       console.log('login POST no body =', loginPage.status, '(expect 400 validation, NOT 401 gate)');
+      console.log('users no token     =', usersNoToken.status, '(expect 401)');
+      console.log('roles no token     =', rolesNoToken.status, '(expect 401)');
 
       const noTokenBody = await protectedNoToken.json().catch(() => null);
       console.log('401 body           =', JSON.stringify(noTokenBody));
@@ -39,7 +44,9 @@ async function main(): Promise<void> {
         docs.status === 200 &&
         protectedNoToken.status === 401 &&
         protectedBadToken.status === 401 &&
-        loginPage.status !== 401;
+        loginPage.status !== 401 &&
+        usersNoToken.status === 401 &&
+        rolesNoToken.status === 401;
       console.log(ok ? 'SMOKE PASS' : 'SMOKE FAIL');
     } catch (error) {
       console.error('SMOKE ERROR', error);
