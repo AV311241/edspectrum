@@ -12,3 +12,17 @@ export const authGuard: CanActivateFn = () => {
   const router = inject(Router);
   return auth.isLoggedIn() ? true : router.createUrlTree(['/login']);
 };
+
+/**
+ * Keeps signed-in sessions off the public login page.
+ *
+ * Without this, a user with a stored token can navigate back to `/login` and
+ * see a second sign-in form floating without the dashboard chrome — the page
+ * looks "full screen but wrong". Redirecting to `/` keeps exactly one
+ * authenticated surface: the dashboard shell.
+ */
+export const publicOnlyGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  return auth.isLoggedIn() ? router.createUrlTree(['/']) : true;
+};

@@ -1,0 +1,24 @@
+// Login page styles — responsive grid only (all paint via Tailwind tokens).
+.login-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .login-hero-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .login-hero-copy,
+  .login-hero-card {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

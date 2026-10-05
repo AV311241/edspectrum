@@ -1,49 +1,185 @@
-<div class="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-  <form
-    (ngSubmit)="submit()"
-    class="w-full max-w-sm bg-white rounded-xl shadow-sm border border-slate-200 p-8 space-y-4"
-  >
-    <div>
-      <h1 class="text-xl font-semibold text-slate-800">Akshara</h1>
-      <p class="text-sm text-slate-500 mt-1">English Skill Building Program - sign in to continue</p>
-    </div>
-
-    @if (error()) {
-      <div class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2" role="alert">
-        {{ error() }}
+<div class="min-h-screen flex flex-col bg-brand-bg text-brand-ink antialiased">
+  <header class="w-full bg-white border-b border-brand-line px-6 py-3.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-brand-pink flex items-center justify-center text-white shadow-sm">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.4 19 2c1 2 2 4.1 2 7 0 6-4.5 11-10 11z" />
+            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+          </svg>
+        </div>
+        <div>
+          <div class="text-[15px] font-extrabold tracking-tight leading-none">
+            Edspectrum <span class="text-xs font-bold text-brand-pink tracking-wider uppercase">Foundation</span>
+          </div>
+          <div class="text-[11px] font-medium text-brand-muted leading-none mt-1">Every Child. A Brighter Future.</div>
+        </div>
       </div>
-    }
+      <div class="flex items-center gap-5 text-xs text-brand-muted">
+        <div class="hidden md:flex items-center gap-2 bg-brand-bg border border-brand-line px-3 py-1.5 rounded-full">
+          <span class="inline-block w-2 h-2 rounded-full bg-status-positive animate-pulse"></span>
+          <span class="font-medium text-brand-ink">M&amp;E Portal Active</span>
+          <span aria-hidden="true">•</span>
+          <span>AY 2026–27</span>
+        </div>
+        <span class="hidden sm:inline font-medium">Partner Support</span>
+      </div>
+    </div>
+  </header>
 
-    <label class="block text-sm text-slate-600">
-      Email
-      <input
-        type="email"
-        name="email"
-        autocomplete="username"
-        [(ngModel)]="email"
-        required
-        class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </label>
+  <main class="flex-1 flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-6xl login-hero-grid">
+      <section class="login-hero-copy flex flex-col justify-center gap-6">
+        <div class="space-y-3">
+          <div class="inline-flex items-center gap-2 bg-brand-pink-soft border border-pink-200 text-brand-pink px-3.5 py-1 rounded-full text-xs font-semibold tracking-wide">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-pink"></span>
+            <span>Flagship Literacy &amp; Spoken English Initiative</span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.15]">
+            <span class="text-brand-pink">Akshara</span> English Skill<br />
+            <span class="font-bold">Building Program</span>
+          </h1>
+          <p class="text-base sm:text-lg text-brand-muted max-w-xl">
+            Practical English for a Brighter Tomorrow. Centralized evaluation, classroom monitoring, and student progress tracking platform.
+          </p>
+        </div>
 
-    <label class="block text-sm text-slate-600">
-      Password
-      <input
-        type="password"
-        name="password"
-        autocomplete="current-password"
-        [(ngModel)]="password"
-        required
-        class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </label>
+        <div class="grid grid-cols-3 gap-3 login-metrics">
+          <div class="bg-white p-3.5 rounded-xl border border-brand-line kpi-card-shadow">
+            <div class="text-xs font-semibold text-brand-muted">Enrolled</div>
+            <div class="text-xl font-extrabold mt-1">500+</div>
+            <div class="text-[11px] font-semibold text-status-positive mt-0.5">↑ +8% <span class="text-brand-muted font-normal">vs last yr</span></div>
+          </div>
+          <div class="bg-white p-3.5 rounded-xl border border-brand-line kpi-card-shadow">
+            <div class="text-xs font-semibold text-brand-muted">Attendance</div>
+            <div class="text-xl font-extrabold mt-1">81%</div>
+            <div class="text-[11px] font-semibold text-status-positive mt-0.5">↑ +7% <span class="text-brand-muted font-normal">monthly</span></div>
+          </div>
+          <div class="bg-white p-3.5 rounded-xl border border-brand-line kpi-card-shadow">
+            <div class="text-xs font-semibold text-brand-muted">AI / IVRS</div>
+            <div class="text-xl font-extrabold mt-1">64%</div>
+            <div class="text-[11px] font-semibold text-brand-pink mt-0.5">1,280 <span class="text-brand-muted font-normal">calls</span></div>
+          </div>
+        </div>
+        <div class="bg-brand-navy rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+          <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-brand-pink/20 blur-xl pointer-events-none"></div>
+          <div class="flex items-start gap-3.5 relative z-10">
+            <div class="p-2 rounded-lg bg-white/10 text-pink-300 font-extrabold text-lg leading-none" aria-hidden="true">&ldquo;</div>
+            <div>
+              <p class="text-sm font-medium text-slate-100 italic leading-relaxed">
+                &ldquo;Confident Learners. Brighter Futures. Every lesson, parent call, and speaking practice changes a trajectory.&rdquo;
+              </p>
+              <div class="mt-2.5 flex items-center justify-between text-xs text-slate-400">
+                <span>Edspectrum Impact Framework 2026</span>
+                <div class="flex gap-1.5" aria-hidden="true">
+                  <span class="w-2 h-2 rounded-full bg-brand-pink"></span>
+                  <span class="w-2 h-2 rounded-full bg-slate-600"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    <button
-      type="submit"
-      [disabled]="loading()"
-      class="w-full rounded-md bg-blue-600 hover:bg-blue-700 text-white py-2 text-sm font-medium disabled:opacity-50"
-    >
-      {{ loading() ? 'Signing in...' : 'Sign in' }}
-    </button>
-  </form>
+        <div>
+          <div class="text-[11px] font-semibold text-brand-muted uppercase tracking-wider mb-2">Designed for stakeholders:</div>
+          <div class="flex flex-wrap gap-2 text-xs">
+            <span class="px-2.5 py-1 rounded-md bg-slate-100 font-medium">🏫 School Principals</span>
+            <span class="px-2.5 py-1 rounded-md bg-slate-100 font-medium">👩‍🏫 English Teachers</span>
+            <span class="px-2.5 py-1 rounded-md bg-slate-100 font-medium">📊 Program M&amp;E Leads</span>
+            <span class="px-2.5 py-1 rounded-md bg-slate-100 font-medium">🤝 Field Coordinators</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="login-hero-card">
+        <div class="bg-white rounded-3xl border border-brand-line shadow-xl shadow-slate-200/50 p-6 sm:p-10 relative">
+          <div class="h-1.5 w-24 bg-gradient-to-r from-brand-pink to-pink-400 rounded-full mb-6"></div>
+          <div class="mb-6">
+            <h2 class="text-2xl font-bold tracking-tight">Sign in to Akshara Portal</h2>
+            <p class="text-sm text-brand-muted mt-1">Enter your institutional credentials provisioned by your administrator.</p>
+          </div>
+
+         
+          <div class="flex bg-slate-100 p-1 rounded-xl mb-6" role="tablist" aria-label="Sign-in method">
+            <span role="tab" aria-selected="true" class="flex-1 py-2 text-xs text-center rounded-lg bg-white text-brand-pink font-semibold shadow-sm">Email / Staff ID</span>
+            <span role="tab" aria-selected="false" aria-disabled="true" title="Mobile OTP is not supported (POST /auth/login takes email + password only)"
+              class="flex-1 py-2 text-xs text-center text-slate-400 rounded-lg cursor-not-allowed">Registered Mobile OTP · soon</span>
+          </div>
+
+          @if (error()) {
+            <div class="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2" role="alert">{{ error() }}</div>
+          }
+
+          <form (ngSubmit)="submit()" class="space-y-4" method="post">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wider mb-1.5" for="identifier">Work email or Teacher ID</label>
+              <input id="identifier" name="identifier" type="email" autocomplete="username" [(ngModel)]="email" required placeholder="name@school.org"
+                class="block w-full px-4 py-2.5 sm:py-3 text-sm rounded-xl border border-brand-line focus:border-brand-pink focus:ring-1 focus:ring-brand-pink transition-colors bg-white placeholder-slate-400" />
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-semibold uppercase tracking-wider" for="password">Password</label>
+                <span class="text-xs text-brand-muted" title="No self-service reset endpoint — ask your administrator">Forgot password? Contact admin</span>
+              </div>
+              <div class="relative">
+                <input id="password" name="password" [type]="showPassword() ? 'text' : 'password'" autocomplete="current-password" [(ngModel)]="password" required placeholder="Enter security key"
+                  class="block w-full px-4 pr-10 py-2.5 sm:py-3 text-sm rounded-xl border border-brand-line focus:border-brand-pink focus:ring-1 focus:ring-brand-pink transition-colors bg-white placeholder-slate-400" />
+                <button type="button" (click)="togglePassword()" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+                  class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" name="rememberMe" [(ngModel)]="rememberMe" class="w-4 h-4 rounded text-brand-pink focus:ring-brand-pink border-slate-300" />
+                <span class="ml-2 text-xs text-slate-600">Keep me signed in for 14 days</span>
+              </label>
+              <span class="text-[11px] text-slate-400 font-mono">v2.4-M&amp;E</span>
+            </div>
+            <div class="pt-2">
+              <button type="submit" [disabled]="loading()"
+                class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-brand-pink hover:bg-brand-pink-dark active:scale-[0.99] text-white font-semibold text-sm transition-all shadow-md disabled:opacity-50">
+                <span>{{ loading() ? 'Signing in…' : 'Sign In to Dashboard' }}</span>
+              </button>
+            </div>
+
+            <div class="pt-3">
+              <div class="relative flex py-2 items-center" aria-hidden="true">
+                <div class="flex-grow border-t border-brand-line"></div>
+                <span class="flex-shrink mx-3 text-[11px] uppercase font-semibold text-slate-400 tracking-wider">or sign in with</span>
+                <div class="flex-grow border-t border-brand-line"></div>
+              </div>
+              <div class="grid grid-cols-2 gap-3 mt-2">
+                <button type="button" disabled title="Google Workspace SSO is not implemented"
+                  class="w-full py-2.5 px-3 border border-brand-line rounded-xl text-xs font-semibold text-slate-400 cursor-not-allowed bg-slate-50">Google · soon</button>
+                <button type="button" disabled title="No self-registration — an admin creates accounts"
+                  class="w-full py-2.5 px-3 border border-brand-line rounded-xl text-xs font-semibold text-slate-400 cursor-not-allowed bg-slate-50">Request Access · via admin</button>
+              </div>
+              <p class="mt-3 text-center text-[11px] text-brand-muted">No account yet? An administrator creates all user accounts.</p>
+            </div>
+          </form>
+
+          <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-400">
+            <span>Secure 256-bit SSL Encrypted • Edspectrum Central M&amp;E Server</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="w-full bg-white border-t border-brand-line py-4 px-6">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between text-xs text-brand-muted gap-3">
+      <div>© 2026 Edspectrum Foundation. All rights reserved. Akshara English Skill Building Program.</div>
+      <div class="flex items-center gap-4">
+        <span>Privacy Policy</span>
+        <span aria-hidden="true">•</span>
+        <span>Terms of Service</span>
+        <span aria-hidden="true">•</span>
+        <span class="text-brand-pink font-bold tracking-tight">Data for Learning. Impact for Life.</span>
+      </div>
+    </div>
+  </footer>
 </div>
+

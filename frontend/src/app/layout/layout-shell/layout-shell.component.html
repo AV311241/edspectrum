@@ -1,3 +1,8 @@
+<!--
+  Authenticated layout: sidebar + Akshara dashboard header + footer.
+  Rendered ONLY by the `shell` branch in app.routes.ts, so the public
+  `/login` route never mounts it — login owns the full viewport.
+-->
 <div class="dashboard-shell">
   <app-sidebar class="dashboard-sidebar" />
   <div class="dashboard-main">
@@ -8,13 +13,14 @@
         own hierarchy controls, so the header is hidden there to avoid two
         competing filters on one screen.
       -->
-      @if (!router.url.startsWith('/schools') && !router.url.startsWith('/admin')) {
+      @if (showDashboardHeader()) {
         <app-header />
       }
-      <ng-content></ng-content>
+      <router-outlet />
     </main>
     <footer class="dashboard-footer">
       Data for Learning. Impact for Life.
     </footer>
   </div>
 </div>
+
