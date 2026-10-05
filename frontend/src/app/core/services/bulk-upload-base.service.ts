@@ -263,8 +263,8 @@ export abstract class BulkUploadService<T> {
     return this.dispatch(result.validRows);
   }
 
-  downloadTemplate(): void {
-    downloadTemplate(this.templateFileName, this.templateSheets());
+  async downloadTemplate(): Promise<void> {
+    await downloadTemplate(this.templateFileName, this.templateSheets());
   }
 
   // -------------------------------------------------------------------------

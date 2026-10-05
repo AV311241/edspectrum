@@ -1,5 +1,17 @@
-import * as XLSX from 'xlsx';
 import { ColumnSpec, DataGrid, GridRow, ValidationError } from '../models/upload.models';
+
+/**
+ * `xlsx` is deliberately NOT statically imported here.
+ *
+ * SheetJS ships as a single non-tree-shakable CJS bundle (~430 kB minified),
+ * so a static `import * as XLSX` would attach the whole library to this module
+ * - dragging it into every chunk that touches even the pure helpers below.
+ * Instead the two functions that actually parse/write workbooks pull it in
+ * with a dynamic `import()`, which emits a separate on-demand chunk.
+ */
+async function loadXlsx(): Promise<typeof import('xlsx')> {
+  return import('xlsx');
+}
 
 /** Academic year must look like `2026-2027`. */
 export const ACADEMIC_YEAR_REGEX = /^\d{4}-\d{4}$/;
@@ -159,6 +171,7 @@ export function findHeaderRow(
 
 /** Read every sheet of a workbook into raw 2D arrays. */
 export async function readWorkbook(file: File): Promise<ParsedSheet> {
+  const XLSX = await loadXlsx();
   const buffer = await file.arrayBuffer();
   const workbook = XLSX.read(buffer, { type: 'array' });
   const sheetNames = workbook.SheetNames ?? [];
@@ -272,10 +285,11 @@ export function toPlainGrid(grid: DataGrid): DataGrid {
 }
 
 /** Build and immediately download a sample .xlsx template. */
-export function downloadTemplate(
+export async function downloadTemplate(
   fileName: string,
   sheets: { name: string; rows: unknown[][]; columnWidths?: number[] }[]
-): void {
+): Promise<void> {
+  const XLSX = await loadXlsx();
   const workbook = XLSX.utils.book_new();
   for (const sheet of sheets) {
     const worksheet = XLSX.utils.aoa_to_sheet(sheet.rows);

@@ -2,7 +2,8 @@
 // Palette: brand pink (#c02672) on dark navy (#182030) over #f4f6fa.
 // Typography: Inter, per the Akshara type scale (800 titles, 700 card
 // titles, 600 sub-headers, 500 values, 400 body).
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300..800;1,300..800&display=swap');
+// NOTE: Inter is loaded ONCE via the <link> in index.html (with preconnect).
+// A duplicate @import url(...) here would only add a render-blocking fetch.
 
 html, body {
   height: 100%;

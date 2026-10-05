@@ -1,5 +1,13 @@
-import * as XLSX from 'xlsx';
 import { CreateBaselineAssessmentInput, DomainScoreInput, OralFlag, BaselineDomain, AssessmentStatus } from '../models/api.models';
+
+/**
+ * `xlsx` is loaded on demand (dynamic `import()`) rather than statically:
+ * SheetJS is a single non-tree-shakable CJS bundle, so a static import would
+ * pin ~430 kB to every module in this file's import graph.
+ */
+async function loadXlsx(): Promise<typeof import('xlsx')> {
+  return import('xlsx');
+}
 
 export interface ExcelValidationError {
   rowNumber: number;
@@ -59,6 +67,7 @@ export class ExcelValidator {
    * Parse Excel File and execute robust client-side validation
    */
   public static async parseAndValidateExcel(file: File): Promise<ParseExcelResult> {
+    const XLSX = await loadXlsx();
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data, { type: 'array' });
     const firstSheetName = workbook.SheetNames[0];
@@ -244,7 +253,8 @@ export class ExcelValidator {
   /**
    * Export dataset to 75-column Excel sheet matching standard Lumino1 schema
    */
-  public static exportToExcel(records: Record<string, unknown>[], filename: string = 'Baseline_Assessments.xlsx'): void {
+  public static async exportToExcel(records: Record<string, unknown>[], filename: string = 'Baseline_Assessments.xlsx'): Promise<void> {
+    const XLSX = await loadXlsx();
     const worksheet = XLSX.utils.json_to_sheet(records);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Baseline Assessments');

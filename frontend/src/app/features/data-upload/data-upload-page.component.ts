@@ -257,9 +257,10 @@ export class DataUploadPageComponent {
   // -------------------------------------------------------------------------
   // Step 2 — template download
   // -------------------------------------------------------------------------
-  downloadTemplate(): void {
+  async downloadTemplate(): Promise<void> {
     try {
-      this.activeService().downloadTemplate();
+      // The sample writer loads `xlsx` on demand, so this is a real await.
+      await this.activeService().downloadTemplate();
       this.noticeMessage.set(`Sample ${this.activeService().label} template downloaded.`);
     } catch {
       this.errorMessage.set('Could not generate the template file.');

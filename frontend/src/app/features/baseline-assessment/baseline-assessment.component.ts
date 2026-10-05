@@ -105,27 +105,31 @@ export class BaselineAssessmentComponent implements OnInit {
   /**
    * Export wider 75-column Excel sheet
    */
-  onDownloadExcel(): void {
+  async onDownloadExcel(): Promise<void> {
     this.assessmentService.exportFlat().subscribe({
-      next: (res: any) => {
+      next: async (res: any) => {
         const flatData = Array.isArray(res) ? res : (res?.data || []);
         console.log(flatData);
-        if (flatData.length > 0) {
-          ExcelValidator.exportToExcel(flatData, `Baseline_Assessments_${new Date().toISOString().split('T')[0]}.xlsx`);
-          this.successMessage.set('Baseline Assessment Excel file generated and downloaded successfully.');
-        } else {
-          // If server has no records yet, export currently displayed records
-          const exportRecords = this.assessments().map(a => ({
-            Student_ID: a.studentId,
-            Assessment_Date: a.assessmentDate,
-            Assessor: a.assessorName,
-            Status: a.status,
-            Key_Support_Flag: a.keySupportFlag || '',
-            Oral_Flag: a.oralFlag || '',
-            QC_Notes: a.qcNotes || ''
-          }));
-          ExcelValidator.exportToExcel(exportRecords, `Baseline_Assessments_${new Date().toISOString().split('T')[0]}.xlsx`);
-          this.successMessage.set('Exported current table view to Excel.');
+        try {
+          if (flatData.length > 0) {
+            await ExcelValidator.exportToExcel(flatData, `Baseline_Assessments_${new Date().toISOString().split('T')[0]}.xlsx`);
+            this.successMessage.set('Baseline Assessment Excel file generated and downloaded successfully.');
+          } else {
+            // If server has no records yet, export currently displayed records
+            const exportRecords = this.assessments().map(a => ({
+              Student_ID: a.studentId,
+              Assessment_Date: a.assessmentDate,
+              Assessor: a.assessorName,
+              Status: a.status,
+              Key_Support_Flag: a.keySupportFlag || '',
+              Oral_Flag: a.oralFlag || '',
+              QC_Notes: a.qcNotes || ''
+            }));
+            await ExcelValidator.exportToExcel(exportRecords, `Baseline_Assessments_${new Date().toISOString().split('T')[0]}.xlsx`);
+            this.successMessage.set('Exported current table view to Excel.');
+          }
+        } catch {
+          this.errorMessage.set('Failed to generate the Excel file.');
         }
       },
       error: () => {
